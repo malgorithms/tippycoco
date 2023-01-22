@@ -1,0 +1,6 @@
+node_modules/
+*.DS_Store
+tests.config.ts
+yarn-error.log
+tsconfig.tsbuildinfo
+debug/
