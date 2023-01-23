@@ -2,11 +2,12 @@
 
 Stuff
 
+- ding nose off flowers is too echo-y
+- make clouds more like moon; parallax
 - debug view prettier
 - code quality and technical debt:
   - move all hard-coded constants into existing tweakables.ts. What a mess.
   - clean up all the player and playerconfig iterations in game.ts
-  - get rid of sprite-batch class; vestigal from XNA
 - firefox:
   - controller lag
   - button mappings different from chrome & safari
@@ -21,7 +22,7 @@ Stuff
 - performance:
   - only one calculation of tLC and bRC per draw;
   - consider no clouds on slow framerate
-  - check if not drawing off-screen clouds affects thigns
+  - check if not drawing off-screen clouds affects things
   - profile JS
 - sound pitch not implemented yet (supposed to be different when growing/shrinking)
 - start linting

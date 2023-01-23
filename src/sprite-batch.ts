@@ -15,8 +15,9 @@ class SpriteBatch {
    * here are dealing with pixels, but actual game units
    */
   public drawTextureCentered(t: Texture2D, center: Vector2, dim: Dim, rot: number, alpha: number) {
+    if (alpha === 0) return
     this.ctx.save()
-    // we need to rotate about center, so let's translater to center, rotate, translate back
+    // we need to rotate about center, so let's translate to center, rotate, translate back
     const w = dim.w
     const h = dim.h
     const rotCenterX = w / 2
@@ -30,10 +31,11 @@ class SpriteBatch {
     this.ctx.restore()
   }
   public drawStringCentered(s: string, center: Vector2, height: number, color: Color, rot: number) {
+    if (color.a === 0) return
     this.ctx.save()
     const pxCenter = this.canvasManager.canvasToPixelPos(center)
     const pixelWidth = this.canvasManager.pixelWidth(1)
-    this.ctx.font = `${height / pixelWidth}px sans-serif`
+    this.ctx.font = `bold ${height / pixelWidth}px 'nunito sans', sans-serif`
     const boxTm = this.ctx.measureText(s)
     const boxWidth = boxTm.width
     const boxHeight = boxTm.actualBoundingBoxAscent + boxTm.actualBoundingBoxDescent
@@ -48,10 +50,11 @@ class SpriteBatch {
     this.ctx.restore()
   }
   public drawStringUncentered(s: string, pos: Vector2, height: number, color: Color, rot: number) {
+    if (color.a === 0) return
     this.ctx.save()
     const pxPos = this.canvasManager.canvasToPixelPos(pos)
     const pixelWidth = this.canvasManager.pixelWidth(1)
-    this.ctx.font = `${height / pixelWidth}px sans-serif`
+    this.ctx.font = `bold ${height / pixelWidth}px 'nunito sans', sans-serif`
     this.ctx.resetTransform()
     this.ctx.translate(pxPos.x, pxPos.y)
     this.ctx.rotate(rot ?? 0)

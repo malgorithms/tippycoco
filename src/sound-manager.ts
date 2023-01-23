@@ -50,7 +50,6 @@ class SoundManager {
     const inst = soundEffect.play(volume, pitch, pan, loop)
     this.instances.set(soundEffect, inst)
   }
-
   public playIfNotPlaying(name: SoundName, volume: number, pitch: number, pan: number, loop: boolean) {
     const soundEffect = this.getSound(name)
     loop ??= false

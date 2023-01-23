@@ -1,6 +1,7 @@
 import {BlackAi} from './ai/black-ai'
 import {GreenAi} from './ai/green-ai'
 import {PurpleAi} from './ai/purple-ai'
+import {WhiteAi} from './ai/white-ai'
 import {Atmosphere} from './atmosphere'
 import {Ball} from './ball'
 import {CanvasManager} from './canvas-manager'
@@ -145,8 +146,15 @@ class Display {
     if (playerSide == PlayerSide.Left) this.p0ScoreCard.bounce()
     else this.p1ScoreCard.bounce()
   }
-  private drawPlayer(gameTime: GameTime, playerSide: PlayerSide, player: Player, playerTexture: Texture2D, ball: Ball): void {
-    const isSkarball = playerSide === PlayerSide.Left
+  private drawPlayer(
+    gameTime: GameTime,
+    playerSide: PlayerSide,
+    player: Player,
+    playerConfig: PlayerConfiguration,
+    playerTexture: Texture2D,
+    ball: Ball,
+  ): void {
+    const isSkarball = playerConfig.species === PlayerSpecies.Ai && playerConfig.ai instanceof WhiteAi
     const leftEyeOffset = vec.scale({x: -0.113, y: 0.14}, player.physics.diameter)
     const rightEyeOffset = vec.scale({x: 0.1195, y: 0.144}, player.physics.diameter)
     let leftEyePosition = vec.add(player.physics.center, leftEyeOffset)
@@ -335,6 +343,7 @@ class Display {
 
       for (const side of [PlayerSide.Left, PlayerSide.Right]) {
         const player = gameConfig.player(side)
+        const playerConfig = gameConfig.playerConfig(side)
         let closestBall = gameConfig.balls[0]
         let closestDistance = Infinity
         for (const ball of gameConfig.balls) {
@@ -347,7 +356,7 @@ class Display {
           }
         }
         const texture = playerTextures.get(side) ?? this.getTexture('redPlayer')
-        this.drawPlayer(gameTime, side, player, texture, closestBall)
+        this.drawPlayer(gameTime, side, player, playerConfig, texture, closestBall)
       }
       for (let i = 0; i < gameConfig.balls.length; i++) {
         this.drawBall(gameConfig.balls[i], i)

@@ -29,8 +29,14 @@ class SoundEffect {
     const pannerNode = this.audioContext.createStereoPanner()
     if (volume < 0 || volume > 1) throw new Error(`bad volume ${volume}`)
     if (pan < -1 || pan > 1) throw new Error(`bad pan ${pan}`)
+    if (pitch < -1 || pitch > 1) throw new Error(`bad pitch ${pitch}`)
     gainNode.gain.linearRampToValueAtTime(volume, currTime)
     pannerNode.pan.setValueAtTime(pan, 0)
+    // attempt to change pitch. pitch values comes in -1...1
+    let rate = source.playbackRate.value
+    rate = rate * 1 + pitch / 2
+    source.playbackRate.setValueAtTime(rate, 0)
+
     // connections
     source.connect(gainNode)
     gainNode.connect(pannerNode)
