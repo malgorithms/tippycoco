@@ -69,6 +69,14 @@ class GamepadMonitor {
     }
     this.prevAssigned = new Map(this.currAssigned)
   }
+  public swapSides() {
+    console.log(`Swapping controller sides`)
+    const prevLeft = this.currAssigned.get(PlayerSide.Left)
+    const prevRight = this.currAssigned.get(PlayerSide.Right)
+    this.currAssigned = new Map()
+    if (prevLeft) this.currAssigned.set(PlayerSide.Right, prevLeft)
+    if (prevRight) this.currAssigned.set(PlayerSide.Left, prevRight)
+  }
   public wasPlayerJustDisconnected(playerSide: PlayerSide): boolean {
     return !this.currAssigned.has(playerSide) && this.prevAssigned.has(playerSide)
   }

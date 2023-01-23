@@ -22,6 +22,8 @@ Prerequisite: `Node.js` installed
 
 For now, just take a look at any of the existing ones (e.g. `src/ai/green-ai.ts`) and edit it. If you make a good one, I can add it to the game.
 
+Also, during a game if you hit the letter `g` on your keyboard (for *G*od mode), it will show you a rough prediction of where the ball(s) will go, highlighting the likely places they will hit the ground or enter a player's jump range.
+
 ### Current todo
 
 See [TODO.md](TODO.md)

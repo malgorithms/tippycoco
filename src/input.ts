@@ -4,7 +4,7 @@ import {KeyboardMonitor} from './keyboard-monitor'
 import {MenuOwnership} from './menu'
 import {PlayerSpecies} from './player'
 import tweakables from './tweakables'
-import {PlayerSide} from './types'
+import {MenuSelectResult, PlayerSide} from './types'
 
 class Input {
   private pads: GamepadMonitor
@@ -33,6 +33,9 @@ class Input {
     if (pI === PlayerSide.Left) return kSet.p0
     else return kSet.p1
   }
+  public swapGamepadSides() {
+    this.pads.swapSides()
+  }
   public wasKeyboardPauseHit(): boolean {
     return this.keyboard.anyKeysJustPushed(['Enter', 'Space'])
   }
@@ -43,13 +46,25 @@ class Input {
     return null
   }
 
-  public wasMenuSelectJustPushed(owner: MenuOwnership): boolean {
-    if (this.keyboard.anyKeysJustPushed(['Enter', 'Space'])) return true
-    if (owner) {
-      return this.pads.anyButtonsPushedBy(owner, ['psX'])
-    } else {
-      return this.pads.anyButtonsPushedByAnyone(['psX'])
+  public wasMenuSelectJustPushed(owner: MenuOwnership): MenuSelectResult {
+    const res: MenuSelectResult = {
+      selected: false,
+      byPlayerSide: null,
+      byKeyboard: false,
     }
+    if (this.keyboard.anyKeysJustPushed(['Enter', 'Space'])) {
+      res.selected = true
+      res.byKeyboard = true
+    } else {
+      const toCheck = owner ? [owner] : [PlayerSide.Left, PlayerSide.Right]
+      for (const playerSide of toCheck) {
+        if (this.pads.anyButtonsPushedBy(playerSide, ['psX'])) {
+          res.selected = true
+          res.byPlayerSide = playerSide
+        }
+      }
+    }
+    return res
   }
 
   public wasMenuUpJustPushed(owner: MenuOwnership): boolean {
@@ -73,7 +88,7 @@ class Input {
     else return this.pads.anyButtonsPushedByAnyone(['psO', 'start'])
   }
   public wasPostgameProceedJustPushed(): boolean {
-    return this.pads.anyButtonsPushedByAnyone(['psO', 'psX', 'start']) || this.wasMenuSelectJustPushed(null)
+    return this.pads.anyButtonsPushedByAnyone(['psO', 'psX', 'start']) || this.wasMenuSelectJustPushed(null).selected
   }
   public wasPlayerJustDisconnectedFromGamepad(playerSide: PlayerSide) {
     return this.pads.wasPlayerJustDisconnected(playerSide)

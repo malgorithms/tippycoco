@@ -68,6 +68,12 @@ interface NewPlayerArg {
   targetXVel: number
 }
 
+interface MenuSelectResult {
+  selected: boolean
+  byKeyboard: boolean
+  byPlayerSide: PlayerSide | null
+}
+
 interface ContentLoadStats {
   total: number
   done: number
@@ -109,4 +115,5 @@ export {
   Rectangle,
   ContentLoadMonitor,
   ContentLoadStats,
+  MenuSelectResult,
 }

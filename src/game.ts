@@ -13,7 +13,7 @@ import {GameConfig, PlayerConfiguration} from './game-config'
 import {HistoryManager} from './history-manager'
 import {Input} from './input'
 import {KapowManager, KapowType} from './kapow-manager'
-import {Menu, MenuOptions} from './menu'
+import {Menu, MenuOptions, MenuOwnership} from './menu'
 import {Player, PlayerSpecies} from './player'
 import {SoundManager} from './sound-manager'
 import tweakables from './tweakables'
@@ -269,7 +269,11 @@ class Game {
     this.gameConfig.balls[1].isAlive = numBalls === 2
     this.display.atmosphere.makeItSunny()
   }
-  private startNewHumanAgainstAIGame(ai: AiBase) {
+  private startNewHumanAgainstAIGame(ai: AiBase, gamepadSide: MenuOwnership) {
+    console.log(`new game by...`, this.menu.getWhoOwnsMenu())
+    if (gamepadSide === PlayerSide.Right) {
+      this.input.swapGamepadSides()
+    }
     this.resetScores()
     this.resetPlayers()
     this.whoseServe = PlayerSide.Left
@@ -288,7 +292,7 @@ class Game {
 
   private handleInstructionsInputs(): void {
     for (let i = 1; i <= 4; i++) {
-      if (this.input.wasMenuSelectJustPushed(null)) {
+      if (this.input.wasMenuSelectJustPushed(null).selected) {
         if (this.scoreLeftPlayer !== 0 || this.scoreRightPlayer !== 0) this.setGameState(GameState.Paused)
         else this.setGameState(GameState.MainMenu)
       }
@@ -297,7 +301,7 @@ class Game {
   private handlePreExitInputs(): void {
     let stepForward = false
     for (let i = 1; i <= 4; i++) {
-      if (this.input.wasMenuSelectJustPushed(null)) {
+      if (this.input.wasMenuSelectJustPushed(null).selected) {
         stepForward = true
       }
     }
@@ -307,7 +311,7 @@ class Game {
   private handleIntroInputs(): void {
     let stepForward = false
     for (let i = 1; i <= 4; i++) {
-      if (this.input.wasMenuSelectJustPushed(null)) {
+      if (this.input.wasMenuSelectJustPushed(null).selected) {
         if (Date.now() - this.whenStartedDateTime > 250) {
           stepForward = true
         }
@@ -334,9 +338,11 @@ class Game {
   }
   private handleMenuInputs(): void {
     const owner = this.menu.getWhoOwnsMenu()
+    const menuSelectResult = this.input.wasMenuSelectJustPushed(owner)
     if (this.input.wasMenuDownJustPushed(owner)) this.menu.moveDown(owner)
     else if (this.input.wasMenuUpJustPushed(owner)) this.menu.moveUp(owner)
-    if (this.input.wasMenuSelectJustPushed(owner)) {
+    if (menuSelectResult.selected) {
+      const gamepadSide = menuSelectResult.byPlayerSide
       const action = this.menu.returnSelection()
       if (action === MenuOptions.Play2Player1Ball) {
         this.startNewTwoPlayerGame(1)
@@ -344,13 +350,13 @@ class Game {
       if (action === MenuOptions.Play2Player2Balls) {
         this.startNewTwoPlayerGame(2)
       } else if (action === MenuOptions.PlayGreen) {
-        this.startNewHumanAgainstAIGame(new GreenAi())
+        this.startNewHumanAgainstAIGame(new GreenAi(), gamepadSide)
       } else if (action === MenuOptions.PlayPurple) {
-        this.startNewHumanAgainstAIGame(new PurpleAi())
+        this.startNewHumanAgainstAIGame(new PurpleAi(), gamepadSide)
       } else if (action === MenuOptions.PlayBlack) {
-        this.startNewHumanAgainstAIGame(new BlackAi())
+        this.startNewHumanAgainstAIGame(new BlackAi(), gamepadSide)
       } else if (action === MenuOptions.PlayWhite) {
-        this.startNewHumanAgainstAIGame(new WhiteAi())
+        this.startNewHumanAgainstAIGame(new WhiteAi(), gamepadSide)
       } else if (action === MenuOptions.Exit) this.setGameState(GameState.PreExitMessage)
       else if (action === MenuOptions.Instructions) this.setGameState(GameState.Instructions)
       else if (action === MenuOptions.ReturnToGame) this.setGameState(GameState.Action)

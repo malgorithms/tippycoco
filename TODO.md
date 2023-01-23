@@ -4,7 +4,7 @@ Stuff
 
 - ding nose off flowers is too echo-y
 - make clouds more like moon; parallax
-- debug view prettier
+- test MS Edge
 - code quality and technical debt:
   - move all hard-coded constants into existing tweakables.ts. What a mess.
   - clean up all the player and playerconfig iterations in game.ts
@@ -15,15 +15,12 @@ Stuff
   - warning when controller connected, if bugs not fixable
 - controller work:
   - autopause on disconnect
-  - test MS Edge
-  - handle case where both controllers connected, then left player disconnects, then new 1-player game started. this should swap connected controller assignment to left player
 - performance:
   - only one calculation of tLC and bRC per draw;
   - consider no clouds on slow framerate
   - check if not drawing off-screen clouds affects things
   - consider separate timer on re-drawing
   - profile JS
-- start linting
 - test on old iMac
 - make work on iPad
 - warning when on mobile device
@@ -32,6 +29,7 @@ Stuff
 - on two player game against white, both balls going in hole on the right
 - unlock AI's by beating previous; display of which unlocked
 - include full-screen launch
+- make the debug view prettier
 - better intro with them emerging from the ground, possibly launching debris
 - switch drawing players to pure canvas actions? might make for more creative additions/eyes/etc.
 - breathe in/out sounds when growing/shrinking

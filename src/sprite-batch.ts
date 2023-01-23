@@ -24,9 +24,9 @@ class SpriteBatch {
     const rotCenterY = h / 2
     this.ctx.translate(center.x, center.y)
     this.ctx.transform(1, 0, 0, -1, 0, 0) // flip y-axis
-    this.ctx.rotate(rot ?? 0)
+    if (rot) this.ctx.rotate(rot)
     this.ctx.translate(-rotCenterX, -rotCenterY)
-    this.ctx.globalAlpha = alpha ?? 1
+    this.ctx.globalAlpha = alpha
     this.ctx.drawImage(t.img, 0, 0, w, h)
     this.ctx.restore()
   }
