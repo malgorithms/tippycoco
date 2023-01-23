@@ -36,10 +36,12 @@ class FontManager {
       p.push(this.loadOneFont(fontName, request))
     }
     await Promise.all(p)
-    console.log(`Fonts loaded in ${Date.now() - start}ms. Now available = `)
-    for (const f of document.fonts.entries()) {
-      console.log('font: ', f)
-    }
+    console.log(`Fonts loaded in ${Date.now() - start}ms.`)
+    // This will throw an error in many browsers but is good for testing in Chrome/Safari:
+    //console.log(`Fonts loaded in ${Date.now() - start}ms. Now available = `)
+    //for (const f of document.fonts.entries()) {
+    //  console.log('font: ', f)
+    //}
   }
 }
 
