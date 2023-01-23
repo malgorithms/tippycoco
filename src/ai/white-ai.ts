@@ -44,8 +44,8 @@ class WhiteAi extends AiBase {
 
     let stateToWatch: FutureState = unknownState()
     const amLeft = o.myPlayerSide === PlayerSide.Left
-    const enteringMyRange = this.getNextBallEnteringMyJumpRange(o.ballPredictions, o.myPlayerSide)
-    const landingOnMySide = this.getNextBallHittingOnMySide(o.ballPredictions, o.myPlayerSide, o.gameConfig.net)
+    const enteringMyRange = this.getNextBallEnteringMyJumpRange(o, o.myPlayerSide)
+    const landingOnMySide = this.getNextBallHittingOnMySide(o, o.myPlayerSide)
     const timeToLanding = Math.abs(landingOnMySide.pos.x - me.physics.center.x) / me.maxVel.x
 
     if (landingOnMySide.isKnown && (!enteringMyRange.isKnown || landingOnMySide.time < timeToLanding + 0.1)) {
