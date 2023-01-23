@@ -25,15 +25,17 @@ body.in-game {
   background-color: #fff;
 }
 .game-canvas {
+  margin: 0;
   /* settings this to absolute will cover link overlays such as footer */
   /*position: absolute;*/
 }
 
 .intro-note {
   font-family: 'Courier New', Courier, monospace;
-  padding: 2em;
-  max-width: 40em;
+  padding: 1em;
+  max-width: 50em;
 }
+
 #btn-go {
   font-weight: Bold;
 }

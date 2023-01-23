@@ -16,11 +16,11 @@ Stuff
 - controller work:
   - autopause on disconnect
 - performance:
-  - only one calculation of tLC and bRC per draw;
   - consider no clouds on slow framerate
   - check if not drawing off-screen clouds affects things
   - consider separate timer on re-drawing
   - profile JS
+- changing size sound persists if game pauses/ends while size changing
 - test on old iMac
 - make work on iPad
 - warning when on mobile device

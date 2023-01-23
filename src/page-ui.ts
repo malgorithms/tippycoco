@@ -66,31 +66,53 @@ class PageUi {
 
   // -----------------------------------------------------------
 
+  private isMobile(): boolean {
+    if (/iPad|Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+      return true
+    } else {
+      return false
+    }
+  }
+
+  // -----------------------------------------------------------
+
   private introDiv(): string {
+    const mobileMessage = this.isMobile()
+      ? `
+      <div style="text-align:center;font-size:2em;margin-top:40px;">
+         ⚠️ <b>T.C.F.T.G</b> will play on an <b>iPad</b>, but only with an
+         external keyboard. It will not play on phones.
+        </p>
+      </div>
+    `
+      : ''
     return `    <div class="game-intro-wrapper">
-    <div class="intro-note" style="width:679px;margin:auto;">
-    <img src="/images/site/cover.png" width="679" height="271">
-    <div id="load-stats" style="text-align:center;font-size:0.9em;height:14px;"></div>
-    <div id="launch-instructions"  style="text-align:center;font-size:0.9em;height:14px;margin-top:14px;"></div>
-    <h4 style="margin-top:50px;">Controls & notes</h4>
-    <p>
-    🎮: T.C.F.T.G. works with 1 or 2 gamepads, and/or keyboard: 
-    <br><br>
-      Player 1 ⌨️: <b>a w d</b> to move
-    <br>
-      Player 2 ⌨️: <b>i j l</b> or <b>arrow keys</b>
-    </p>
-    <h4>Latest changes</h4>
-    <p>
-     Fixed control of menu when paused by controller
-    </p>
-    <h4>About</h4>
-    <p>
-     This game is a free, open-source hobby project by <b>Chris Coyne</b> (<a href="https://chriscoyne.com">chriscoyne.com</a>) with help from friends. Contributions accepted. Source code at
-     <a href="https://github.com/malgorithms/they-came-from-the-ground">https://github.com/malgorithms/they-came-from-the-ground</a>. The GitHub readme shows how to run your own
-     copy of the game. It's fun to change the game physics and rules.
-    </p>
-    </div>
+    <div class="intro-note" style="max-width:100%;">
+      <div style="text-align:center">
+        <img src="/images/site/cover.png" width="100%">
+        <div id="load-stats" style="text-align:center;font-size:0.9em;height:14px;"></div>
+        ${mobileMessage}        
+        <div id="launch-instructions"  style="text-align:center;font-size:1.1em;height:20px;margin-top:20px;"></div>
+      </div>
+      <h4 style="margin-top:50px;">Controls & notes</h4>
+      <p>
+      🎮: T.C.F.T.G. works with 1 or 2 gamepads, and/or keyboard: 
+      <br><br>
+        Player 1 ⌨️: <b>a w d</b> to move
+      <br>
+        Player 2 ⌨️: <b>i j l</b> or <b>arrow keys</b>
+      </p>
+      <h4>Latest changes</h4>
+      <p>
+      Fixed control of menu when paused by controller
+      </p>
+      <h4>About</h4>
+      <p>
+      This game is a free, open-source hobby project by <b>Chris Coyne</b> (<a href="https://chriscoyne.com">chriscoyne.com</a>) with help from friends. Contributions accepted. Source code at
+      <a href="https://github.com/malgorithms/they-came-from-the-ground">https://github.com/malgorithms/they-came-from-the-ground</a>. The GitHub readme shows how to run your own
+      copy of the game. It's a joy to change the game physics and rules.
+      </p>
+      </div>
     </div>`
   }
 
