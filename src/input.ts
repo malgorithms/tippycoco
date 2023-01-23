@@ -1,6 +1,7 @@
 import {GameConfig, PlayerConfiguration} from './game-config'
 import {GamepadConnectSummary, GamepadMonitor, TriggerName} from './gamepad-monitor'
 import {KeyboardMonitor} from './keyboard-monitor'
+import {MenuOwnership} from './menu'
 import {PlayerSpecies} from './player'
 import tweakables from './tweakables'
 import {PlayerSide} from './types'
@@ -32,9 +33,6 @@ class Input {
     if (pI === PlayerSide.Left) return kSet.p0
     else return kSet.p1
   }
-  public wasMenuSelectJustPushed(): boolean {
-    return this.keyboard.anyKeysJustPushed(['Enter', 'Space']) || this.pads.anyButtonsPushedByAnyone(['psX'])
-  }
   public wasKeyboardPauseHit(): boolean {
     return this.keyboard.anyKeysJustPushed(['Enter', 'Space'])
   }
@@ -44,18 +42,38 @@ class Input {
     }
     return null
   }
-  public wasMenuUpJustPushed(): boolean {
-    return this.keyboard.anyKeysJustPushed(['KeyI', 'KeyW', 'ArrowUp']) || this.pads.anyButtonsPushedByAnyone(['dPadUp'])
+
+  public wasMenuSelectJustPushed(owner: MenuOwnership): boolean {
+    if (this.keyboard.anyKeysJustPushed(['Enter', 'Space'])) return true
+    if (owner) {
+      return this.pads.anyButtonsPushedBy(owner, ['psX'])
+    } else {
+      return this.pads.anyButtonsPushedByAnyone(['psX'])
+    }
   }
-  public wasMenuDownJustPushed(): boolean {
-    return this.keyboard.anyKeysJustPushed(['KeyS', 'KeyK', 'ArrowDown']) || this.pads.anyButtonsPushedByAnyone(['dPadDown'])
+
+  public wasMenuUpJustPushed(owner: MenuOwnership): boolean {
+    if (this.keyboard.anyKeysJustPushed(['KeyI', 'KeyW', 'ArrowUp'])) return true
+    if (owner) {
+      return this.pads.anyButtonsPushedBy(owner, ['dPadUp'])
+    } else {
+      return this.pads.anyButtonsPushedByAnyone(['dPadUp'])
+    }
   }
-  public wasMenuExitJustPushed(pI: PlayerSide | null): boolean {
-    if (pI) return this.pads.anyButtonsPushedBy(pI, ['psO', 'start'])
+  public wasMenuDownJustPushed(owner: MenuOwnership): boolean {
+    if (this.keyboard.anyKeysJustPushed(['KeyS', 'KeyK', 'ArrowDown'])) return true
+    if (owner) {
+      return this.pads.anyButtonsPushedBy(owner, ['dPadDown'])
+    } else {
+      return this.pads.anyButtonsPushedByAnyone(['dPadDown'])
+    }
+  }
+  public wasMenuExitJustPushed(owner: MenuOwnership): boolean {
+    if (owner) return this.pads.anyButtonsPushedBy(owner, ['psO', 'start'])
     else return this.pads.anyButtonsPushedByAnyone(['psO', 'start'])
   }
   public wasPostgameProceedJustPushed(): boolean {
-    return this.pads.anyButtonsPushedByAnyone(['psO', 'psX', 'start']) || this.wasMenuSelectJustPushed()
+    return this.pads.anyButtonsPushedByAnyone(['psO', 'psX', 'start']) || this.wasMenuSelectJustPushed(null)
   }
   public wasPlayerJustDisconnectedFromGamepad(playerSide: PlayerSide) {
     return this.pads.wasPlayerJustDisconnected(playerSide)

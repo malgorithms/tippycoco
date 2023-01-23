@@ -136,14 +136,14 @@ class Menu {
     }
   }
 
-  public moveDown(playerSide: PlayerSide): void {
-    if (this.playerOwnsMenu === null || this.playerOwnsMenu === playerSide) {
+  public moveDown(owner: MenuOwnership): void {
+    if (this.playerOwnsMenu === null || this.playerOwnsMenu === owner) {
       this.selectedMenuItem = (this.selectedMenuItem + 1) % this.menuItems.length
       if (this.selectedMenuItem == 0 && !this.allowReturnToGame) this.selectedMenuItem++
     }
   }
-  public moveUp(playerSide: PlayerSide): void {
-    if (this.playerOwnsMenu === null || this.playerOwnsMenu === playerSide) {
+  public moveUp(owner: MenuOwnership): void {
+    if (this.playerOwnsMenu === null || this.playerOwnsMenu === owner) {
       this.selectedMenuItem--
       if ((this.selectedMenuItem == 0 && !this.allowReturnToGame) || this.selectedMenuItem < 0)
         this.selectedMenuItem = this.menuItems.length - 1
@@ -161,4 +161,4 @@ class Menu {
   }
 }
 
-export {MenuOptions, Menu}
+export {MenuOptions, Menu, MenuOwnership}

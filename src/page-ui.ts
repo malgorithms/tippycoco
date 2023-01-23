@@ -82,7 +82,7 @@ class PageUi {
     </p>
     <h4>Latest changes</h4>
     <p>
-     Gamepads working, at least some, in Safari and Chrome. Not FF yet.
+     Fixed control of menu when paused by controller
     </p>
     <h4>About</h4>
     <p>

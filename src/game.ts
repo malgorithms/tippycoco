@@ -288,7 +288,7 @@ class Game {
 
   private handleInstructionsInputs(): void {
     for (let i = 1; i <= 4; i++) {
-      if (this.input.wasMenuSelectJustPushed()) {
+      if (this.input.wasMenuSelectJustPushed(null)) {
         if (this.scoreLeftPlayer !== 0 || this.scoreRightPlayer !== 0) this.setGameState(GameState.Paused)
         else this.setGameState(GameState.MainMenu)
       }
@@ -297,7 +297,7 @@ class Game {
   private handlePreExitInputs(): void {
     let stepForward = false
     for (let i = 1; i <= 4; i++) {
-      if (this.input.wasMenuSelectJustPushed()) {
+      if (this.input.wasMenuSelectJustPushed(null)) {
         stepForward = true
       }
     }
@@ -307,7 +307,7 @@ class Game {
   private handleIntroInputs(): void {
     let stepForward = false
     for (let i = 1; i <= 4; i++) {
-      if (this.input.wasMenuSelectJustPushed()) {
+      if (this.input.wasMenuSelectJustPushed(null)) {
         if (Date.now() - this.whenStartedDateTime > 250) {
           stepForward = true
         }
@@ -334,33 +334,30 @@ class Game {
   }
   private handleMenuInputs(): void {
     const owner = this.menu.getWhoOwnsMenu()
-    for (const playerSide of [PlayerSide.Left, PlayerSide.Right]) {
-      if (owner !== null && owner !== playerSide) continue
-      if (playerSide === PlayerSide.Left && this.input.wasMenuDownJustPushed()) this.menu.moveDown(playerSide)
-      else if (playerSide === PlayerSide.Left && this.input.wasMenuUpJustPushed()) this.menu.moveUp(playerSide)
-      if (playerSide === PlayerSide.Left && this.input.wasMenuSelectJustPushed()) {
-        const action = this.menu.returnSelection()
-        if (action === MenuOptions.Play2Player1Ball) {
-          this.startNewTwoPlayerGame(1)
-        }
-        if (action === MenuOptions.Play2Player2Balls) {
-          this.startNewTwoPlayerGame(2)
-        } else if (action === MenuOptions.PlayGreen) {
-          this.startNewHumanAgainstAIGame(new GreenAi())
-        } else if (action === MenuOptions.PlayPurple) {
-          this.startNewHumanAgainstAIGame(new PurpleAi())
-        } else if (action === MenuOptions.PlayBlack) {
-          this.startNewHumanAgainstAIGame(new BlackAi())
-        } else if (action === MenuOptions.PlayWhite) {
-          this.startNewHumanAgainstAIGame(new WhiteAi())
-        } else if (action === MenuOptions.Exit) this.setGameState(GameState.PreExitMessage)
-        else if (action === MenuOptions.Instructions) this.setGameState(GameState.Instructions)
-        else if (action === MenuOptions.ReturnToGame) this.setGameState(GameState.Action)
+    if (this.input.wasMenuDownJustPushed(owner)) this.menu.moveDown(owner)
+    else if (this.input.wasMenuUpJustPushed(owner)) this.menu.moveUp(owner)
+    if (this.input.wasMenuSelectJustPushed(owner)) {
+      const action = this.menu.returnSelection()
+      if (action === MenuOptions.Play2Player1Ball) {
+        this.startNewTwoPlayerGame(1)
       }
-      // Pressing B or Start from Pause returns to Game
-      if (this.gameState === GameState.Paused) {
-        if (this.input.wasMenuExitJustPushed(owner)) this.setGameState(GameState.Action)
-      }
+      if (action === MenuOptions.Play2Player2Balls) {
+        this.startNewTwoPlayerGame(2)
+      } else if (action === MenuOptions.PlayGreen) {
+        this.startNewHumanAgainstAIGame(new GreenAi())
+      } else if (action === MenuOptions.PlayPurple) {
+        this.startNewHumanAgainstAIGame(new PurpleAi())
+      } else if (action === MenuOptions.PlayBlack) {
+        this.startNewHumanAgainstAIGame(new BlackAi())
+      } else if (action === MenuOptions.PlayWhite) {
+        this.startNewHumanAgainstAIGame(new WhiteAi())
+      } else if (action === MenuOptions.Exit) this.setGameState(GameState.PreExitMessage)
+      else if (action === MenuOptions.Instructions) this.setGameState(GameState.Instructions)
+      else if (action === MenuOptions.ReturnToGame) this.setGameState(GameState.Action)
+    }
+    // Pressing B or Start from Pause returns to Game
+    if (this.gameState === GameState.Paused) {
+      if (this.input.wasMenuExitJustPushed(owner)) this.setGameState(GameState.Action)
     }
   }
   handleVictoryInputs(): void {

@@ -14,8 +14,6 @@ Stuff
   - fps sucks
   - warning when controller connected, if bugs not fixable
 - controller work:
-  - visual indicator of controllers connected or not
-  - neither pad can control menu when paused with start buttons (pausing controller should control menu)
   - autopause on disconnect
   - test MS Edge
   - handle case where both controllers connected, then left player disconnects, then new 1-player game started. this should swap connected controller assignment to left player
