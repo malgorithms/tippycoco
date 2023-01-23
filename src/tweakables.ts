@@ -57,6 +57,7 @@ export default {
   triggerTolerance: 0.05, // anything this close to 0 is just 0
   triggerGrowthMult: 0.4, //
   keyboardGrowthRate: 0.1,
+  fontFamilyFallback: "'Courier New', Arial",
   net: {
     center: {x: 0.5, y: 0.025},
     width: 0.08,

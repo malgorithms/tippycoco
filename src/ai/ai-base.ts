@@ -1,3 +1,4 @@
+import {Ball} from '../ball'
 import {FuturePrediction, unknownState} from '../future-prediction'
 import {GameConfig} from '../game-config'
 import {Player} from '../player'
@@ -10,7 +11,8 @@ interface AiThinkArg {
   accumulatedPointTime: number
   gameConfig: GameConfig
   myPlayerSide: PlayerSide
-  futurePredictionList: FuturePrediction[]
+  balls: Ball[]
+  ballPredictions: FuturePrediction[]
   gameGravity: Vector2
   p0Score: number
   p1Score: number
@@ -28,27 +30,23 @@ abstract class AiBase {
 
   public abstract think(o: AiThinkArg): void
 
-  protected getNextBallEnteringMyJumpRange(futurePredictionList: FuturePrediction[], myPlayerSide: PlayerSide): FutureState {
+  protected getNextBallEnteringMyJumpRange(o: AiThinkArg, myPlayerSide: PlayerSide): FutureState {
     let result: FutureState = unknownState()
-    for (let i = 0; i < futurePredictionList.length; i++) {
-      const pred = futurePredictionList[i]
+    for (const pred of o.ballPredictions) {
       const lookup = pred.ballEnteringJumpRange(myPlayerSide)
       if (!lookup) throw new Error('failed to lookup')
-      if (i === 0 || !result?.isKnown || lookup.time < result.time) {
+      if (!result?.isKnown || lookup.time < result.time) {
         result = lookup
       }
     }
     return result
   }
 
-  protected getNextBallHittingOnMySide(
-    futurePredictionList: FuturePrediction[],
-    myPlayerSide: PlayerSide,
-    net: RectangularObstacle,
-  ): FutureState {
+  protected getNextBallHittingOnMySide(o: AiThinkArg, myPlayerSide: PlayerSide): FutureState {
+    const net = o.gameConfig.net
     const result: FutureState = unknownState()
     const amLeft = myPlayerSide === PlayerSide.Left
-    for (const p of futurePredictionList) {
+    for (const p of o.ballPredictions) {
       const hittingGround = p.ballHittingGround
       if ((amLeft && hittingGround.pos.x > net.center.x) || (!amLeft && hittingGround.pos.x < net.center.x)) {
         continue

@@ -1,6 +1,7 @@
 import {CanvasManager} from './canvas-manager'
 import {Color} from './color'
-import {Dim, Rectangle, Texture2D, Vector2} from './types'
+import tweakables from './tweakables'
+import {Dim, FontDef, Rectangle, Texture2D, Vector2} from './types'
 
 class SpriteBatch {
   private canvasManager: CanvasManager
@@ -15,7 +16,7 @@ class SpriteBatch {
    * here are dealing with pixels, but actual game units
    */
   public drawTextureCentered(t: Texture2D, center: Vector2, dim: Dim, rot: number, alpha: number) {
-    if (alpha === 0) return
+    if (alpha <= 0) return
     this.ctx.save()
     // we need to rotate about center, so let's translate to center, rotate, translate back
     const w = dim.w
@@ -30,12 +31,11 @@ class SpriteBatch {
     this.ctx.drawImage(t.img, 0, 0, w, h)
     this.ctx.restore()
   }
-  public drawStringCentered(s: string, center: Vector2, height: number, color: Color, rot: number) {
+  public drawStringCentered(s: string, font: FontDef, size: number, center: Vector2, color: Color, rot: number) {
     if (color.a === 0) return
     this.ctx.save()
     const pxCenter = this.canvasManager.canvasToPixelPos(center)
-    const pixelWidth = this.canvasManager.pixelWidth(1)
-    this.ctx.font = `bold ${height / pixelWidth}px 'nunito sans', sans-serif`
+    this.ctx.font = this.fontDescriptor(font, size)
     const boxTm = this.ctx.measureText(s)
     const boxWidth = boxTm.width
     const boxHeight = boxTm.actualBoundingBoxAscent + boxTm.actualBoundingBoxDescent
@@ -49,12 +49,11 @@ class SpriteBatch {
     this.ctx.fillText(s, 0, 0)
     this.ctx.restore()
   }
-  public drawStringUncentered(s: string, pos: Vector2, height: number, color: Color, rot: number) {
+  public drawStringUncentered(s: string, font: FontDef, size: number, pos: Vector2, color: Color, rot: number) {
     if (color.a === 0) return
     this.ctx.save()
     const pxPos = this.canvasManager.canvasToPixelPos(pos)
-    const pixelWidth = this.canvasManager.pixelWidth(1)
-    this.ctx.font = `bold ${height / pixelWidth}px 'nunito sans', sans-serif`
+    this.ctx.font = this.fontDescriptor(font, size)
     this.ctx.resetTransform()
     this.ctx.translate(pxPos.x, pxPos.y)
     this.ctx.rotate(rot ?? 0)
@@ -81,6 +80,19 @@ class SpriteBatch {
       w: width,
       h: (width * texture2d.height) / texture2d.width,
     }
+  }
+  /**
+   * returns something like "bold 12px 'nunito sans', sans-serif"
+   * @param font - font definition
+   * @param size - the size in game coordinates; gets converted to pixels
+   * @returns string
+   */
+  private fontDescriptor(font: FontDef, size: number): string {
+    const pixelWidth = this.canvasManager.pixelWidth(1)
+    const pxSize = size / pixelWidth
+    const res = `${font.weight} ${pxSize.toFixed(4)}px "${font.family}", ${tweakables.fontFamilyFallback}`
+    //console.log(`Got font descriptor "${res}"`)
+    return res
   }
 }
 export {SpriteBatch}

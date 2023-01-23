@@ -44,8 +44,8 @@ class WhiteAi extends AiBase {
 
     let stateToWatch: FutureState = unknownState()
     const amLeft = o.myPlayerSide === PlayerSide.Left
-    const enteringMyRange = this.getNextBallEnteringMyJumpRange(o.futurePredictionList, o.myPlayerSide)
-    const landingOnMySide = this.getNextBallHittingOnMySide(o.futurePredictionList, o.myPlayerSide, o.gameConfig.net)
+    const enteringMyRange = this.getNextBallEnteringMyJumpRange(o.ballPredictions, o.myPlayerSide)
+    const landingOnMySide = this.getNextBallHittingOnMySide(o.ballPredictions, o.myPlayerSide, o.gameConfig.net)
     const timeToLanding = Math.abs(landingOnMySide.pos.x - me.physics.center.x) / me.maxVel.x
 
     if (landingOnMySide.isKnown && (!enteringMyRange.isKnown || landingOnMySide.time < timeToLanding + 0.1)) {
@@ -105,7 +105,7 @@ class WhiteAi extends AiBase {
     }
     //2. when there's 1 known landing
     let count = 0
-    for (const f of o.futurePredictionList) {
+    for (const f of o.ballPredictions) {
       if (f.ballHittingGround.isKnown) {
         count++
       }

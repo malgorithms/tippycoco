@@ -28,9 +28,9 @@ class BlackAi extends AiBase {
 
     if (o.accumulatedPointTime < 1.0) return
 
-    let stateToWatch = o.futurePredictionList[0].ballEnteringJumpRange(o.myPlayerSide)
+    let stateToWatch = o.ballPredictions[0].ballEnteringJumpRange(o.myPlayerSide)
     const amLeft = o.myPlayerSide === PlayerSide.Left
-    if (!stateToWatch.isKnown) stateToWatch = o.futurePredictionList[0].ballHittingGround
+    if (!stateToWatch.isKnown) stateToWatch = o.ballPredictions[0].ballHittingGround
     if (stateToWatch.isKnown) stateToWatch.pos.x += ((amLeft ? -1.0 : 1.0) * me.physics.diameter) / 6.0
 
     // What to do if we have no idea

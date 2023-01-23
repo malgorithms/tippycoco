@@ -6,7 +6,8 @@ import {Atmosphere} from './atmosphere'
 import {Ball} from './ball'
 import {CanvasManager} from './canvas-manager'
 import {Color, Colors} from './color'
-import {ContentManager} from './content-manager'
+import {ContentLoader} from './content-loader'
+import {FontManager, FontName} from './font-manager'
 import {FuturePrediction} from './future-prediction'
 import {GameState} from './game'
 import {GameConfig, PlayerConfiguration} from './game-config'
@@ -81,13 +82,14 @@ class Display {
   private p0ScoreCard: ScoreCard
   private p1ScoreCard: ScoreCard
 
-  private content: ContentManager
+  private content: ContentLoader
   private spriteBatch: SpriteBatch
   private textures: Map<TextureName, Texture2D>
   public atmosphere: Atmosphere
   private lastCloudDraw: number
+  private _fontManager: FontManager
 
-  public constructor(content: ContentManager, targetDiv: HTMLDivElement) {
+  public constructor(content: ContentLoader, targetDiv: HTMLDivElement) {
     this.textures = new Map()
     this.lastCloudDraw = 0
     this.inDebugView = false
@@ -97,13 +99,16 @@ class Display {
     this.atmosphere = new Atmosphere(this.canvasManager)
     this.p0ScoreCard = new ScoreCard()
     this.p1ScoreCard = new ScoreCard()
+    this._fontManager = new FontManager(this.content)
   }
 
   private async loadTexture(path: string, name: TextureName) {
     const t = await this.content.loadTexture2d(path)
     this.textures.set(name, t)
   }
-
+  public font(fontName: FontName) {
+    return this._fontManager.getFont(fontName)
+  }
   public get canvasWidth(): number {
     return this.canvasManager.width
   }
@@ -124,6 +129,7 @@ class Display {
 
     const p: Promise<any>[] = []
     Object.entries(textureSources).forEach(([name, source]) => p.push(this.loadTexture(source, name as TextureName)))
+    p.push(this._fontManager.loadContent())
     await Promise.all(p)
 
     this.atmosphere.addBackgroundTextures(this.getTexture('sunnyBackground'), this.getTexture('darkBackground'))
@@ -219,25 +225,27 @@ class Display {
 
     const destination: Vector2 = {x: 0.5, y: 0.4}
     const shift = this.canvasManager.pixelWidth(2)
+    const subFont = this.font('regular')
+    const font = this.font('extraBold')
 
     // we draw subtitle first so title is on top when they overlap
     if (subtitle) {
       const subtitleRelativeSize = 0.8 // 80% as big as title
       const subtitleSize = (minHeight + (maxHeight - height)) * subtitleRelativeSize
       destination.y -= subtitleSize * 2
-      this.spriteBatch.drawStringCentered(subtitle, vec.add(destination, {x: shift, y: shift}), subtitleSize, Colors.black, rot)
-      this.spriteBatch.drawStringCentered(subtitle, vec.add(destination, {x: shift, y: -shift}), subtitleSize, Colors.black, rot)
-      this.spriteBatch.drawStringCentered(subtitle, vec.add(destination, {x: -shift, y: shift}), subtitleSize, Colors.black, rot)
-      this.spriteBatch.drawStringCentered(subtitle, vec.add(destination, {x: -shift, y: -shift}), subtitleSize, Colors.black, rot)
-      this.spriteBatch.drawStringCentered(subtitle, destination, subtitleSize, color, rot)
+      this.spriteBatch.drawStringCentered(subtitle, subFont, subtitleSize, vec.add(destination, {x: shift, y: shift}), Colors.black, rot)
+      this.spriteBatch.drawStringCentered(subtitle, subFont, subtitleSize, vec.add(destination, {x: shift, y: -shift}), Colors.black, rot)
+      this.spriteBatch.drawStringCentered(subtitle, subFont, subtitleSize, vec.add(destination, {x: -shift, y: shift}), Colors.black, rot)
+      this.spriteBatch.drawStringCentered(subtitle, subFont, subtitleSize, vec.add(destination, {x: -shift, y: -shift}), Colors.black, rot)
+      this.spriteBatch.drawStringCentered(subtitle, subFont, subtitleSize, destination, color, rot)
       destination.y += subtitleSize
     }
 
-    this.spriteBatch.drawStringCentered(text, vec.add(destination, {x: shift, y: shift}), height, Colors.black, rot)
-    this.spriteBatch.drawStringCentered(text, vec.add(destination, {x: shift, y: -shift}), height, Colors.black, rot)
-    this.spriteBatch.drawStringCentered(text, vec.add(destination, {x: -shift, y: shift}), height, Colors.black, rot)
-    this.spriteBatch.drawStringCentered(text, vec.add(destination, {x: -shift, y: -shift}), height, Colors.black, rot)
-    this.spriteBatch.drawStringCentered(text, destination, height, color, rot)
+    this.spriteBatch.drawStringCentered(text, font, height, vec.add(destination, {x: shift, y: shift}), Colors.black, rot)
+    this.spriteBatch.drawStringCentered(text, font, height, vec.add(destination, {x: shift, y: -shift}), Colors.black, rot)
+    this.spriteBatch.drawStringCentered(text, font, height, vec.add(destination, {x: -shift, y: shift}), Colors.black, rot)
+    this.spriteBatch.drawStringCentered(text, font, height, vec.add(destination, {x: -shift, y: -shift}), Colors.black, rot)
+    this.spriteBatch.drawStringCentered(text, font, height, destination, color, rot)
   }
 
   private getPlayerTexture(playerConfig: PlayerConfiguration, playerSide: PlayerSide): Texture2D {
@@ -254,11 +262,11 @@ class Display {
   public drawControllerInstructions() {
     // TODO
     const c = new Color(1, 1, 1, 1)
-    this.spriteBatch.drawStringCentered('Instructions soon', {x: 0.5, y: 0.1}, 0.1, c, 0)
+    this.spriteBatch.drawStringCentered('Instructions soon', this.font('regular'), 0.1, {x: 0.5, y: 0.1}, c, 0)
   }
 
   public drawCredits(gameTime: GameTime) {
-    // TODO
+    console.log(`Todo, draw credits at ${gameTime.totalGameTime.totalSeconds}`)
   }
 
   public drawKapows(k: KapowManager) {
@@ -558,14 +566,16 @@ class Display {
     const xPos = view.x1 + height * 2
     const yPos = view.y1 + height * 2
     const color = new Color(0, 0, 0, 0.25)
-    this.spriteBatch.drawStringUncentered(`${~~currentFps} fps`, {x: xPos, y: yPos}, height, color, 0)
+    const font = this.font('regular')
+    this.spriteBatch.drawStringUncentered(`${~~currentFps} fps`, font, height, {x: xPos, y: yPos}, color, 0)
     const suggAt = 90
     if (currentFps && currentFps < suggAt) {
       const opacity = 0.5 * (1 - currentFps / suggAt)
       this.spriteBatch.drawStringUncentered(
         `lmk if a smaller window improves smoothness/fps`,
-        {x: xPos, y: yPos - height * 1.1},
+        font,
         height * 0.75,
+        {x: xPos, y: yPos - height * 1.1},
         new Color(0, 0, 0, opacity),
         0,
       )
@@ -643,13 +653,14 @@ class Display {
 
     const p0h = this.p0ScoreCard.sizeMultiplier * scoreCardHeight
     this.spriteBatch.drawTextureCentered(this.getTexture('scoreCard'), box1Center, {w: p0h, h: p0h}, rotation, 1)
-    this.spriteBatch.drawStringCentered(text1, box1Center, p0h * 0.9 * this.p0ScoreCard.sizeMultiplier, Colors.black, rotation)
+    const font = this.font('extraBold')
+    this.spriteBatch.drawStringCentered(text1, font, p0h * 0.9 * this.p0ScoreCard.sizeMultiplier, box1Center, Colors.black, rotation)
 
     const text2 = `${p1Score}`
 
     const p1h = this.p1ScoreCard.sizeMultiplier * scoreCardHeight
     this.spriteBatch.drawTextureCentered(this.getTexture('scoreCard'), box2Center, {w: p1h, h: p1h}, rotation, 1)
-    this.spriteBatch.drawStringCentered(text2, box2Center, p1h * 0.9 * this.p1ScoreCard.sizeMultiplier, Colors.black, rotation)
+    this.spriteBatch.drawStringCentered(text2, font, p1h * 0.9 * this.p1ScoreCard.sizeMultiplier, box2Center, Colors.black, rotation)
   }
 
   public adjustZoomLevel(maxBallHeight: number, dt: number) {

@@ -1,4 +1,3 @@
-import {unknownState} from '../future-prediction'
 import {PlayerSide} from '../types'
 import {AiBase, AiThinkArg} from './ai-base'
 
@@ -19,9 +18,9 @@ class GreenAi extends AiBase {
 
     if (o.accumulatedPointTime < 1.0) return
 
-    let stateToWatch = o.futurePredictionList[0].ballEnteringJumpRange(o.myPlayerSide)
+    let stateToWatch = this.getNextBallEnteringMyJumpRange(o, o.myPlayerSide)
     const amLeft = o.myPlayerSide === PlayerSide.Left
-    if (!stateToWatch.isKnown) stateToWatch = o.futurePredictionList[0].ballHittingGround
+    if (!stateToWatch.isKnown) stateToWatch = this.getNextBallHittingOnMySide(o, o.myPlayerSide)
     if (stateToWatch.isKnown) stateToWatch.pos.x += ((amLeft ? -1.0 : 1.0) * me.physics.diameter) / 6.0
 
     // What to do if we have no idea

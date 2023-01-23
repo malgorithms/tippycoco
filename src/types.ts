@@ -80,6 +80,11 @@ interface ContentLoadStats {
 }
 type ContentLoadMonitor = (ls: ContentLoadStats) => void
 
+interface FontDef {
+  family: string
+  weight: number
+  url: string
+}
 enum GameState {
   PreStart,
   Intro1,
@@ -111,6 +116,7 @@ export {
   CircleCircleCollision,
   NewPlayerArg,
   Dim,
+  FontDef,
   Texture2D,
   Rectangle,
   ContentLoadMonitor,

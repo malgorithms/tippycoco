@@ -1,8 +1,7 @@
 import {SoundEffect} from './sound-effect'
 import {ContentLoadMonitor, ContentLoadStats, Texture2D} from './types'
-import {timeout} from './utils'
 
-class ContentManager {
+class ContentLoader {
   private audioContext: AudioContext
   private loadStats: ContentLoadStats
   private loadMonitor: ContentLoadMonitor
@@ -10,6 +9,15 @@ class ContentManager {
     this.loadStats = {total: 0, done: 0}
     this.audioContext = new AudioContext()
     this.loadMonitor = loadMonitor
+  }
+  public async loadFont(familyName: string, url: string, weight: number) {
+    this.loadStats.total++
+    const ffd: FontFaceDescriptors = {weight: `${weight}`}
+    const ff = new FontFace(`${familyName}`, `url(${url})`, ffd)
+    document.fonts.add(ff)
+    await ff.load()
+    this.loadStats.done++
+    return ff
   }
   private loadImage(url: string): Promise<HTMLImageElement> {
     this.loadStats.total++
@@ -57,4 +65,4 @@ class ContentManager {
   }
 }
 
-export {ContentManager}
+export {ContentLoader}

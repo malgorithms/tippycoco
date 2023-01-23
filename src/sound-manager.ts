@@ -1,4 +1,4 @@
-import {ContentManager} from './content-manager'
+import {ContentLoader} from './content-loader'
 import {SoundEffect, SoundEffectInstance} from './sound-effect'
 import {PlayerSide} from './types'
 
@@ -21,11 +21,11 @@ const soundSources = {
 type SoundName = keyof typeof soundSources
 
 class SoundManager {
-  private content: ContentManager
+  private content: ContentLoader
   public instances: Map<SoundEffect, SoundEffectInstance>
   private sounds: Map<SoundName, SoundEffect>
 
-  public constructor(content: ContentManager) {
+  public constructor(content: ContentLoader) {
     this.content = content
     this.sounds = new Map()
     this.instances = new Map()

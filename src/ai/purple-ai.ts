@@ -22,9 +22,9 @@ class PurpleAi extends AiBase {
     }
 
     let stateToWatch: FutureState = unknownState()
-    const enteringMyRange = this.getNextBallEnteringMyJumpRange(o.futurePredictionList, o.myPlayerSide)
+    const enteringMyRange = this.getNextBallEnteringMyJumpRange(o.ballPredictions, o.myPlayerSide)
     const amLeft = o.myPlayerSide === PlayerSide.Left
-    const landingOnMySide = this.getNextBallHittingOnMySide(o.futurePredictionList, o.myPlayerSide, o.gameConfig.net)
+    const landingOnMySide = this.getNextBallHittingOnMySide(o.ballPredictions, o.myPlayerSide, o.gameConfig.net)
     const timeToLanding = Math.abs(landingOnMySide.pos.x - me.physics.center.x) / me.maxVel.x
 
     if (landingOnMySide.isKnown && (!enteringMyRange.isKnown || landingOnMySide.time < timeToLanding + 0.1)) {

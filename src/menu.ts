@@ -109,9 +109,10 @@ class Menu {
       const p0 = vec.add(destination, {x: -0.01, y: -0.01})
       const p1 = vec.add(destination, {x: 0.01, y: 0.02})
       const p2 = destination
-      this.spriteBatch.drawStringUncentered(this.menuItems[i].text, p0, sizeMultiplier, backgroundColor2, r)
-      this.spriteBatch.drawStringUncentered(this.menuItems[i].text, p1, sizeMultiplier, backgroundColor, r)
-      this.spriteBatch.drawStringUncentered(this.menuItems[i].text, p2, sizeMultiplier, foregroundColor, r)
+      const font = this.display.font('extraBold')
+      this.spriteBatch.drawStringUncentered(this.menuItems[i].text, font, sizeMultiplier, p0, backgroundColor2, r)
+      this.spriteBatch.drawStringUncentered(this.menuItems[i].text, font, sizeMultiplier, p1, backgroundColor, r)
+      this.spriteBatch.drawStringUncentered(this.menuItems[i].text, font, sizeMultiplier, p2, foregroundColor, r)
     }
     if (this.selectedMenuItem >= 1 && this.selectedMenuItem <= 6) {
       const p: Vector2 = {x: (2 * this.canvasWidth) / 3, y: (2 * this.canvasHeight) / 3}

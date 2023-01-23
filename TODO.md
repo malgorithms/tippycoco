@@ -22,11 +22,16 @@ Stuff
   - profile JS
 - changing size sound persists if game pauses/ends while size changing
 - test on old iMac
-- make work on iPad
 - menu redesign:
+  - which characters have you beaten, including trophies
+    - trophies are for achievements against them
+  - which characters are unlocked (and how to unlock?)
+  - visual representation of characters
   - give characters names
   - more characters
-  - bot template support; if bot activated, shows up
+  - bot template support
+    - disabled but visible with explanation you can write your own
+    - activated as soon as you edit something like myBot.ts
 - on two player game against white, both balls going in hole on the right
 - possible achievements:
   - shut out

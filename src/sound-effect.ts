@@ -44,7 +44,7 @@ class SoundEffect {
     source.loop = loop
     this.playingSources.push(source)
     source.start(0, 0)
-    source.onended = (_ev) => {
+    source.onended = () => {
       this.playingSources.splice(this.playingSources.indexOf(source), 1)
     }
     return {

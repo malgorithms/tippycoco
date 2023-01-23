@@ -6,7 +6,7 @@ import {WhiteAi} from './ai/white-ai'
 import {Ball} from './ball'
 import {Colors} from './color'
 import constants from './constants'
-import {ContentManager} from './content-manager'
+import {ContentLoader} from './content-loader'
 import {Display} from './display'
 import {FuturePrediction, unknownState} from './future-prediction'
 import {GameConfig, PlayerConfiguration} from './game-config'
@@ -21,7 +21,7 @@ import {ContentLoadMonitor, FutureState, GameState, GameTime, NewPlayerArg, Play
 import {timeout, vec} from './utils'
 
 class Game {
-  private content: ContentManager
+  private content: ContentLoader
   private display!: Display
   private input!: Input
   private sound!: SoundManager
@@ -46,7 +46,7 @@ class Game {
   private whenStartedDateTime = Date.now()
 
   constructor(targetDiv: HTMLDivElement, contentLoadMonitor: ContentLoadMonitor) {
-    this.content = new ContentManager(contentLoadMonitor)
+    this.content = new ContentLoader(contentLoadMonitor)
     this.gameConfig = new GameConfig()
     this.kapowManager = new KapowManager()
     this.historyManager = new HistoryManager()
@@ -479,7 +479,8 @@ class Game {
           accumulatedPointTime: this.accumulatedPointTime,
           gameConfig: this.gameConfig,
           myPlayerSide: playerSide,
-          futurePredictionList: this.futurePredictionList,
+          balls: this.gameConfig.balls,
+          ballPredictions: this.futurePredictionList,
           gameGravity: tweakables.gameGravity,
           p0Score: this.scoreLeftPlayer,
           p1Score: this.scoreRightPlayer,
