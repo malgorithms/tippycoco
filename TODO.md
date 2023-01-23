@@ -2,9 +2,18 @@
 
 Stuff
 
-- ding nose off flowers is too echo-y
+- menu redesign:
+  - which characters have you beaten, including trophies
+    - trophies are for achievements against them
+  - which characters are unlocked (and how to unlock?)
+  - visual representation of characters
+  - give characters names
+  - more characters
+  - bot template support
+    - disabled but visible with explanation you can write your own
+    - activated as soon as you edit something like myBot.ts
 - make clouds more like moon; parallax
-- test MS Edge
+- favicon
 - code quality and technical debt:
   - move all hard-coded constants into existing tweakables.ts. What a mess.
   - clean up all the player and playerconfig iterations in game.ts
@@ -20,27 +29,19 @@ Stuff
   - check if not drawing off-screen clouds affects things
   - consider separate timer on re-drawing
   - profile JS
-- changing size sound persists if game pauses/ends while size changing
 - test on old iMac
-- menu redesign:
-  - which characters have you beaten, including trophies
-    - trophies are for achievements against them
-  - which characters are unlocked (and how to unlock?)
-  - visual representation of characters
-  - give characters names
-  - more characters
-  - bot template support
-    - disabled but visible with explanation you can write your own
-    - activated as soon as you edit something like myBot.ts
 - possible achievements:
   - shut out
   - no jumps win
   - all points scored while tiny
-- unlock AI's by beating previous; display of which unlocked
-- make the debug view prettier
 - better intro with them emerging from the ground, possibly launching debris
 - switch drawing players to pure canvas actions? might make for more creative additions/eyes/etc.
-- breathe in/out sounds when growing/shrinking
+- growth/shrink sounds:
+  - breathe in/out, with pitch by speed?
+  - fix bug where it persists on game pause or end
+- sound improvements:
+  - if ball bounces in rapid succession (fast volley?) pitch increases
+  - fix ding off flower...too bell-like, echoey
 
 Before launching
 
