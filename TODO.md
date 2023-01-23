@@ -32,7 +32,6 @@ Stuff
   - bot template support
     - disabled but visible with explanation you can write your own
     - activated as soon as you edit something like myBot.ts
-- on two player game against white, both balls going in hole on the right
 - possible achievements:
   - shut out
   - no jumps win

@@ -826,11 +826,13 @@ class Game {
     // Only move it after that
     else {
       const dt = this.currentGameTime.elapsedGameTime.totalMilliseconds / 1000
+      const isTwoBallGame = this.gameConfig.balls[1].isAlive
       for (let i = 0; i < 2; i++) {
         const ball = this.gameConfig.balls[i]
         if (ball.isAlive) {
           ball.stepVelocity(dt, vec.scale(tweakables.gameGravity, 1.5), false)
-          const xDestination = this.whoseServe === PlayerSide.Left ? 0.25 : 0.75
+          let xDestination = this.whoseServe === PlayerSide.Left ? 0.25 : 0.75
+          if (isTwoBallGame) xDestination = 0.75 - 0.5 * i
           const xDistance = xDestination - ball.physics.center.x
           const timeTillStateSwitch = tweakables.timeAfterPointToReturnHome - this.accumulatedStateTime
           ball.physics.vel.x = (2 * xDistance) / timeTillStateSwitch
