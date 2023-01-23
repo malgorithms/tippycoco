@@ -267,7 +267,7 @@ class Game {
     this.gameConfig.playerConfig(PlayerSide.Right).species = PlayerSpecies.Human
     this.accumulatedGamePlayTime = 0.0
     this.gameConfig.balls[1].isAlive = numBalls === 2
-    this.display.atmosphere.makeItSunny(1.0)
+    this.display.atmosphere.makeItSunny()
   }
   private startNewHumanAgainstAIGame(ai: AiBase) {
     this.resetScores()
@@ -283,7 +283,7 @@ class Game {
     } else {
       this.gameConfig.balls[1].isAlive = true
     }
-    this.display.atmosphere.makeItSunny(1.0)
+    this.display.atmosphere.makeItSunny()
   }
 
   private handleInstructionsInputs(): void {
@@ -580,9 +580,9 @@ class Game {
       this.sound.stopPlayMusic()
       this.isGamePoint = true
       this.sound.playIfNotPlaying('gamePoint', 0.6, 0.0, 0.0, false)
-      this.display.atmosphere.makeItDark(3.0)
+      this.display.atmosphere.makeItDark()
     } else if (pointForPlayer0 || pointForPlayer1) {
-      this.display.atmosphere.makeItSunny(2.0)
+      this.display.atmosphere.makeItSunny()
     }
 
     return pointForPlayer0 || pointForPlayer1

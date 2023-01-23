@@ -6,12 +6,7 @@ import {Texture2D} from './types'
 import {vec} from './utils'
 
 class Atmosphere {
-  private numClouds
-
-  private minCloudSpeedX = 0.01
-  private maxCloudSpeedX = 0.07
-  private minCloudSpeedY = -0.01
-  private maxCloudSpeedY = 0.01
+  private numClouds = tweakables.cloud.num
 
   private clouds: Cloud[]
   private sunnyCloudTextures: Texture2D[] // has a 1-1 relationship with DarkCloudTextures list
@@ -20,14 +15,12 @@ class Atmosphere {
   private darkBackgroundTexture!: Texture2D
   private moonTexture!: Texture2D
 
-  private sunnyness: number // 1.0 = perfectly nice day; 0.0 = dark and gloomy
-  private isSunny: boolean
-  private timeToChange = 0.1 // seconds
+  private sunnyness = 1 // 1.0 = perfectly nice day; 0.0 = dark and gloomy
+  private isSunny = true
+  private timeToChange: number // seconds
   private canvasManager: CanvasManager
   public constructor(canvasManager: CanvasManager) {
-    this.numClouds = 5
-    this.sunnyness = 1
-    this.isSunny = true
+    this.timeToChange = tweakables.atmosphere.timeToTurnSunny
     this.clouds = []
     this.sunnyCloudTextures = []
     this.darkCloudTextures = []
@@ -40,13 +33,13 @@ class Atmosphere {
     return this.canvasManager.height
   }
 
-  public makeItSunny(timeToChange: number) {
+  public makeItSunny() {
     this.isSunny = true
-    this.timeToChange = timeToChange
+    this.timeToChange = tweakables.atmosphere.timeToTurnSunny
   }
-  public makeItDark(timeToChange: number) {
+  public makeItDark() {
     this.isSunny = false
-    this.timeToChange = timeToChange
+    this.timeToChange = tweakables.atmosphere.timeToTurnDark
   }
   public addMoonTexture(moonTexture: Texture2D) {
     this.moonTexture = moonTexture
@@ -70,11 +63,11 @@ class Atmosphere {
     sb.drawTextureCentered(this.sunnyBackgroundTexture, ctr, dims, 0, this.sunnyness)
     sb.drawTextureCentered(this.darkBackgroundTexture, ctr, dims, 0, 1 - this.sunnyness)
 
-    const nightMoonHeight = view.y2 * 0.75
+    const nightMoonHeight = view.y2 * tweakables.moon.nightHeightFrac
     const dayMoonHeight = view.y1
     const moonHeight = nightMoonHeight - Math.sqrt(this.sunnyness) * (nightMoonHeight - dayMoonHeight)
     const moonLoc = {
-      x: ctr.x + (1 - this.sunnyness) * (view.x2 - ctr.x) * 0.3,
+      x: ctr.x + (1 - this.sunnyness) * (view.x2 - ctr.x) * tweakables.moon.widthFrac,
       y: moonHeight,
     }
     sb.drawTextureCentered(this.moonTexture, moonLoc, sb.autoDim(0.1, this.moonTexture), 0, 1)
@@ -97,11 +90,13 @@ class Atmosphere {
   }
   public fillClouds() {
     const t = tweakables
+    const vMin = t.cloud.minVel
+    const vMax = t.cloud.maxVel
     for (let i = 0; i < this.numClouds; i++) {
       const sunny = this.sunnyCloudTextures[i % this.sunnyCloudTextures.length]
       const dark = this.darkCloudTextures[i % this.darkCloudTextures.length]
-      const vx = this.minCloudSpeedX + Math.random() * (this.maxCloudSpeedX - this.minCloudSpeedX)
-      const vy = this.minCloudSpeedY + Math.random() * (this.maxCloudSpeedY - this.minCloudSpeedY)
+      const vx = vMax.x + Math.random() * (vMax.x - vMin.x)
+      const vy = vMin.y + Math.random() * (vMax.y - vMin.y)
       const vel = {x: vx, y: vy}
       const width = sunny.width / 1000
       const rect = {

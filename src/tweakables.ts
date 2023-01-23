@@ -86,6 +86,19 @@ export default {
       maxSpeed: 1.4,
     },
   },
+  cloud: {
+    num: 5,
+    minVel: {x: 0.01, y: -0.01},
+    maxVel: {x: 0.07, y: 0.01},
+  },
+  atmosphere: {
+    timeToTurnSunny: 2,
+    timeToTurnDark: 3,
+  },
+  moon: {
+    nightHeightFrac: 0.75,
+    widthFrac: 0.3,
+  },
   proximityTolerance: 0.001,
   player: {
     growSpeed: 0.1,
