@@ -23,18 +23,15 @@ Stuff
   - only one calculation of tLC and bRC per draw;
   - consider no clouds on slow framerate
   - check if not drawing off-screen clouds affects things
+  - consider separate timer on re-drawing
   - profile JS
-- sound pitch not implemented yet (supposed to be different when growing/shrinking)
 - start linting
 - test on old iMac
 - make work on iPad
-- consider separate timer on re-drawing
 - warning when on mobile device
 - slam sprite flickers back to life at end
 - give characters names
-- are rotations clockwise? should switch to counter-clockwise?
 - on two player game against white, both balls going in hole on the right
-- better font choice
 - unlock AI's by beating previous; display of which unlocked
 - include full-screen launch
 - better intro with them emerging from the ground, possibly launching debris

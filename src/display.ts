@@ -218,7 +218,7 @@ class Display {
     const rot = -0.1 + Math.sin(beat) / 50.0
 
     const destination: Vector2 = {x: 0.5, y: 0.4}
-    const shift = this.canvasManager.onePixel() * 2
+    const shift = this.canvasManager.pixelWidth(2)
 
     // we draw subtitle first so title is on top when they overlap
     if (subtitle) {
@@ -312,16 +312,16 @@ class Display {
 
     this.atmosphere.draw(this.spriteBatch)
 
-    const topLeftCorner = this.canvasManager.topLeftCorner()
-    const bottomRightCorner = this.canvasManager.bottomRightCorner()
-
+    //const topLeftCorner = this.canvasManager.topLeftCorner()
+    //const bottomRightCorner = this.canvasManager.bottomRightCorner()
+    const viewableRegion = this.canvasManager.viewableRegion
     //const floorBackDim = this.spriteBatch.autoDim(gameConfig.floorBack.width, this.floorBackTexture)
 
     this.spriteBatch.drawTextureInRect(
       this.getTexture('floorBack'),
       {
-        x1: topLeftCorner.x,
-        x2: bottomRightCorner.x,
+        x1: viewableRegion.x1,
+        x2: viewableRegion.x2,
         y1: tweakables.floorBack.yMin,
         y2: tweakables.floorBack.yMax,
       },
@@ -365,9 +365,9 @@ class Display {
     this.spriteBatch.drawTextureInRect(
       this.getTexture('floorFront'),
       {
-        x1: topLeftCorner.x,
-        x2: bottomRightCorner.x,
-        y1: bottomRightCorner.y,
+        x1: viewableRegion.x1,
+        x2: viewableRegion.x2,
+        y1: viewableRegion.y1,
         y2: tweakables.floorFront.yMax,
       },
       1,
@@ -510,9 +510,10 @@ class Display {
       return
     }
     // draw FPS in bottom rigth corner
-    const tlC = this.canvasManager.topLeftCorner()
-    const bRC = this.canvasManager.bottomRightCorner()
-    const onePixel = this.canvasManager.onePixel()
+    const view = this.canvasManager.viewableRegion
+    //const tlC = this.canvasManager.topLeftCorner()
+    //const bRC = this.canvasManager.bottomRightCorner()
+    const onePixel = this.canvasManager.onePixel
     const height = 100
     const width = 100
     const kbLeftOpacity = gCS.left ? 0.1 : 1
@@ -521,32 +522,32 @@ class Display {
     const gpRightOpacity = gCS.right ? 1 : 0.1
 
     const kbLeftRect = {
-      x1: tlC.x + 70 * onePixel,
-      x2: tlC.x + 70 * onePixel + onePixel * width,
-      y1: bRC.y + onePixel * height,
-      y2: bRC.y + onePixel * height * 2,
+      x1: view.x1 + 70 * onePixel,
+      x2: view.x1 + 70 * onePixel + onePixel * width,
+      y1: view.y1 + onePixel * height,
+      y2: view.y1 + onePixel * height * 2,
     }
     const gpLeftRect = {
       x1: kbLeftRect.x2 + onePixel * 10,
       x2: kbLeftRect.x2 + onePixel * (10 + width),
-      y1: bRC.y + onePixel * height,
-      y2: bRC.y + onePixel * height * 2,
+      y1: view.y1 + onePixel * height,
+      y2: view.y1 + onePixel * height * 2,
     }
     this.spriteBatch.drawTextureInRect(this.getTexture('keyboard'), kbLeftRect, kbLeftOpacity)
     this.spriteBatch.drawTextureInRect(this.getTexture('gamepad'), gpLeftRect, gpLeftOpacity)
 
     // now player 2
     const kbRightRect = {
-      x1: bRC.x - onePixel * width * 3.8 + onePixel * width,
-      x2: bRC.x - onePixel * width * 3.8 + onePixel * width * 2,
-      y1: bRC.y + onePixel * height,
-      y2: bRC.y + onePixel * height * 2,
+      x1: view.x2 - onePixel * width * 3.8 + onePixel * width,
+      x2: view.x2 - onePixel * width * 3.8 + onePixel * width * 2,
+      y1: view.y1 + onePixel * height,
+      y2: view.y1 + onePixel * height * 2,
     }
     const gpRightRect = {
       x1: kbRightRect.x2 + onePixel * 10,
       x2: kbRightRect.x2 + onePixel * (10 + width),
-      y1: bRC.y + onePixel * height,
-      y2: bRC.y + onePixel * height * 2,
+      y1: view.y1 + onePixel * height,
+      y2: view.y1 + onePixel * height * 2,
     }
     this.spriteBatch.drawTextureInRect(this.getTexture('keyboard'), kbRightRect, kbRightOpacity)
     this.spriteBatch.drawTextureInRect(this.getTexture('gamepad'), gpRightRect, gpRightOpacity)
@@ -556,12 +557,11 @@ class Display {
 
   private drawDebugView(gameConfig: GameConfig, futurePrediction: FuturePrediction[], currentFps: number) {
     // draw FPS in bottom rigth corner
-    const tlC = this.canvasManager.topLeftCorner()
-    const bRC = this.canvasManager.bottomRightCorner()
-    const onePixel = this.canvasManager.onePixel()
+    const view = this.canvasManager.viewableRegion
+    const onePixel = this.canvasManager.onePixel
     const height = onePixel * 36
-    const xPos = tlC.x + height * 2
-    const yPos = bRC.y + height * 2
+    const xPos = view.x1 + height * 2
+    const yPos = view.y1 + height * 2
     const color = new Color(0, 0, 0, 0.25)
     this.spriteBatch.drawStringUncentered(`${~~currentFps} fps`, {x: xPos, y: yPos}, height, color, 0)
     const suggAt = 90
@@ -643,12 +643,11 @@ class Display {
     const beat = 2.0 * Math.PI * seconds * (tweakables.menu.bpm / 60) // 87bmp
     const extraScale = 1 - scaleMax * Math.sin(beat / 4) - scaleMax * Math.sin(beat / 8)
 
-    const tL = this.canvasManager.topLeftCorner()
-    const bR = this.canvasManager.bottomRightCorner()
-    const scoreCardHeight = ((tL.y - bR.y) / 10) * extraScale
-    const y = (9 * tL.y + bR.y) / 10 // most of the way towards tL.y
-    const x1 = (9 * tL.x + bR.x) / 10 // most of the way to the left side
-    const x2 = (9 * bR.x + tL.x) / 10 //  most of the way to the right side
+    const view = this.canvasManager.viewableRegion
+    const scoreCardHeight = ((view.y2 - view.y1) / 10) * extraScale
+    const y = (9 * view.y2 + view.y1) / 10 // most of the way towards tL.y
+    const x1 = (9 * view.x1 + view.x2) / 10 // most of the way to the left side
+    const x2 = (9 * view.x2 + view.x1) / 10 //  most of the way to the right side
 
     const box1Center: Vector2 = {x: x1, y}
     const box2Center: Vector2 = {x: x2, y}

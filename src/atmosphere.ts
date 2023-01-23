@@ -60,22 +60,21 @@ class Atmosphere {
     this.darkBackgroundTexture = darkTexture
   }
   public draw(sb: SpriteBatch) {
-    const tLC = this.canvasManager.topLeftCorner()
-    const brC = this.canvasManager.bottomRightCorner()
-    const bottomOfSkyRight = {x: brC.x, y: tweakables.net.center.y - tweakables.net.height / 2}
-    const ctr = vec.avg(tLC, bottomOfSkyRight)
+    const view = this.canvasManager.viewableRegion
+    const bottomOfSkyRight = {x: view.x2, y: tweakables.net.center.y - tweakables.net.height / 2}
+    const ctr = vec.avg({x: view.x1, y: view.y2}, bottomOfSkyRight)
     const dims = {
-      w: bottomOfSkyRight.x - tLC.x,
-      h: tLC.y - bottomOfSkyRight.y,
+      w: bottomOfSkyRight.x - view.x1,
+      h: view.y2 - bottomOfSkyRight.y,
     }
     sb.drawTextureCentered(this.sunnyBackgroundTexture, ctr, dims, 0, this.sunnyness)
     sb.drawTextureCentered(this.darkBackgroundTexture, ctr, dims, 0, 1 - this.sunnyness)
 
-    const nightMoonHeight = tLC.y * 0.75
-    const dayMoonHeight = brC.y
+    const nightMoonHeight = view.y2 * 0.75
+    const dayMoonHeight = view.y1
     const moonHeight = nightMoonHeight - Math.sqrt(this.sunnyness) * (nightMoonHeight - dayMoonHeight)
     const moonLoc = {
-      x: ctr.x + (1 - this.sunnyness) * (brC.x - ctr.x) * 0.3,
+      x: ctr.x + (1 - this.sunnyness) * (view.x2 - ctr.x) * 0.3,
       y: moonHeight,
     }
     sb.drawTextureCentered(this.moonTexture, moonLoc, sb.autoDim(0.1, this.moonTexture), 0, 1)

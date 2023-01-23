@@ -1,5 +1,5 @@
 import constants from './constants'
-import {Vector2} from './types'
+import {Rectangle, Vector2} from './types'
 import {vec} from './utils'
 
 class CanvasManager {
@@ -14,15 +14,22 @@ class CanvasManager {
   private startZoomScale = this.maxZoomLevel // higher number = can see more
   private center: Vector2
 
+  private _currViewRegion: Rectangle
+  private _currOnePixel: number
+  private _currInverseTransform: DOMMatrix
   public _zoomScale: number
 
   constructor(parentEl: HTMLElement) {
     this.center = {x: 0.5, y: 0.3}
     this._zoomScale = this.startZoomScale
     this.parentEl = parentEl
+    this._currViewRegion = {x1: -Infinity, x2: Infinity, y1: -Infinity, y2: Infinity}
+    this._currOnePixel = 1
+    this._currInverseTransform = new DOMMatrix()
   }
   public initialDraw() {
     this.generateCanvas()
+    this.recalcCtxTransform()
   }
   private recalcCtxTransform() {
     const cw = this.canvas.width
@@ -34,8 +41,18 @@ class CanvasManager {
     this.ctx.scale(unitScale, unitScale) // scale to unit
     this.ctx.translate(-this.center.x / this.zoomScale, -this.center.y / this.zoomScale) // now shift to desired center
     this.ctx.scale(1 / this.zoomScale, 1 / this.zoomScale) // scale from there
+    const topLeft = this.pixelToCanvasPos({x: 0, y: 0})
+    const bottomRight = this.pixelToCanvasPos({x: this.width, y: this.height})
+    this._currViewRegion = {x1: topLeft.x, x2: bottomRight.x, y1: bottomRight.y, y2: topLeft.y}
+    this._currOnePixel = this.pixelToCanvasPos({x: 1, y: 1}).x - this.pixelToCanvasPos({x: 0, y: 0}).x
+    this._currInverseTransform = this.ctx.getTransform().inverse()
   }
-
+  public get viewableRegion(): Rectangle {
+    return this._currViewRegion
+  }
+  public get onePixel(): number {
+    return this._currOnePixel
+  }
   public get zoomScale(): number {
     return this._zoomScale
   }
@@ -77,33 +94,16 @@ class CanvasManager {
   }
   private onWindowResize(): void {
     this.setCanvasDims()
+    this.recalcCtxTransform()
   }
-
   public pixelToCanvasPos(p: Vector2): Vector2 {
-    // TODO perf: can avoid recalculating this inverse
-    return vec.transform(p, this.ctx.getTransform().inverse())
+    return vec.transform(p, this._currInverseTransform)
   }
   public canvasToPixelPos(p: Vector2): Vector2 {
     return vec.transform(p, this.ctx.getTransform())
   }
   public pixelWidth(pixels: number): number {
-    // TODO perf: can avoid recalculating this
-    return pixels * (this.pixelToCanvasPos({x: 1, y: 1}).x - this.pixelToCanvasPos({x: 0, y: 0}).x)
-  }
-  public onePixel(): number {
-    return this.pixelWidth(1)
-  }
-  /**
-   * returns the top left corner in game coordinates
-   */
-  public topLeftCorner(): Vector2 {
-    return this.pixelToCanvasPos({x: 0, y: 0})
-  }
-  /**
-   * returns the bottom right corner in game coordinates
-   */
-  public bottomRightCorner(): Vector2 {
-    return this.pixelToCanvasPos({x: this.width, y: this.height})
+    return this._currOnePixel * pixels
   }
   public adjustZoomLevel(maxBallHeight: number, dt: number) {
     let idealZoomLevel = 1.05 * maxBallHeight
