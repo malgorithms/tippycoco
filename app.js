@@ -8,6 +8,6 @@ const port = 3377
 
 app.use(morgan('combined'))
 app.use(express.static('dist'))
-app.use(favicon(path.join(__dirname, 'dist', 'images', 'favicon.ico')))
+app.use(favicon(path.join(__dirname, 'dist', 'images', 'site', 'favicon.ico')))
 
 app.listen(port, () => console.log(`Listening. Visit http://localhost:${port}`))

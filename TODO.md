@@ -13,7 +13,6 @@ Stuff
     - disabled but visible with explanation you can write your own
     - activated as soon as you edit something like myBot.ts
 - make clouds more like moon; parallax
-- favicon
 - code quality and technical debt:
   - move all hard-coded constants into existing tweakables.ts. What a mess.
   - clean up all the player and playerconfig iterations in game.ts
@@ -50,3 +49,4 @@ Before launching
 - review all console logging
 - basic SEO of landing page
 - basic pageview stats?
+- better favicon / larger ones for bookmarking
