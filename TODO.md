@@ -23,12 +23,16 @@ Stuff
 - changing size sound persists if game pauses/ends while size changing
 - test on old iMac
 - make work on iPad
-- warning when on mobile device
-- slam sprite flickers back to life at end
-- give characters names
+- menu redesign:
+  - give characters names
+  - more characters
+  - bot template support; if bot activated, shows up
 - on two player game against white, both balls going in hole on the right
+- possible achievements:
+  - shut out
+  - no jumps win
+  - all points scored while tiny
 - unlock AI's by beating previous; display of which unlocked
-- include full-screen launch
 - make the debug view prettier
 - better intro with them emerging from the ground, possibly launching debris
 - switch drawing players to pure canvas actions? might make for more creative additions/eyes/etc.
@@ -36,7 +40,6 @@ Stuff
 
 Before launching
 
-- better landing page
 - discord to discuss
 - proper readme page for github
 - review all console logging

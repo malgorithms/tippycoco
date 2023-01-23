@@ -50,9 +50,9 @@ export default {
   timeAfterPointToReturnHome: 1.5,
   predictFutureEvery: 0.3,
   physicsDt: 0.002, // seconds,
-  predictionLookahead: 1.5,
-  predictionPhysicsDt: 0.005,
-  predictionStorageDt: 0.01,
+  predictionLookahead: 1.75,
+  predictionPhysicsDt: 0.004,
+  predictionStorageDt: 0.02,
   thumbstickCenterTolerance: 0.05, // anything this close to center is returned as 0
   triggerTolerance: 0.05, // anything this close to 0 is just 0
   triggerGrowthMult: 0.4, //

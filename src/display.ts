@@ -16,7 +16,7 @@ import {Player, PlayerSpecies} from './player'
 import {ScoreCard} from './score-card'
 import {SpriteBatch} from './sprite-batch'
 import tweakables from './tweakables'
-import {GameTime, PlayerSide, Rectangle, Texture2D, Vector2} from './types'
+import {FutureState, GameTime, PlayerSide, Rectangle, Texture2D, Vector2} from './types'
 import {vec} from './utils'
 
 const textureSources = {
@@ -278,13 +278,8 @@ class Display {
           texture = this.getTexture('kapowSlam')
           break
       }
-      this.spriteBatch.drawTextureCentered(
-        texture,
-        kapow.pos,
-        {w: kapow.size, h: kapow.size},
-        kapow.orientation,
-        1 - kapow.fractionOfWayToDeath(),
-      )
+      const alpha = 1 - kapow.fractionOfWayToDeath()
+      this.spriteBatch.drawTextureCentered(texture, kapow.pos, {w: kapow.size, h: kapow.size}, kapow.orientation, alpha)
     }
   }
 
@@ -578,43 +573,35 @@ class Display {
     currentFps
 
     if (this.inDebugView) {
-      this.drawDebugCoordinates()
+      const alpha = (s: FutureState) => 1 - Math.sqrt(s.time / tweakables.predictionLookahead)
       for (let i = 0; i < gameConfig.balls.length; i++) {
         const prediction = futurePrediction[i]
+        for (const state of prediction.ballStates ?? []) {
+          this.spriteBatch.drawTextureCentered(this.getTexture('predictionDot'), state.pos, {w: 0.01, h: 0.01}, 0, alpha(state))
+        }
+
         for (const s of [PlayerSide.Left, PlayerSide.Right]) {
           const entrance = prediction.ballEnteringJumpRange(s)
           if (entrance?.isKnown)
             this.spriteBatch.drawTextureCentered(
-              this.getTexture('playerShadowBehind'),
+              this.getTexture('kapowScore'),
               entrance.pos,
               {w: gameConfig.balls[i].physics.diameter, h: gameConfig.balls[i].physics.diameter},
               0,
-              1,
+              alpha(entrance),
             )
         }
-        if (prediction.ballHittingGround?.isKnown)
+        const groundHit = prediction.ballHittingGround
+        if (groundHit?.isKnown)
           this.spriteBatch.drawTextureCentered(
-            this.getTexture('playerShadowFront'),
+            this.getTexture('kapowScore'),
             prediction.ballHittingGround.pos,
             {w: gameConfig.balls[i].physics.diameter, h: gameConfig.balls[i].physics.diameter},
             0,
-            1,
+            alpha(groundHit),
           )
-
-        for (const state of prediction.ballStates ?? []) {
-          this.spriteBatch.drawTextureCentered(this.getTexture('predictionDot'), state.pos, {w: 0.01, h: 0.01}, 0, 1)
-        }
       }
     }
-  }
-
-  private drawDebugCoordinates() {
-    const fontHeight = this.canvasManager.pixelWidth(14)
-    const c = (p: Vector2) => `${p.x.toFixed(3)}, ${p.y.toFixed(3)}`
-    const ctrNet = tweakables.net.center
-    this.spriteBatch.drawStringCentered(c(ctrNet), ctrNet, fontHeight, Colors.black, 0)
-    const brNet = {x: tweakables.net.center.x + tweakables.net.width / 2, y: tweakables.net.center.y + tweakables.net.height / 2}
-    this.spriteBatch.drawStringCentered(c(brNet), brNet, fontHeight, Colors.black, 0)
   }
 
   public drawMenuBanner(bannerTexture: Texture2D, gameTime: GameTime, center: Vector2) {

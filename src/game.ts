@@ -900,9 +900,6 @@ class Game {
     this.constrainPlayers()
   }
 
-  // time_forward = how many seconds forward to look
-  // sim_dt = seconds delta for recalculating (could use the same as PHYSICS_DT or something bigger for less precision, more speed)
-  // storage_dt = seconds increment for storing next X positions of ball in FutureBallPositions list; (for example, 0.5 means store the ball's future half second positions)
   private updateFuturePrediction(): void {
     //return;
     // Copy current player/ball info to temp so we can step w/o wrecking things
@@ -924,7 +921,7 @@ class Game {
     }
 
     let time = 0
-    const timeElapsed = this.currentGameTime.totalGameTime.totalMilliseconds
+    const timeElapsed = this.currentGameTime.totalGameTime.totalSeconds
     const p0JumpHeight = p0Copy.getMaxJumpHeight(tweakables.gameGravity.y)
     const p1JumpHeight = p1Copy.getMaxJumpHeight(tweakables.gameGravity.y)
 
