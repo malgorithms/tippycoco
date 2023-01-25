@@ -68,6 +68,8 @@ class Game {
 
     this.playerLeftCfg.species = PlayerSpecies.Human
     this.playerRightCfg.species = PlayerSpecies.Human
+    console.log('setting sky')
+    this.display.atmosphere.changeSkyForOpponent(this.playerRightCfg, 1)
     this.setGameState(GameState.PreStart)
     this.futurePredictionList = []
     for (let i = 0; i < this.gameConfig.balls.length; i++) {
@@ -173,7 +175,6 @@ class Game {
     if (
       gs === GameState.MainMenu ||
       gs === GameState.Paused ||
-      gs === GameState.Instructions ||
       gs === GameState.PreExitMessage ||
       gs === GameState.PreExitCredits ||
       gs === GameState.Intro1 ||
@@ -254,8 +255,7 @@ class Game {
       this.menu.draw(true, gameTime)
     } else if (this.gameState === GameState.MainMenu) {
       this.menu.draw(false, gameTime)
-    } else if (this.gameState === GameState.Instructions) this.display.drawControllerInstructions()
-    else if (this.gameState === GameState.PreExitCredits) this.display.drawCredits(gameTime)
+    } else if (this.gameState === GameState.PreExitCredits) this.display.drawCredits(gameTime)
   }
   private startNewTwoPlayerGame(numBalls: number): void {
     this.resetScores()
@@ -267,7 +267,7 @@ class Game {
     this.gameConfig.playerConfig(PlayerSide.Right).species = PlayerSpecies.Human
     this.accumulatedGamePlayTime = 0.0
     this.gameConfig.balls[1].isAlive = numBalls === 2
-    this.display.atmosphere.makeItSunny()
+    this.display.atmosphere.changeSkyForOpponent(this.playerRightCfg, 1)
   }
   private startNewHumanAgainstAIGame(ai: AiBase, gamepadSide: MenuOwnership) {
     console.log(`new game by...`, this.menu.getWhoOwnsMenu())
@@ -287,17 +287,9 @@ class Game {
     } else {
       this.gameConfig.balls[1].isAlive = true
     }
-    this.display.atmosphere.makeItSunny()
+    this.display.atmosphere.changeSkyForOpponent(this.playerRightCfg, 1)
   }
 
-  private handleInstructionsInputs(): void {
-    for (let i = 1; i <= 4; i++) {
-      if (this.input.wasMenuSelectJustPushed(null).selected) {
-        if (this.scoreLeftPlayer !== 0 || this.scoreRightPlayer !== 0) this.setGameState(GameState.Paused)
-        else this.setGameState(GameState.MainMenu)
-      }
-    }
-  }
   private handlePreExitInputs(): void {
     let stepForward = false
     for (let i = 1; i <= 4; i++) {
@@ -332,18 +324,17 @@ class Game {
       this.menu.setWhoOwnsMenu(null)
       // Go to paused menu
       this.setGameState(GameState.Paused)
-      // Select "return to game"
-      this.menu.select(0, PlayerSide.Left)
+      this.menu.select(MenuOptions.ReturnToGame, PlayerSide.Left)
     }
   }
   private handleMenuInputs(): void {
     const owner = this.menu.getWhoOwnsMenu()
     const menuSelectResult = this.input.wasMenuSelectJustPushed(owner)
-    if (this.input.wasMenuDownJustPushed(owner)) this.menu.moveDown(owner)
-    else if (this.input.wasMenuUpJustPushed(owner)) this.menu.moveUp(owner)
+    if (this.input.wasMenuRightJustPushed(owner)) this.menu.moveRight(owner)
+    else if (this.input.wasMenuLeftJustPushed(owner)) this.menu.moveLeft(owner)
     if (menuSelectResult.selected) {
       const gamepadSide = menuSelectResult.byPlayerSide
-      const action = this.menu.returnSelection()
+      const action = this.menu.selection
       if (action === MenuOptions.Play2Player1Ball) {
         this.startNewTwoPlayerGame(1)
       }
@@ -358,7 +349,6 @@ class Game {
       } else if (action === MenuOptions.PlayWhite) {
         this.startNewHumanAgainstAIGame(new WhiteAi(), gamepadSide)
       } else if (action === MenuOptions.Exit) this.setGameState(GameState.PreExitMessage)
-      else if (action === MenuOptions.Instructions) this.setGameState(GameState.Instructions)
       else if (action === MenuOptions.ReturnToGame) this.setGameState(GameState.Action)
     }
     // Pressing B or Start from Pause returns to Game
@@ -392,7 +382,7 @@ class Game {
   pauseTheGame(playerSide: PlayerSide | null): void {
     this.menu.setWhoOwnsMenu(playerSide)
     this.setGameState(GameState.Paused)
-    this.menu.select(0, playerSide)
+    this.menu.select(MenuOptions.ReturnToGame, playerSide)
   }
 
   handleActionInputs(dt: number): void {
@@ -584,11 +574,10 @@ class Game {
       this.sound.stopPlayMusic()
       this.isGamePoint = true
       this.sound.playIfNotPlaying('gamePoint', 0.6, 0.0, 0.0, false)
-      this.display.atmosphere.makeItDark()
+      this.display.atmosphere.changeSkyForOpponent(this.playerRightCfg, 0)
     } else if (pointForPlayer0 || pointForPlayer1) {
-      this.display.atmosphere.makeItSunny()
+      this.display.atmosphere.changeSkyForOpponent(this.playerRightCfg, 1)
     }
-
     return pointForPlayer0 || pointForPlayer1
   }
 
@@ -1014,9 +1003,6 @@ class Game {
   runAutoPausedState() {
     this.handleAutoPausedInputs()
   }
-  runInstructionsState() {
-    this.handleInstructionsInputs()
-  }
   runPointState() {
     this.postPointStep()
     this.handlePointInputs()
@@ -1062,10 +1048,6 @@ class Game {
       case GameState.AutoPaused:
         this.display.adjustZoomLevel(1000, dt)
         this.runAutoPausedState()
-        break
-      case GameState.Instructions:
-        this.display.adjustZoomLevel(1000, dt)
-        this.runInstructionsState()
         break
       case GameState.MainMenu:
         this.runMainMenuState()

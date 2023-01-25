@@ -68,6 +68,13 @@ class SpriteBatch {
     const center = {x: (rect.x1 + rect.x2) / 2, y: (rect.y1 + rect.y2) / 2}
     this.drawTextureCentered(t, center, {w, h}, 0, alpha)
   }
+  public drawScreenOverlay(color: Color) {
+    this.ctx.save()
+    this.ctx.resetTransform()
+    this.ctx.fillStyle = color.toHtmlRgb()
+    this.ctx.fillRect(0, 0, this.canvasManager.width, this.canvasManager.height)
+    this.ctx.restore()
+  }
   /**
    * returns width and height object for the given texture,
    * given a desired width passed in. basically just scales to aspectRatio.

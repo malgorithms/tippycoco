@@ -1,4 +1,5 @@
-import {GameControlKeyboardSet as KeyboardControlSet, NewPlayerArg, PlayerKeyboardSet} from './types'
+import {Color} from './color'
+import {KeyboardControlSet, NewPlayerArg, PlayerKeyboardSet} from './types'
 
 //
 // TODO: extract all the garbage I hard-coded in game.ts into here
@@ -38,8 +39,22 @@ export default {
   twoPlayerControls,
   onePlayerControls,
   menu: {
-    bpm: 87, // beats per minute for menu, etc.
-    lineSpacing: 1.05,
+    bpm: 87, // beats per minute for menu, to match the music
+    cardWidth: 0.7, // game units
+    cardWidthSelected: 1.0, // selected card this much bigger
+    cardStackStart: {x: 0.5, y: 0.5},
+    cardStackSpacing: {x: 0.2, y: 0.0}, // game units
+    textOffsetFromCard: {x: 0, y: 0.4},
+    afterChosenOffset: {x: 0.1, y: -0.1},
+    coverColor: new Color(0, 0, 0, 0.3), //  background over existing game
+    deselectedCardColor: new Color(0, 0, 0, 0.2), //  background over existing game
+    cardBall1Pos: {x: 0.85, y: 0.73}, // fractional position on card's surface!
+    cardBall2Pos: {x: 0.85, y: 0.58}, // fractional position on card's surface!
+    cardBallSize: 0.08, // fractional to card's size
+    cardSizeBounce: 0.05,
+    cardRotationBounce: 0.03,
+    subtextOffset: {x: 0, y: -1.0},
+    subtextRelSize: 0.4,
   },
   fpsSampleCount: 100, // loops
   ballPlayerLaunchTime: 0.5,
@@ -95,6 +110,8 @@ export default {
   atmosphere: {
     timeToTurnSunny: 2,
     timeToTurnDark: 3,
+    maxSkies: 3,
+    skyTransitionMs: 1000,
   },
   moon: {
     nightHeightFrac: 0.75,

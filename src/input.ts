@@ -67,20 +67,20 @@ class Input {
     return res
   }
 
-  public wasMenuUpJustPushed(owner: MenuOwnership): boolean {
-    if (this.keyboard.anyKeysJustPushed(['KeyI', 'KeyW', 'ArrowUp'])) return true
+  public wasMenuLeftJustPushed(owner: MenuOwnership): boolean {
+    if (this.keyboard.anyKeysJustPushed(['KeyA', 'KeyJ', 'ArrowLeft'])) return true
     if (owner) {
-      return this.pads.anyButtonsPushedBy(owner, ['dPadUp'])
+      return this.pads.anyButtonsPushedBy(owner, ['dPadLeft'])
     } else {
-      return this.pads.anyButtonsPushedByAnyone(['dPadUp'])
+      return this.pads.anyButtonsPushedByAnyone(['dPadLeft'])
     }
   }
-  public wasMenuDownJustPushed(owner: MenuOwnership): boolean {
-    if (this.keyboard.anyKeysJustPushed(['KeyS', 'KeyK', 'ArrowDown'])) return true
+  public wasMenuRightJustPushed(owner: MenuOwnership): boolean {
+    if (this.keyboard.anyKeysJustPushed(['KeyD', 'KeyL', 'ArrowRight'])) return true
     if (owner) {
-      return this.pads.anyButtonsPushedBy(owner, ['dPadDown'])
+      return this.pads.anyButtonsPushedBy(owner, ['dPadRight'])
     } else {
-      return this.pads.anyButtonsPushedByAnyone(['dPadDown'])
+      return this.pads.anyButtonsPushedByAnyone(['dPadRight'])
     }
   }
   public wasMenuExitJustPushed(owner: MenuOwnership): boolean {

@@ -12,7 +12,7 @@ interface PlayerKeyboardSet {
   grow: KeyboardKeyCode[]
   shrink: KeyboardKeyCode[]
 }
-interface GameControlKeyboardSet {
+interface KeyboardControlSet {
   p0: PlayerKeyboardSet
   p1: PlayerKeyboardSet
 }
@@ -99,7 +99,6 @@ enum GameState {
   Action,
   Paused,
   AutoPaused, // happens if player disconnects controller
-  Instructions,
   PreExitMessage,
   PreExitCredits,
   Exit,
@@ -109,7 +108,7 @@ export {
   GameState,
   GameTime,
   PlayerKeyboardSet,
-  GameControlKeyboardSet,
+  KeyboardControlSet,
   PlayerSide,
   Vector2,
   FutureState,

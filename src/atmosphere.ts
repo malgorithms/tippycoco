@@ -1,29 +1,48 @@
+import {BlackAi} from './ai/black-ai'
+import {GreenAi} from './ai/green-ai'
+import {PurpleAi} from './ai/purple-ai'
+import {WhiteAi} from './ai/white-ai'
 import {CanvasManager} from './canvas-manager'
 import {Cloud} from './cloud'
+import {Display} from './display'
+import {PlayerConfiguration} from './game-config'
+import {PlayerSpecies} from './player'
 import {SpriteBatch} from './sprite-batch'
 import tweakables from './tweakables'
 import {Texture2D} from './types'
 import {vec} from './utils'
 
+// the way we handle sky transitions is to have a collection of
+// them (typically 1 when sky has settled) and there is a timer
+// on each one saying how long it has been set. for any that isn't on top,
+// it fades out and then disappears after a second or so.
+
+interface ActiveSky {
+  texture: Texture2D
+  whenSpawned: number
+  sunniness: 0 | 1
+}
+interface SkyAssignment {
+  dark: Texture2D
+  sunny: Texture2D
+}
+
 class Atmosphere {
   private numClouds = tweakables.cloud.num
 
+  private display: Display
   private clouds: Cloud[]
+  private activeSkies: ActiveSky[]
   private sunnyCloudTextures: Texture2D[] // has a 1-1 relationship with DarkCloudTextures list
   private darkCloudTextures: Texture2D[] // has a 1-1 relationship with SunnyCloudTextures list
-  private sunnyBackgroundTexture!: Texture2D
-  private darkBackgroundTexture!: Texture2D
-  private moonTexture!: Texture2D
-
-  private sunnyness = 1 // 1.0 = perfectly nice day; 0.0 = dark and gloomy
-  private isSunny = true
-  private timeToChange: number // seconds
   private canvasManager: CanvasManager
-  public constructor(canvasManager: CanvasManager) {
-    this.timeToChange = tweakables.atmosphere.timeToTurnSunny
+
+  public constructor(display: Display, canvasManager: CanvasManager) {
+    this.activeSkies = []
     this.clouds = []
     this.sunnyCloudTextures = []
     this.darkCloudTextures = []
+    this.display = display
     this.canvasManager = canvasManager
   }
   public get canvasWidth(): number {
@@ -32,58 +51,117 @@ class Atmosphere {
   public get canvasHeight(): number {
     return this.canvasManager.height
   }
+  private getFractionTransitioned(i: number) {
+    const now = Date.now()
+    if (this.activeSkies.length <= 1) return 1
+    const currSky = this.activeSkies[i]
+    const elapsed = now - currSky.whenSpawned
+    if (elapsed >= tweakables.atmosphere.skyTransitionMs) return 1
+    return elapsed / tweakables.atmosphere.skyTransitionMs
+  }
+  public get sunniness(): number {
+    if (this.activeSkies.length === 0) return 1
+    if (this.activeSkies.length === 1) {
+      return this.activeSkies[0].sunniness
+    }
+    const f = this.getFractionTransitioned(this.activeSkies.length - 1)
+    const currSky = this.activeSkies[this.activeSkies.length - 1]
+    const prevSky = this.activeSkies[this.activeSkies.length - 2]
+    return currSky.sunniness * f + prevSky.sunniness * (1 - f)
+  }
 
-  public makeItSunny() {
-    this.isSunny = true
-    this.timeToChange = tweakables.atmosphere.timeToTurnSunny
+  public skyForOpponent(oppConfig: PlayerConfiguration): SkyAssignment {
+    if (oppConfig.species === PlayerSpecies.Human) {
+      return {
+        sunny: this.display.getTexture('sunnyBackgroundBlue'),
+        dark: this.display.getTexture('darkBackground'),
+      }
+    } else if (oppConfig.ai instanceof GreenAi) {
+      return {
+        sunny: this.display.getTexture('sunnyBackgroundGreen'),
+        dark: this.display.getTexture('darkBackground'),
+      }
+    } else if (oppConfig.ai instanceof BlackAi) {
+      return {
+        sunny: this.display.getTexture('sunnyBackgroundBlack'),
+        dark: this.display.getTexture('darkBackground'),
+      }
+    } else if (oppConfig.ai instanceof WhiteAi) {
+      return {
+        sunny: this.display.getTexture('sunnyBackgroundFire'),
+        dark: this.display.getTexture('darkBackground'),
+      }
+    } else if (oppConfig.ai instanceof PurpleAi) {
+      return {
+        sunny: this.display.getTexture('sunnyBackgroundPurplish'),
+        dark: this.display.getTexture('darkBackground'),
+      }
+    } else
+      return {
+        sunny: this.display.getTexture('sunnyBackgroundBlue'),
+        dark: this.display.getTexture('darkBackground'),
+      }
   }
-  public makeItDark() {
-    this.isSunny = false
-    this.timeToChange = tweakables.atmosphere.timeToTurnDark
+  public changeSkyForOpponent(oppConfig: PlayerConfiguration, sunniness: 0 | 1) {
+    const textures = this.skyForOpponent(oppConfig)
+    if (sunniness === 1) this.changeSky(textures.sunny, 1)
+    else this.changeSky(textures.dark, 0)
   }
-  public addMoonTexture(moonTexture: Texture2D) {
-    this.moonTexture = moonTexture
+
+  public changeSky(texture: Texture2D, sunniess: 0 | 1) {
+    this.activeSkies.push({
+      texture,
+      whenSpawned: Date.now(),
+      sunniness: sunniess,
+    })
+    if (this.activeSkies.length > tweakables.atmosphere.maxSkies) {
+      throw new Error('too many skies!')
+    }
+  }
+  private pruneAncientSkies() {
+    const freshest = this.activeSkies[this.activeSkies.length - 1]
+    const deleteOldAfter = freshest.whenSpawned + tweakables.atmosphere.skyTransitionMs
+    if (Date.now() > deleteOldAfter) {
+      this.activeSkies = [freshest]
+    }
   }
   public addCloudTextures(sunnyTexture: Texture2D, darkTexture: Texture2D) {
     this.sunnyCloudTextures.push(sunnyTexture)
     this.darkCloudTextures.push(darkTexture)
   }
-  public addBackgroundTextures(sunnyTexture: Texture2D, darkTexture: Texture2D) {
-    this.sunnyBackgroundTexture = sunnyTexture
-    this.darkBackgroundTexture = darkTexture
-  }
   public draw(sb: SpriteBatch) {
+    this.pruneAncientSkies()
     const view = this.canvasManager.viewableRegion
     const bottomOfSkyRight = {x: view.x2, y: tweakables.net.center.y - tweakables.net.height / 2}
     const ctr = vec.avg({x: view.x1, y: view.y2}, bottomOfSkyRight)
     const dims = {
-      w: bottomOfSkyRight.x - view.x1,
-      h: view.y2 - bottomOfSkyRight.y,
+      w: bottomOfSkyRight.x - view.x1 + 0.1,
+      h: view.y2 - bottomOfSkyRight.y + 0.1,
     }
-    sb.drawTextureCentered(this.sunnyBackgroundTexture, ctr, dims, 0, this.sunnyness)
-    sb.drawTextureCentered(this.darkBackgroundTexture, ctr, dims, 0, 1 - this.sunnyness)
+    const numSkies = this.activeSkies.length
+    for (let i = 0; i < numSkies; i++) {
+      const frac = this.getFractionTransitioned(i)
+      const sky = this.activeSkies[i]
+      const alpha = frac
+      sb.drawTextureCentered(sky.texture, ctr, dims, 0, alpha)
+    }
 
     const nightMoonHeight = view.y2 * tweakables.moon.nightHeightFrac
     const dayMoonHeight = view.y1
-    const moonHeight = nightMoonHeight - Math.sqrt(this.sunnyness) * (nightMoonHeight - dayMoonHeight)
+    const moonHeight = nightMoonHeight - Math.sqrt(this.sunniness) * (nightMoonHeight - dayMoonHeight)
     const moonLoc = {
-      x: ctr.x + (1 - this.sunnyness) * (view.x2 - ctr.x) * tweakables.moon.widthFrac,
+      x: ctr.x + (1 - this.sunniness) * (view.x2 - ctr.x) * tweakables.moon.widthFrac,
       y: moonHeight,
     }
-    sb.drawTextureCentered(this.moonTexture, moonLoc, sb.autoDim(0.1, this.moonTexture), 0, 1)
+    const moonTexture = this.display.getTexture('moon')
+    const moonDims = sb.autoDim(0.1, moonTexture)
+    sb.drawTextureCentered(moonTexture, moonLoc, moonDims, 0, 1)
     for (const c of this.clouds) {
-      sb.drawTextureCentered(c.sunnyTexture, c.pos, sb.autoDim(c.width, c.sunnyTexture), 0, this.sunnyness)
-      sb.drawTextureCentered(c.darkTexture, c.pos, sb.autoDim(c.width, c.darkTexture), 0, 1 - this.sunnyness)
+      sb.drawTextureCentered(c.sunnyTexture, c.pos, sb.autoDim(c.width, c.sunnyTexture), 0, this.sunniness)
+      sb.drawTextureCentered(c.darkTexture, c.pos, sb.autoDim(c.width, c.darkTexture), 0, 1 - this.sunniness)
     }
   }
   public step(dt: number) {
-    if (this.isSunny && this.sunnyness < 1.0) {
-      this.sunnyness += dt / this.timeToChange
-      this.sunnyness = Math.min(1, this.sunnyness)
-    } else if (!this.isSunny && this.sunnyness > 0.0) {
-      this.sunnyness -= dt / this.timeToChange
-      this.sunnyness = Math.max(0, this.sunnyness)
-    }
     for (const c of this.clouds) {
       c.step(dt)
     }
