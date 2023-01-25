@@ -7,6 +7,11 @@ function timeout(ms: number): Promise<void> {
     }, ms)
   })
 }
+function sign(n: number) {
+  if (n > 0) return 1
+  else if (n < 0) return -1
+  else throw new Error(`0 is unsigned`)
+}
 const vec = {
   copy: (v: Vector2): Vector2 => ({x: v.x, y: v.y}),
   sub: (v1: Vector2, v2: Vector2): Vector2 => ({x: v1.x - v2.x, y: v1.y - v2.y}),
@@ -34,4 +39,4 @@ const vec = {
 }
 const aspectRatio = (t: Texture2D): number => t.width / t.height
 
-export {timeout, vec, aspectRatio}
+export {timeout, vec, aspectRatio, sign}

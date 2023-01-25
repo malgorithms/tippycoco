@@ -3,8 +3,8 @@
 Stuff
 
 - menu redesign:
-  - which characters have you beaten, including trophies
-    - trophies are for achievements against them
+  - which characters have you beaten
+    - trophies for achievements against them
   - which characters are unlocked (and how to unlock?)
   - visual representation of characters
   - give characters names

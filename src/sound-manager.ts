@@ -1,24 +1,7 @@
+import {SoundName, soundSources} from './content-load-list'
 import {ContentLoader} from './content-loader'
 import {SoundEffect, SoundEffectInstance} from './sound-effect'
 import {PlayerSide} from './types'
-
-const soundSources = {
-  themeSong: 'sounds/ThemeSong.mp3',
-  beep: 'sounds/Beep1.mp3',
-  slam: 'sounds/Slam01.mp3',
-  rejected: 'sounds/Rejected.mp3',
-  pointScored: 'sounds/PointScored.mp3',
-  gamePlayMusic: 'sounds/GamePlay02.mp3',
-  p1Growth: 'sounds/SizeChange2.mp3',
-  p2Growth: 'sounds/SizeChange1.mp3',
-  p1Shrinkage: 'sounds/SizeChange2.mp3',
-  p2Shrinkage: 'sounds/SizeChange1.mp3',
-  thud: 'sounds/Hit1.mp3',
-  ding: 'sounds/Hit1.mp3',
-  gamePoint: 'sounds/GamePoint.mp3',
-} as const
-
-type SoundName = keyof typeof soundSources
 
 class SoundManager {
   private content: ContentLoader

@@ -6,6 +6,7 @@ import {Atmosphere} from './atmosphere'
 import {Ball} from './ball'
 import {CanvasManager} from './canvas-manager'
 import {Color, Colors} from './color'
+import {TextureName, textureSources} from './content-load-list'
 import {ContentLoader} from './content-loader'
 import {FontManager, FontName} from './font-manager'
 import {FuturePrediction} from './future-prediction'
@@ -19,58 +20,6 @@ import {SpriteBatch} from './sprite-batch'
 import tweakables from './tweakables'
 import {FutureState, GameTime, PlayerSide, Rectangle, Texture2D, Vector2} from './types'
 import {vec} from './utils'
-
-const textureSources = {
-  ball1: 'images/Volleyball1.png',
-  ball2: 'images/Volleyball2.png',
-  ballShadow: 'images/BallShadow.png',
-  net: 'images/Net.png',
-  redPlayer: 'images/Players/RedPlayer.png',
-  greenPlayer: 'images/Players/GreenPlayer.png',
-  purplePlayer: 'images/Players/PurplePlayer.png',
-  whitePlayer: 'images/Players/WhitePlayer.png',
-  blackPlayer: 'images/Players/BlackPlayer.png',
-  bluePlayer: 'images/Players/BluePlayer.png',
-  pupil: 'images/Players/Pupil.png',
-  pupilGray: 'images/Players/PupilGray.png',
-  scoreCard: 'images/ScoreCard.png',
-  leftFlower: 'images/FlowerLeft.png',
-  rightFlower: 'images/FlowerRight.png',
-  leftFlowerTop: 'images/FlowerTop1.png',
-  rightFlowerTop: 'images/FlowerTop2.png',
-  floorFront: 'images/FloorFront.png',
-  floorBack: 'images/FloorBack.png',
-  playerShadowBehind: 'images/PlayerShadowBehind.png',
-  playerShadowFront: 'images/PlayerShadowFront.png',
-  gamepad: 'images/Gamepad.png',
-  keyboard: 'images/Keyboard.png',
-  moon: 'images/Atmosphere/Moon.png',
-  predictionDot: 'images/PredictionDot.png',
-  kapowSlam: 'images/Kapows/KapowSlam.png',
-  kapowRejected: 'images/Kapows/KapowRejected.png',
-  kapowScore: 'images/Kapows/KapowScore.png',
-  sunnyCloud1: 'images/Atmosphere/SunnyCloud1.png',
-  darkCloud1: 'images/Atmosphere/DarkCloud1.png',
-  sunnyCloud2: 'images/Atmosphere/SunnyCloud2.png',
-  darkCloud2: 'images/Atmosphere/DarkCloud2.png',
-  sunnyCloud3: 'images/Atmosphere/SunnyCloud3.png',
-  darkCloud3: 'images/Atmosphere/DarkCloud3.png',
-  sunnyCloud4: 'images/Atmosphere/SunnyCloud4.png',
-  darkCloud4: 'images/Atmosphere/DarkCloud4.png',
-  sunnyCloud5: 'images/Atmosphere/SunnyCloud5.png',
-  darkCloud5: 'images/Atmosphere/DarkCloud5.png',
-  sunnyBackground: 'images/Atmosphere/SunnyBackground.png',
-  darkBackground: 'images/Atmosphere/DarkBackground.png',
-  menuDivider: 'images/MenuDivider.png',
-  menuBanner2Player1Ball: 'images/MenuBanners/MenuBanner2P1.png',
-  menuBanner2Player2Balls: 'images/MenuBanners/MenuBanner2P2.png',
-  menuBannerGreen: 'images/MenuBanners/MenuBannerGreen.png',
-  menuBannerBlack: 'images/MenuBanners/MenuBannerBlack.png',
-  menuBannerWhite: 'images/MenuBanners/MenuBannerWhite.png',
-  menuBannerPurple: 'images/MenuBanners/MenuBannerPurple.png',
-} as const
-
-type TextureName = keyof typeof textureSources
 
 class Display {
   private canvasManager: CanvasManager
@@ -96,7 +45,7 @@ class Display {
     this.content = content
     this.canvasManager = new CanvasManager(targetDiv)
     this.spriteBatch = new SpriteBatch(this.canvasManager)
-    this.atmosphere = new Atmosphere(this.canvasManager)
+    this.atmosphere = new Atmosphere(this, this.canvasManager)
     this.p0ScoreCard = new ScoreCard()
     this.p1ScoreCard = new ScoreCard()
     this._fontManager = new FontManager(this.content)
@@ -132,14 +81,12 @@ class Display {
     p.push(this._fontManager.loadContent())
     await Promise.all(p)
 
-    this.atmosphere.addBackgroundTextures(this.getTexture('sunnyBackground'), this.getTexture('darkBackground'))
     for (let i = 1; i <= 5; i++) {
       const tSunny = this.getTexture(`sunnyCloud${i}` as TextureName)
       const tDark = this.getTexture(`darkCloud${i}` as TextureName)
       this.atmosphere.addCloudTextures(tSunny, tDark)
     }
     this.atmosphere.fillClouds()
-    this.atmosphere.addMoonTexture(this.getTexture('moon'))
   }
 
   public getTexture(name: TextureName): Texture2D {
@@ -333,7 +280,6 @@ class Display {
 
     if (
       gameState != GameState.PreExitMessage &&
-      gameState != GameState.Instructions &&
       gameState != GameState.Intro1 &&
       gameState != GameState.Intro2 &&
       gameState != GameState.Intro3 &&
@@ -378,7 +324,6 @@ class Display {
 
     if (
       gameState != GameState.PreExitMessage &&
-      gameState != GameState.Instructions &&
       gameState != GameState.Intro1 &&
       gameState != GameState.Intro2 &&
       gameState != GameState.Intro3 &&
@@ -408,7 +353,6 @@ class Display {
     if (
       gameState != GameState.MainMenu &&
       gameState != GameState.PreStart &&
-      gameState != GameState.Instructions &&
       gameState != GameState.PreExitMessage &&
       gameState != GameState.PreExitCredits &&
       gameState != GameState.Intro1 &&
@@ -668,4 +612,4 @@ class Display {
   }
 }
 
-export {Display}
+export {Display, TextureName}

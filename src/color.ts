@@ -11,7 +11,8 @@ class Color {
     this.a = a
   }
   public toHtmlRgb(): string {
-    return `rgba(${this.r * 255},${this.g * 255},${this.b * 255},${this.a})`
+    if (this.a === 1) return `rgb(${this.r * 255},${this.g * 255},${this.b * 255})`
+    else return `rgba(${this.r * 255},${this.g * 255},${this.b * 255},${this.a})`
   }
 }
 const Colors = {
