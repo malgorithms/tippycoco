@@ -1,51 +1,94 @@
+import {AiName, ais, KnownAi} from './ai/ai'
 import {Color, Colors} from './color'
 import {Display, TextureName} from './display'
+import {persistence} from './persistence'
 import {PlayerSpecies} from './player'
 import {SpriteBatch} from './sprite-batch'
 import tweakables from './tweakables'
 import {GameTime, PlayerSide, Texture2D, Vector2} from './types'
 import {vec, sign} from './utils'
 
-enum MenuOptions {
+enum MenuAction {
   ReturnToGame = 'return-to-game',
-  Play2Player1Ball = 'humans-1-ball',
-  Play2Player2Balls = 'humans-2-balls',
-  PlayGreen = 'play-green',
-  PlayPurple = 'play-purple',
-  PlayBlack = 'play-black',
-  PlayWhite = 'play-white',
+  Play = 'play',
   Exit = 'exit',
+}
+type UnlockRequirement = {
+  defeat: AiName
+  defeatType: 'win' | 'shutout' | 'no-jumping'
 }
 interface MenuEntry {
   text: string
   subtext?: string
-  choice: MenuOptions
+  action: MenuAction
   opponentType?: PlayerSpecies
+  ai?: KnownAi
   numBalls?: number
   card: TextureName
+  unlockRequirement?: UnlockRequirement
 }
 
 const allMenuItems: MenuEntry[] = [
-  {text: 'Quit', choice: MenuOptions.Exit, card: 'menuCardExit'},
-  {text: 'Return to Game', choice: MenuOptions.ReturnToGame, card: 'menuCardReturnToGame'},
+  {text: 'Quit', action: MenuAction.Exit, card: 'menuCardExit'},
+  {text: 'Return to Game', action: MenuAction.ReturnToGame, card: 'menuCardReturnToGame'},
   {
     text: 'Human v. Human',
-    choice: MenuOptions.Play2Player1Ball,
+    action: MenuAction.Play,
     card: 'menuCardHuman1Ball',
     opponentType: PlayerSpecies.Human,
     numBalls: 1,
   },
   {
     text: 'Human v. Human',
-    choice: MenuOptions.Play2Player2Balls,
+    action: MenuAction.Play,
     card: 'menuCardHuman2Balls',
     opponentType: PlayerSpecies.Human,
     numBalls: 2,
   },
-  {text: 'Challenge Green', choice: MenuOptions.PlayGreen, card: 'menuCardPlayGreen', opponentType: PlayerSpecies.Ai, numBalls: 1},
-  {text: 'Challenge Purple', choice: MenuOptions.PlayPurple, card: 'menuCardPlayPurple', opponentType: PlayerSpecies.Ai, numBalls: 2},
-  {text: 'Challenge Black', choice: MenuOptions.PlayBlack, card: 'menuCardPlayBlack', opponentType: PlayerSpecies.Ai, numBalls: 1},
-  {text: 'Challenge White', choice: MenuOptions.PlayWhite, card: 'menuCardPlayWhite', opponentType: PlayerSpecies.Ai, numBalls: 2},
+  {
+    text: 'Challenge Green',
+    ai: ais.Green,
+    action: MenuAction.Play,
+    card: 'menuCardPlayGreen',
+    opponentType: PlayerSpecies.Ai,
+    numBalls: 1,
+  },
+  {
+    text: 'Challenge Purple',
+    ai: ais.Purple,
+    action: MenuAction.Play,
+    card: 'menuCardPlayPurple',
+    opponentType: PlayerSpecies.Ai,
+    numBalls: 2,
+    unlockRequirement: {
+      defeat: 'Green',
+      defeatType: 'win',
+    },
+  },
+  {
+    text: 'Challenge Black',
+    ai: ais.Black,
+    action: MenuAction.Play,
+    card: 'menuCardPlayBlack',
+    opponentType: PlayerSpecies.Ai,
+    numBalls: 1,
+    unlockRequirement: {
+      defeat: 'Purple',
+      defeatType: 'no-jumping',
+    },
+  },
+  {
+    text: 'Challenge White',
+    ai: ais.White,
+    action: MenuAction.Play,
+    card: 'menuCardPlayWhite',
+    opponentType: PlayerSpecies.Ai,
+    numBalls: 2,
+    unlockRequirement: {
+      defeat: 'Black',
+      defeatType: 'shutout',
+    },
+  },
 ]
 
 type MenuOwnership = PlayerSide | null
@@ -67,21 +110,50 @@ class Menu {
   private get spriteBatch(): SpriteBatch {
     return this.display.getSpriteBatch()
   }
-  public get selection(): MenuOptions {
-    return this.menuItems[this.selectedMenuIndex].choice
+  public get selection(): MenuAction {
+    return this.menuItems[this.selectedMenuIndex].action
   }
-  public select(menuOption: MenuOptions, playerSide: PlayerSide | null) {
+  public get selectionEntry() {
+    return this.menuItems[this.selectedMenuIndex]
+  }
+  public select(menuOption: MenuAction, playerSide: PlayerSide | null) {
     if (this.playerOwnsMenu === null || this.playerOwnsMenu === playerSide) {
       for (let i = 0; i < this.menuItems.length; i++) {
-        if (this.menuItems[i].choice === menuOption) {
+        if (this.menuItems[i].action === menuOption) {
           this.selectedMenuIndex = i
           break
         }
       }
     }
   }
-  private choice(num: number) {
-    return this.menuItems[num].choice
+  private isLockedReason(entry: MenuEntry): false | string {
+    if (entry.unlockRequirement) {
+      return this.lockCheckReason(entry.unlockRequirement)
+    }
+    return false
+  }
+  /**
+   * returns false if not locked, otherwise a string explaining why
+   * @param ur
+   * @returns
+   */
+  private lockCheckReason(ur: UnlockRequirement): false | string {
+    const d = persistence.data.aiRecord[ur.defeat]
+    if (ur.defeatType === 'win') {
+      if (d.wins > 0) return false
+      else return `Defeat ${ur.defeat} to unlock`
+    } else if (ur.defeatType === 'no-jumping') {
+      if (d.noJumpWins > 0) return false
+      else return `Defeat ${ur.defeat} without jumping to unlock`
+    } else if (ur.defeatType === 'shutout') {
+      if (d.shutoutWins > 0) return false
+      else return `Shutout ${ur.defeat} to unlock`
+    } else {
+      throw new Error(`unknown unlock requirement ${ur.defeatType}`)
+    }
+  }
+  private action(num: number) {
+    return this.menuItems[num].action
   }
   private beat(totalSeconds: number) {
     return 2.0 * Math.PI * totalSeconds * (tweakables.menu.bpm / 60)
@@ -144,12 +216,18 @@ class Menu {
     const texture = this.display.getTexture(item.card)
     const dims = this.spriteBatch.autoDim(cardWidth, texture)
     const rotation = this.cardRotation(gameTime, i)
-    //if (isSelected) {
     const shadowTexture = this.display.getTexture('menuCardShadow')
+    const lockOverlay = this.display.getTexture('menuCardLockOverlay')
     const sCenter = vec.add(center, {x: 0.03, y: -0.03})
+    const lockReason = this.isLockedReason(item)
+    // shadow
     this.spriteBatch.drawTextureCentered(shadowTexture, sCenter, dims, rotation, 1)
-    // }
+    // then the card itself
     this.spriteBatch.drawTextureCentered(texture, center, dims, rotation, 1)
+    // then lock overlay, if it's locked
+    if (lockReason) {
+      this.spriteBatch.drawTextureCentered(lockOverlay, center, dims, rotation, tMenu.lockOverlayAlpha)
+    }
 
     // now any attachments, such as #ball icons, etc.
     const cosRot = Math.cos(rotation)
@@ -187,7 +265,7 @@ class Menu {
 
   public draw(allowReturnToGame: boolean, gameTime: GameTime): void {
     this.allowReturnToGame = allowReturnToGame
-    if (!allowReturnToGame && this.selection === MenuOptions.ReturnToGame) {
+    if (!allowReturnToGame && this.selection === MenuAction.ReturnToGame) {
       this.moveRight(this.playerOwnsMenu)
     }
     const tMenu = tweakables.menu
@@ -201,7 +279,7 @@ class Menu {
     )
     for (const k of drawOrder) {
       const i = parseInt(k)
-      if (this.choice(i) === MenuOptions.ReturnToGame && !this.allowReturnToGame) continue
+      if (this.action(i) === MenuAction.ReturnToGame && !this.allowReturnToGame) continue
       const center = this.cardCenter(i)
       if (i === this.selectedMenuIndex) {
         // draw a second cover over the non-selected ones
@@ -220,7 +298,7 @@ class Menu {
   public moveRight(owner: MenuOwnership): void {
     if (this.playerOwnsMenu === null || this.playerOwnsMenu === owner) {
       this.selectedMenuIndex = (this.selectedMenuIndex + 1) % this.menuItems.length
-      if (this.selection === MenuOptions.ReturnToGame && !this.allowReturnToGame) {
+      if (this.selection === MenuAction.ReturnToGame && !this.allowReturnToGame) {
         this.selectedMenuIndex++
       }
     }
@@ -228,7 +306,7 @@ class Menu {
   public moveLeft(owner: MenuOwnership): void {
     if (this.playerOwnsMenu === null || this.playerOwnsMenu === owner) {
       this.selectedMenuIndex--
-      if (this.selectedMenuIndex >= 0 && this.selection === MenuOptions.ReturnToGame && !this.allowReturnToGame) {
+      if (this.selectedMenuIndex >= 0 && this.selection === MenuAction.ReturnToGame && !this.allowReturnToGame) {
         this.selectedMenuIndex--
       }
       if (this.selectedMenuIndex < 0) {
@@ -244,4 +322,4 @@ class Menu {
   }
 }
 
-export {MenuOptions, Menu, MenuOwnership}
+export {MenuAction, Menu, MenuOwnership}

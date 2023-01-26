@@ -1,16 +1,16 @@
 import {PlayerSide} from '../types'
-import {AiBase, AiThinkArg} from './ai-base'
-import {WhiteAi} from './white-ai'
+import {AiBase, AiThinkArg} from './base'
+import {_WhiteAi} from './white-ai'
 
 //
 // TODO: replace that this is just using a green AI.
 //
 
 class BlackAi extends AiBase {
-  private hiddenWhiteBrain: WhiteAi
+  private hiddenWhiteBrain: _WhiteAi
   constructor() {
     super()
-    this.hiddenWhiteBrain = new WhiteAi()
+    this.hiddenWhiteBrain = new _WhiteAi()
   }
   public think(o: AiThinkArg): void {
     if ((o.p0Score + o.p1Score) % 3 == 0 && Math.sin(o.accumulatedPointTime / 3) < 0) {
@@ -69,4 +69,6 @@ class BlackAi extends AiBase {
     if (stateToWatch.time < timeTillJump && o.gameTime.totalGameTime.totalSeconds % 50 != 0) BlackAi.jumpIfOkay(me)
   }
 }
-export {BlackAi}
+
+// import from ai.ts not here, to use
+export {BlackAi as _BlackAi}

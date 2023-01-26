@@ -1,8 +1,4 @@
-import {AiBase, AiThinkArg} from './ai/ai-base'
-import {BlackAi} from './ai/black-ai'
-import {GreenAi} from './ai/green-ai'
-import {PurpleAi} from './ai/purple-ai'
-import {WhiteAi} from './ai/white-ai'
+import {AiBase, AiThinkArg} from './ai/base'
 import {Ball} from './ball'
 import {Colors} from './color'
 import constants from './constants'
@@ -13,12 +9,14 @@ import {GameConfig, PlayerConfiguration} from './game-config'
 import {HistoryManager} from './history-manager'
 import {Input} from './input'
 import {KapowManager, KapowType} from './kapow-manager'
-import {Menu, MenuOptions, MenuOwnership} from './menu'
+import {Menu, MenuAction} from './menu'
 import {Player, PlayerSpecies} from './player'
 import {SoundManager} from './sound-manager'
 import tweakables from './tweakables'
 import {ContentLoadMonitor, FutureState, GameState, GameTime, NewPlayerArg, PlayerSide, Vector2} from './types'
 import {timeout, vec} from './utils'
+import {persistence} from './persistence'
+import {aiToName} from './ai/ai'
 
 class Game {
   private content: ContentLoader
@@ -40,7 +38,7 @@ class Game {
   private fpsTimer: number[]
   private isContentLoadedYet = false
 
-  public accumulatedGamePlayTime = 0 // How much the clock has run this game, in ms, excluding pauses and between points
+  public accumulatedGamePlayTime = 0 // How much the clock has run this game, in seconds, excluding pauses and between points
   public accumulatedStateTime = 0 // Time accumulated since last gamestate change
   public accumulatedPointTime = 0 // Accumulated play time this point (persists even if pausing it to go to menu)
   private whenStartedDateTime = Date.now()
@@ -204,10 +202,11 @@ class Game {
     if (playerSide === PlayerSide.Left) return 'Red'
     const c = this.gameConfig.playerConfig(playerSide)
     if (c.species === PlayerSpecies.Human) return 'Blue'
-    else if (c.ai instanceof GreenAi) return 'Green'
-    else if (c.ai instanceof WhiteAi) return 'White'
-    else if (c.ai instanceof BlackAi) return 'Black'
-    else return 'Purple'
+    else if (c.ai) {
+      return aiToName(c.ai)
+    } else {
+      return 'Unknown'
+    }
   }
 
   public draw(gameTime: GameTime): void {
@@ -257,36 +256,18 @@ class Game {
       this.menu.draw(false, gameTime)
     } else if (this.gameState === GameState.PreExitCredits) this.display.drawCredits(gameTime)
   }
-  private startNewTwoPlayerGame(numBalls: number): void {
+
+  private startNewGame(numBalls: number, ai: AiBase | null) {
+    persistence.incGamesStarted()
     this.resetScores()
     this.resetPlayers()
-    this.whoseServe = Math.random() < 0.5 ? PlayerSide.Left : PlayerSide.Right
+    this.whoseServe = ai || Math.random() < 0.5 ? PlayerSide.Left : PlayerSide.Right
     this.setGameState(GameState.PreAction)
-
-    this.gameConfig.playerConfig(PlayerSide.Left).species = PlayerSpecies.Human
-    this.gameConfig.playerConfig(PlayerSide.Right).species = PlayerSpecies.Human
+    this.playerLeftCfg.species = PlayerSpecies.Human
+    this.playerRightCfg.species = ai ? PlayerSpecies.Ai : PlayerSpecies.Human
+    this.playerRightCfg.ai = ai
     this.accumulatedGamePlayTime = 0.0
     this.gameConfig.balls[1].isAlive = numBalls === 2
-    this.display.atmosphere.changeSkyForOpponent(this.playerRightCfg, 1)
-  }
-  private startNewHumanAgainstAIGame(ai: AiBase, gamepadSide: MenuOwnership) {
-    console.log(`new game by...`, this.menu.getWhoOwnsMenu())
-    if (gamepadSide === PlayerSide.Right) {
-      this.input.swapGamepadSides()
-    }
-    this.resetScores()
-    this.resetPlayers()
-    this.whoseServe = PlayerSide.Left
-    this.setGameState(GameState.PreAction)
-    this.gameConfig.playerConfig(PlayerSide.Left).species = PlayerSpecies.Human
-    this.gameConfig.playerConfig(PlayerSide.Right).species = PlayerSpecies.Ai
-    this.gameConfig.playerConfig(PlayerSide.Right).ai = ai
-    this.accumulatedGamePlayTime = 0.0
-    if (ai instanceof GreenAi || ai instanceof BlackAi) {
-      this.gameConfig.balls[1].isAlive = false
-    } else {
-      this.gameConfig.balls[1].isAlive = true
-    }
     this.display.atmosphere.changeSkyForOpponent(this.playerRightCfg, 1)
   }
 
@@ -324,7 +305,7 @@ class Game {
       this.menu.setWhoOwnsMenu(null)
       // Go to paused menu
       this.setGameState(GameState.Paused)
-      this.menu.select(MenuOptions.ReturnToGame, PlayerSide.Left)
+      this.menu.select(MenuAction.ReturnToGame, PlayerSide.Left)
     }
   }
   private handleMenuInputs(): void {
@@ -334,22 +315,20 @@ class Game {
     else if (this.input.wasMenuLeftJustPushed(owner)) this.menu.moveLeft(owner)
     if (menuSelectResult.selected) {
       const gamepadSide = menuSelectResult.byPlayerSide
-      const action = this.menu.selection
-      if (action === MenuOptions.Play2Player1Ball) {
-        this.startNewTwoPlayerGame(1)
-      }
-      if (action === MenuOptions.Play2Player2Balls) {
-        this.startNewTwoPlayerGame(2)
-      } else if (action === MenuOptions.PlayGreen) {
-        this.startNewHumanAgainstAIGame(new GreenAi(), gamepadSide)
-      } else if (action === MenuOptions.PlayPurple) {
-        this.startNewHumanAgainstAIGame(new PurpleAi(), gamepadSide)
-      } else if (action === MenuOptions.PlayBlack) {
-        this.startNewHumanAgainstAIGame(new BlackAi(), gamepadSide)
-      } else if (action === MenuOptions.PlayWhite) {
-        this.startNewHumanAgainstAIGame(new WhiteAi(), gamepadSide)
-      } else if (action === MenuOptions.Exit) this.setGameState(GameState.PreExitMessage)
-      else if (action === MenuOptions.ReturnToGame) this.setGameState(GameState.Action)
+      const entry = this.menu.selectionEntry
+      const action = entry.action
+      if (action === MenuAction.Play) {
+        const numBalls = entry.numBalls ?? 1
+        if (!entry.ai) {
+          this.startNewGame(numBalls, null)
+        } else {
+          if (gamepadSide === PlayerSide.Right) {
+            this.input.swapGamepadSides()
+          }
+          this.startNewGame(numBalls, new entry.ai())
+        }
+      } else if (action === MenuAction.Exit) this.setGameState(GameState.PreExitMessage)
+      else if (action === MenuAction.ReturnToGame) this.setGameState(GameState.Action)
     }
     // Pressing B or Start from Pause returns to Game
     if (this.gameState === GameState.Paused) {
@@ -382,7 +361,7 @@ class Game {
   pauseTheGame(playerSide: PlayerSide | null): void {
     this.menu.setWhoOwnsMenu(playerSide)
     this.setGameState(GameState.Paused)
-    this.menu.select(MenuOptions.ReturnToGame, playerSide)
+    this.menu.select(MenuAction.ReturnToGame, playerSide)
   }
 
   handleActionInputs(dt: number): void {
@@ -584,27 +563,38 @@ class Game {
   private handlePointScored(playerSide: PlayerSide): void {
     const winByTwo = tweakables.winByTwo
     const winScore = tweakables.winningScore
+    this.display.bounceScoreCard(playerSide)
+    const seconds = this.accumulatedGamePlayTime
     if (playerSide === PlayerSide.Left) {
       this.setGameState(GameState.PointForPlayer0)
-      this.display.bounceScoreCard(playerSide)
       this.scoreLeftPlayer++
-
       if (
         (this.scoreLeftPlayer >= winScore && !winByTwo) ||
         (this.scoreLeftPlayer >= winScore && winByTwo && this.scoreLeftPlayer - this.scoreRightPlayer >= 2)
-      )
+      ) {
         this.setGameState(GameState.VictoryForPlayer0)
+        persistence.incGamesCompleted()
+        if (this.playerRightCfg.ai) {
+          const aiName = aiToName(this.playerRightCfg.ai)
+          const wasShutout = this.scoreRightPlayer === 0
+          persistence.recordResultAgainstAi(aiName, true, wasShutout, seconds, this.playerLeft.jumpCount)
+        }
+      }
       this.whoseServe = PlayerSide.Left
     } else {
       this.setGameState(GameState.PointForPlayer1)
-      this.display.bounceScoreCard(playerSide)
       this.scoreRightPlayer++
-
       if (
         (this.scoreRightPlayer >= winScore && !winByTwo) ||
         (this.scoreRightPlayer >= winScore && winByTwo && this.scoreRightPlayer - this.scoreLeftPlayer >= 2)
-      )
+      ) {
         this.setGameState(GameState.VictoryForPlayer1)
+        persistence.incGamesCompleted()
+        if (this.playerRightCfg.ai) {
+          const aiName = aiToName(this.playerRightCfg.ai)
+          persistence.recordResultAgainstAi(aiName, false, false, seconds, this.playerLeft.jumpCount)
+        }
+      }
       this.whoseServe = PlayerSide.Right
     }
   }

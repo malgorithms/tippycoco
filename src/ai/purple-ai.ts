@@ -1,6 +1,6 @@
 import {unknownState} from '../future-prediction'
 import {FutureState, PlayerSide} from '../types'
-import {AiBase, AiThinkArg} from './ai-base'
+import {AiBase, AiThinkArg} from './base'
 //
 // TODO: replace that this is just using a green AI.
 //
@@ -76,4 +76,4 @@ class PurpleAi extends AiBase {
     else this.moveRationally(o.gameTime, me, 0.0)
   }
 }
-export {PurpleAi}
+export {PurpleAi as _PurpleAi}

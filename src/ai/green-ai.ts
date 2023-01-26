@@ -1,5 +1,5 @@
 import {PlayerSide} from '../types'
-import {AiBase, AiThinkArg} from './ai-base'
+import {AiBase, AiThinkArg} from './base'
 
 class GreenAi extends AiBase {
   private reactionTime: number // won't go for balls that are further than this from being interesting
@@ -7,6 +7,7 @@ class GreenAi extends AiBase {
     super()
     this.reactionTime = 0.4
   }
+
   public think(o: AiThinkArg) {
     const me = o.me
     const dt: number = o.gameTime.elapsedGameTime.totalMilliseconds / 1000
@@ -67,4 +68,4 @@ class GreenAi extends AiBase {
   }
 }
 
-export {GreenAi}
+export {GreenAi as _GreenAi}

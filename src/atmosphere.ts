@@ -1,7 +1,4 @@
-import {BlackAi} from './ai/black-ai'
-import {GreenAi} from './ai/green-ai'
-import {PurpleAi} from './ai/purple-ai'
-import {WhiteAi} from './ai/white-ai'
+import {aiToName} from './ai/ai'
 import {CanvasManager} from './canvas-manager'
 import {Cloud} from './cloud'
 import {Display} from './display'
@@ -71,37 +68,37 @@ class Atmosphere {
   }
 
   public skyForOpponent(oppConfig: PlayerConfiguration): SkyAssignment {
-    if (oppConfig.species === PlayerSpecies.Human) {
+    const ai = oppConfig.ai
+    if (oppConfig.species === PlayerSpecies.Human || !ai) {
       return {
         sunny: this.display.getTexture('sunnyBackgroundBlue'),
         dark: this.display.getTexture('darkBackground'),
       }
-    } else if (oppConfig.ai instanceof GreenAi) {
+    }
+    const aiName = aiToName(ai)
+    if (aiName === 'Green')
       return {
         sunny: this.display.getTexture('sunnyBackgroundGreen'),
         dark: this.display.getTexture('darkBackground'),
       }
-    } else if (oppConfig.ai instanceof BlackAi) {
+    else if (aiName === 'Black')
       return {
         sunny: this.display.getTexture('sunnyBackgroundBlack'),
         dark: this.display.getTexture('darkBackground'),
       }
-    } else if (oppConfig.ai instanceof WhiteAi) {
+    else if (aiName === 'White')
       return {
         sunny: this.display.getTexture('sunnyBackgroundFire'),
         dark: this.display.getTexture('darkBackground'),
       }
-    } else if (oppConfig.ai instanceof PurpleAi) {
+    // purple
+    else
       return {
         sunny: this.display.getTexture('sunnyBackgroundPurplish'),
         dark: this.display.getTexture('darkBackground'),
       }
-    } else
-      return {
-        sunny: this.display.getTexture('sunnyBackgroundBlue'),
-        dark: this.display.getTexture('darkBackground'),
-      }
   }
+
   public changeSkyForOpponent(oppConfig: PlayerConfiguration, sunniness: 0 | 1) {
     const textures = this.skyForOpponent(oppConfig)
     if (sunniness === 1) this.changeSky(textures.sunny, 1)

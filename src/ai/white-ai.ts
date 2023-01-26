@@ -1,6 +1,6 @@
 import {unknownState} from '../future-prediction'
 import {FutureState, PlayerSide} from '../types'
-import {AiBase, AiThinkArg} from './ai-base'
+import {AiBase, AiThinkArg} from './base'
 
 class WhiteAi extends AiBase {
   // not jumping right at the start of a point prevents WhiteAi from
@@ -115,4 +115,4 @@ class WhiteAi extends AiBase {
     }
   }
 }
-export {WhiteAi}
+export {WhiteAi as _WhiteAi}

@@ -3,6 +3,8 @@ enum PlayerSide {
   Right = 'right',
 }
 
+type ValueOf<T> = T[keyof T]
+
 type KeyboardKeyCode = string // as seen in event.code; ' ' for space, etc.
 
 interface PlayerKeyboardSet {
@@ -105,6 +107,7 @@ enum GameState {
 }
 
 export {
+  ValueOf,
   GameState,
   GameTime,
   PlayerKeyboardSet,

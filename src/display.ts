@@ -1,7 +1,4 @@
-import {BlackAi} from './ai/black-ai'
-import {GreenAi} from './ai/green-ai'
-import {PurpleAi} from './ai/purple-ai'
-import {WhiteAi} from './ai/white-ai'
+import {aiToName} from './ai/ai'
 import {Atmosphere} from './atmosphere'
 import {Ball} from './ball'
 import {CanvasManager} from './canvas-manager'
@@ -99,6 +96,10 @@ class Display {
     if (playerSide == PlayerSide.Left) this.p0ScoreCard.bounce()
     else this.p1ScoreCard.bounce()
   }
+  private isSkarball(pc: PlayerConfiguration): boolean {
+    if (pc.species === PlayerSpecies.Ai && pc.ai && aiToName(pc.ai) === 'White') return true
+    return false
+  }
   private drawPlayer(
     gameTime: GameTime,
     playerSide: PlayerSide,
@@ -107,7 +108,7 @@ class Display {
     playerTexture: Texture2D,
     ball: Ball,
   ): void {
-    const isSkarball = playerConfig.species === PlayerSpecies.Ai && playerConfig.ai instanceof WhiteAi
+    const isSkarball = this.isSkarball(playerConfig)
     const leftEyeOffset = vec.scale({x: -0.113, y: 0.14}, player.physics.diameter)
     const rightEyeOffset = vec.scale({x: 0.1195, y: 0.144}, player.physics.diameter)
     let leftEyePosition = vec.add(player.physics.center, leftEyeOffset)
@@ -196,14 +197,14 @@ class Display {
   }
 
   private getPlayerTexture(playerConfig: PlayerConfiguration, playerSide: PlayerSide): Texture2D {
-    if (playerSide == PlayerSide.Left && playerConfig.species === PlayerSpecies.Human) return this.getTexture('redPlayer')
-    else if (playerSide == PlayerSide.Right && playerConfig.species == PlayerSpecies.Human) return this.getTexture('bluePlayer')
-    else {
-      if (playerConfig.ai instanceof BlackAi) return this.getTexture('blackPlayer')
-      else if (playerConfig.ai instanceof GreenAi) return this.getTexture('greenPlayer')
-      else if (playerConfig.ai instanceof PurpleAi) return this.getTexture('purplePlayer')
+    if (playerConfig.ai) {
+      const aiName = aiToName(playerConfig.ai)
+      if (aiName === 'Black') return this.getTexture('blackPlayer')
+      else if (aiName === 'Green') return this.getTexture('greenPlayer')
+      else if (aiName === 'Purple') return this.getTexture('purplePlayer')
       else return this.getTexture('whitePlayer')
-    }
+    } else if (playerSide == PlayerSide.Left) return this.getTexture('redPlayer')
+    else return this.getTexture('bluePlayer')
   }
 
   public drawControllerInstructions() {

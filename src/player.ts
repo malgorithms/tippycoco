@@ -15,11 +15,16 @@ class Player {
   public maxVel: Vector2
   public targetXVel: number // desired speed, accelerates towards
   public xSpringConstant: number
+  private _jumpCount: number
   constructor(o: NewPlayerArg) {
+    this._jumpCount = 0
     this.physics = new CircularObject(vec.zero(), vec.zero(), o.diameter, o.mass, 0, 0, o.gravityMultiplier)
     this.maxVel = o.maxVel
     this.targetXVel = o.targetXVel
     this.xSpringConstant = o.xSpringConstant
+  }
+  public get jumpCount() {
+    return this._jumpCount
   }
   public deepCopy(): Player {
     const sp = new Player({
@@ -37,6 +42,7 @@ class Player {
     return sp
   }
   public jump(): void {
+    this._jumpCount++
     this.physics.vel.y = this.maxVel.y
   }
   public grow(dt: number, vel: number) {

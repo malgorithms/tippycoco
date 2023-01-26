@@ -1,4 +1,4 @@
-import {AiBase} from './ai/ai-base'
+import {AiBase} from './ai/base'
 import {Ball} from './ball'
 import {Player, PlayerSpecies} from './player'
 import {RectangularObstacle} from './rectangular-obstacle'

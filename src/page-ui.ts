@@ -60,8 +60,16 @@ class PageUi {
       this.runYet = true
       await this.game.run()
       // game is over
-      window.location.reload()
+      this.refresh()
     }
+  }
+
+  // -----------------------------------------------------------
+
+  private refresh() {
+    // TODO: something that doesn't require rechecking all the assets
+    // for not-modified
+    window.location.reload()
   }
 
   // -----------------------------------------------------------

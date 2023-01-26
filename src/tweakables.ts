@@ -55,6 +55,7 @@ export default {
     cardRotationBounce: 0.03,
     subtextOffset: {x: 0, y: -1.0},
     subtextRelSize: 0.4,
+    lockOverlayAlpha: 0.6,
   },
   fpsSampleCount: 100, // loops
   ballPlayerLaunchTime: 0.5,

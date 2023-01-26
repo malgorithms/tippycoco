@@ -47,6 +47,7 @@ const textureSources = {
   menuCardReturnToGame: 'images/MenuCards/ReturnToGame.png',
   menuCardExit: 'images/MenuCards/Exit.png',
   menuCardShadow: 'images/MenuCards/Shadow.png',
+  menuCardLockOverlay: 'images/MenuCards/LockOverlay.png',
   /* human opponent cards */
   menuCardHuman1Ball: 'images/MenuCards/Human1Ball.png',
   menuCardHuman2Balls: 'images/MenuCards/Human2Balls.png',
