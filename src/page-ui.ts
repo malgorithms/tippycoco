@@ -104,7 +104,9 @@ class PageUi {
       </div>
       <h4 style="margin-top:50px;">Controls & notes</h4>
       <p>
-      🎮: T.C.F.T.G. works with 1 or 2 gamepads, and/or keyboard: 
+      🎮: T.C.F.T.G. works with 1 or 2 gamepads. (PS5, XBox, etc. controllers work when plugged into your computer.)
+      <br><br>
+      If you're using a keyboard:
       <br><br>
         Player 1 ⌨️: <b>a w d</b> to move
       <br>
@@ -112,13 +114,20 @@ class PageUi {
       </p>
       <h4>Latest changes</h4>
       <p>
-      Fixed control of menu when paused by controller
+      Unlockable enemies
       </p>
+      <h4>Links</h4>
+      <ul>
+       <li><a href="https://github.com/malgorithms/they-came-from-the-ground">source code</a></li>
+       <li><a href="#no" id="btn-erase-storage">erase local stats</a></li>
+       <li>my personal website, <a href="https://chriscoyne.com">ChrisCoyne.com</a></li>
+       <li>my twitter, <a href="https://twitter.com/malgorithms">@malgorithms</a></li>
+      </ul>
       <h4>About</h4>
       <p>
-      This game is a free, open-source hobby project by <b>Chris Coyne</b> (<a href="https://chriscoyne.com">chriscoyne.com</a>) with help from friends. Contributions accepted. Source code at
-      <a href="https://github.com/malgorithms/they-came-from-the-ground">https://github.com/malgorithms/they-came-from-the-ground</a>. The GitHub readme shows how to run your own
-      copy of the game. It's a joy to change the game physics and rules.
+        This game is a free, open-source hobby project by <b>Chris Coyne</b> (<a href="https://chriscoyne.com">chriscoyne.com</a>) with help from friends. The GitHub readme shows how to run your own
+        copy of the game. It's a joy to change the game physics and rules. The original inspiration for this game was Slime Volleyball, by Quin Pendragon. Music in T.C.F.T.G. by my friend
+        Christian Rudder, of the band <a href="https://en.wikipedia.org/wiki/Bishop_Allen">Bishop Allen</a>.
       </p>
       </div>
     </div>`
@@ -140,6 +149,14 @@ class PageUi {
     }
     const btn = document.getElementById('btn-go') as HTMLElement
     if (btn) btn.onclick = () => this.onRunClick()
+    const eraseBtn = document.getElementById('btn-erase-storage') as HTMLElement
+    eraseBtn.onclick = () => {
+      if (confirm('sure? this will clear your game stats and unlocks.')) {
+        window.localStorage.clear()
+        alert('done!')
+        this.refresh()
+      }
+    }
   }
 }
 

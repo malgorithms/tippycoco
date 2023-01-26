@@ -178,8 +178,7 @@ class Game {
       gs === GameState.Intro1 ||
       gs === GameState.Intro2 ||
       gs === GameState.Intro3 ||
-      gs === GameState.VictoryForPlayer0 ||
-      gs === GameState.VictoryForPlayer1
+      gs === GameState.Victory
     ) {
       this.sound.playIfNotPlaying('themeSong', 1.0, 0.0, 0.0, true)
     } else if (gs !== GameState.PreStart) {
@@ -225,31 +224,24 @@ class Game {
       this.input.gamepadConnectSummary(),
     )
 
-    if (this.gameState === GameState.VictoryForPlayer0 || this.gameState === GameState.VictoryForPlayer1) {
+    if (this.gameState === GameState.Victory) {
       this.isGamePoint = false
-      const minutes = Math.floor(this.accumulatedGamePlayTime / 60.0)
-      const seconds = Math.floor(this.accumulatedGamePlayTime - minutes * 60)
-      const time = minutes > 0 ? `${minutes} min ${seconds} sec` : `${seconds} seconds`
-
-      if (this.scoreLeftPlayer === 0 || this.scoreRightPlayer === 0)
-        this.display.drawCenteredDancingMessage(gameTime, 'Shutout!', 'Victory in ' + time + '.', Colors.white)
-      else if (this.gameState === GameState.VictoryForPlayer0)
-        this.display.drawCenteredDancingMessage(
-          gameTime,
-          this.getPlayerName(PlayerSide.Left) + ' Wins!',
-          ' Victory in ' + time + '.',
-          Colors.white,
-        )
-      else if (this.gameState === GameState.VictoryForPlayer1)
-        this.display.drawCenteredDancingMessage(
-          gameTime,
-          this.getPlayerName(PlayerSide.Right) + ' Wins!',
-          ' Victory in ' + time + '.',
-          Colors.white,
-        )
+      const seconds = this.accumulatedGamePlayTime
+      const minutesInt = Math.floor(seconds / 60.0)
+      const secondsInt = Math.floor(seconds - minutesInt * 60)
+      const time = minutesInt > 0 ? `${minutesInt} min ${secondsInt} sec` : `${seconds.toFixed(3)} seconds`
+      const winner = this.scoreLeftPlayer > this.scoreRightPlayer ? PlayerSide.Left : PlayerSide.Right
+      const summ = winner === PlayerSide.Right && this.playerRightCfg.ai ? `Defeat in ${time}.` : `Victory in ${time}.`
+      const wPlayer = winner === PlayerSide.Right ? this.playerRight : this.playerLeft
+      if (wPlayer.jumpCount === 0) {
+        this.display.drawCenteredDancingMessage(gameTime, 'Without Jumping!!!', summ, Colors.white)
+      } else if (this.scoreLeftPlayer === 0 || this.scoreRightPlayer === 0) {
+        this.display.drawCenteredDancingMessage(gameTime, 'Shutout!', summ, Colors.white)
+      } else {
+        this.display.drawCenteredDancingMessage(gameTime, this.getPlayerName(winner) + ' Wins!', summ, Colors.white)
+      }
     }
-    if (this.gameState === GameState.PointForPlayer0) {
-    } else if (this.gameState === GameState.PointForPlayer1) {
+    if (this.gameState === GameState.PointScored) {
     } else if (this.gameState === GameState.Paused) {
       this.menu.draw(true, gameTime)
     } else if (this.gameState === GameState.MainMenu) {
@@ -313,7 +305,7 @@ class Game {
     const menuSelectResult = this.input.wasMenuSelectJustPushed(owner)
     if (this.input.wasMenuRightJustPushed(owner)) this.menu.moveRight(owner)
     else if (this.input.wasMenuLeftJustPushed(owner)) this.menu.moveLeft(owner)
-    if (menuSelectResult.selected) {
+    if (menuSelectResult.selected && !this.menu.isOnLockedSelection()) {
       const gamepadSide = menuSelectResult.byPlayerSide
       const entry = this.menu.selectionEntry
       const action = entry.action
@@ -546,7 +538,7 @@ class Game {
       this.handlePointScored(PlayerSide.Right)
     }
     if (
-      (this.gameState === GameState.PointForPlayer0 || this.gameState === GameState.PointForPlayer1) &&
+      this.gameState === GameState.PointScored &&
       this.scoreLeftPlayer !== this.scoreRightPlayer &&
       (this.scoreLeftPlayer >= tweakables.winningScore - 1 || this.scoreRightPlayer >= tweakables.winningScore - 1)
     ) {
@@ -561,39 +553,32 @@ class Game {
   }
 
   private handlePointScored(playerSide: PlayerSide): void {
-    const winByTwo = tweakables.winByTwo
     const winScore = tweakables.winningScore
     this.display.bounceScoreCard(playerSide)
-    const seconds = this.accumulatedGamePlayTime
+    const sec = this.accumulatedGamePlayTime
+    const jumps = this.playerLeft.jumpCount
+    this.setGameState(GameState.PointScored)
     if (playerSide === PlayerSide.Left) {
-      this.setGameState(GameState.PointForPlayer0)
       this.scoreLeftPlayer++
-      if (
-        (this.scoreLeftPlayer >= winScore && !winByTwo) ||
-        (this.scoreLeftPlayer >= winScore && winByTwo && this.scoreLeftPlayer - this.scoreRightPlayer >= 2)
-      ) {
-        this.setGameState(GameState.VictoryForPlayer0)
+      if (this.scoreLeftPlayer >= winScore && this.scoreLeftPlayer - this.scoreRightPlayer >= 2) {
         persistence.incGamesCompleted()
         if (this.playerRightCfg.ai) {
           const aiName = aiToName(this.playerRightCfg.ai)
           const wasShutout = this.scoreRightPlayer === 0
-          persistence.recordResultAgainstAi(aiName, true, wasShutout, seconds, this.playerLeft.jumpCount)
+          persistence.recordResultAgainstAi(aiName, true, wasShutout, sec, jumps)
         }
+        this.setGameState(GameState.Victory)
       }
       this.whoseServe = PlayerSide.Left
     } else {
-      this.setGameState(GameState.PointForPlayer1)
       this.scoreRightPlayer++
-      if (
-        (this.scoreRightPlayer >= winScore && !winByTwo) ||
-        (this.scoreRightPlayer >= winScore && winByTwo && this.scoreRightPlayer - this.scoreLeftPlayer >= 2)
-      ) {
-        this.setGameState(GameState.VictoryForPlayer1)
+      if (this.scoreRightPlayer >= winScore && this.scoreRightPlayer - this.scoreLeftPlayer >= 2) {
         persistence.incGamesCompleted()
         if (this.playerRightCfg.ai) {
           const aiName = aiToName(this.playerRightCfg.ai)
-          persistence.recordResultAgainstAi(aiName, false, false, seconds, this.playerLeft.jumpCount)
+          persistence.recordResultAgainstAi(aiName, false, false, sec, jumps)
         }
+        this.setGameState(GameState.Victory)
       }
       this.whoseServe = PlayerSide.Right
     }
@@ -798,7 +783,7 @@ class Game {
         if (config.species !== PlayerSpecies.Off) {
           const player = this.gameConfig.player(playerSide)
           player.physics.vel.x = 0.0
-          player.jump()
+          player.physics.vel.y = tweakables.player.jumpSpeedAfterPoint
         }
       }
     }
@@ -1047,15 +1032,13 @@ class Game {
       case GameState.Intro3:
         this.runIntroState()
         break
-      case GameState.PointForPlayer0:
-      case GameState.PointForPlayer1:
+      case GameState.PointScored:
         this.runPointState()
         break
       case GameState.PreAction:
         this.runPreActionState()
         break
-      case GameState.VictoryForPlayer0:
-      case GameState.VictoryForPlayer1:
+      case GameState.Victory:
         this.display.adjustZoomLevel(1000, dt)
         this.runVictoryState()
         break

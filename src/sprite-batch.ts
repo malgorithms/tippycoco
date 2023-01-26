@@ -1,7 +1,7 @@
 import {CanvasManager} from './canvas-manager'
 import {Color} from './color'
 import tweakables from './tweakables'
-import {Dim, FontDef, Rectangle, Texture2D, Vector2} from './types'
+import {Dim, FontDef, Rectangle, TextDrawOptions, Texture2D, Vector2} from './types'
 
 class SpriteBatch {
   private canvasManager: CanvasManager
@@ -49,7 +49,8 @@ class SpriteBatch {
     this.ctx.fillText(s, 0, 0)
     this.ctx.restore()
   }
-  public drawStringUncentered(s: string, font: FontDef, size: number, pos: Vector2, color: Color, rot: number) {
+  public drawStringUncentered(s: string, font: FontDef, size: number, pos: Vector2, color: Color, rot: number, opts?: TextDrawOptions) {
+    opts ??= {}
     if (color.a === 0) return
     this.ctx.save()
     const pxPos = this.canvasManager.canvasToPixelPos(pos)
@@ -57,6 +58,7 @@ class SpriteBatch {
     this.ctx.resetTransform()
     this.ctx.translate(pxPos.x, pxPos.y)
     this.ctx.rotate(rot ?? 0)
+    this.ctx.textAlign = opts.textAlign ?? 'left'
     this.ctx.fillStyle = color.toHtmlRgb()
     this.ctx.fillText(s, 0, 0)
     this.ctx.restore()

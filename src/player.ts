@@ -39,6 +39,7 @@ class Player {
     sp.physics.vel = vec.copy(this.physics.vel)
     sp.physics.orientation = this.physics.orientation
     sp.physics.angularVel = this.physics.angularVel
+    sp._jumpCount = this._jumpCount
     return sp
   }
   public jump(): void {

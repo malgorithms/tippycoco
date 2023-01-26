@@ -1,11 +1,11 @@
-import {AiName, ais, KnownAi} from './ai/ai'
+import {AiName, ais, aiToName, KnownAi} from './ai/ai'
 import {Color, Colors} from './color'
 import {Display, TextureName} from './display'
 import {persistence} from './persistence'
 import {PlayerSpecies} from './player'
 import {SpriteBatch} from './sprite-batch'
 import tweakables from './tweakables'
-import {GameTime, PlayerSide, Texture2D, Vector2} from './types'
+import {GameTime, PlayerSide, TextDrawOptions, Texture2D, Vector2} from './types'
 import {vec, sign} from './utils'
 
 enum MenuAction {
@@ -141,13 +141,13 @@ class Menu {
     const d = persistence.data.aiRecord[ur.defeat]
     if (ur.defeatType === 'win') {
       if (d.wins > 0) return false
-      else return `Defeat ${ur.defeat} to unlock`
+      else return `defeat ${ur.defeat}`
     } else if (ur.defeatType === 'no-jumping') {
       if (d.noJumpWins > 0) return false
-      else return `Defeat ${ur.defeat} without jumping to unlock`
+      else return `beat ${ur.defeat} without jumping`
     } else if (ur.defeatType === 'shutout') {
       if (d.shutoutWins > 0) return false
-      else return `Shutout ${ur.defeat} to unlock`
+      else return `shut out ${ur.defeat}`
     } else {
       throw new Error(`unknown unlock requirement ${ur.defeatType}`)
     }
@@ -155,15 +155,19 @@ class Menu {
   private action(num: number) {
     return this.menuItems[num].action
   }
+  public isOnLockedSelection(): boolean {
+    const sel = this.menuItems[this.selectedMenuIndex]
+    return this.isLockedReason(sel) ? true : false
+  }
   private beat(totalSeconds: number) {
     return 2.0 * Math.PI * totalSeconds * (tweakables.menu.bpm / 60)
   }
   private drawDancingMenuText(s: string, destination: Vector2, totalSeconds: number, relSize: number) {
     /* dancing stuff */
     const beat = this.beat(totalSeconds)
-    const sizeMultiplier = 0.2 + Math.sin(beat / 2) / 100 + Math.sin(beat / 8) / 100
+    const sizeMultiplier = 0.3 + Math.sin(beat / 2) / 100 + Math.sin(beat / 8) / 100
     const size = sizeMultiplier * relSize
-    const rotation = -0.1 + Math.sin(beat) / 32
+    const rotation = -0.1 + Math.sin(beat / 16) / 32
     const backgroundColor = new Color(0.0, 0.0, 0.0, 0.75)
     const backgroundColor2 = new Color(0.0, 0.0, 0.0, 0.15)
     const foregroundColor = Colors.white
@@ -220,26 +224,21 @@ class Menu {
     const lockOverlay = this.display.getTexture('menuCardLockOverlay')
     const sCenter = vec.add(center, {x: 0.03, y: -0.03})
     const lockReason = this.isLockedReason(item)
+    const cosRot = Math.cos(rotation) // useful for attachments
+    const relPos = (v: Vector2): Vector2 => ({
+      x: center.x + ((cosRot * dims.w) / 2) * v.x,
+      y: center.y + ((cosRot * dims.h) / 2) * v.y,
+    })
+
     // shadow
     this.spriteBatch.drawTextureCentered(shadowTexture, sCenter, dims, rotation, 1)
     // then the card itself
     this.spriteBatch.drawTextureCentered(texture, center, dims, rotation, 1)
-    // then lock overlay, if it's locked
-    if (lockReason) {
-      this.spriteBatch.drawTextureCentered(lockOverlay, center, dims, rotation, tMenu.lockOverlayAlpha)
-    }
 
     // now any attachments, such as #ball icons, etc.
-    const cosRot = Math.cos(rotation)
     const ballSize = cardWidth * tMenu.cardBallSize
-    const ball1Pos = {
-      x: center.x + ((cosRot * dims.w) / 2) * tMenu.cardBall1Pos.x,
-      y: center.y + ((cosRot * dims.h) / 2) * tMenu.cardBall1Pos.y,
-    }
-    const ball2Pos = {
-      x: center.x + ((cosRot * dims.w) / 2) * tMenu.cardBall2Pos.x,
-      y: center.y + ((cosRot * dims.h) / 2) * tMenu.cardBall2Pos.y,
-    }
+    const ball1Pos = relPos(tMenu.cardBall1Pos)
+    const ball2Pos = relPos(tMenu.cardBall2Pos)
     const ball1Texture = this.display.getTexture('ball1')
     const ball2Texture = this.display.getTexture('ball2')
     const ballRot = isSelected ? gameTime.totalGameTime.totalSeconds : rotation
@@ -251,16 +250,72 @@ class Menu {
       this.spriteBatch.drawTextureCentered(ball2Texture, ball1Pos, {w: ballSize, h: ballSize}, ballRot, 1)
     }
 
+    // then lock overlay, if it's locked
+    if (lockReason) {
+      this.spriteBatch.drawTextureCentered(lockOverlay, center, dims, rotation, tMenu.lockOverlayAlpha)
+      if (isSelected) {
+        const txtCenter = relPos(tMenu.lockReasonPos)
+        const txtCenter2 = relPos({x: 0, y: -0})
+        const font = this.display.font('regular')
+        this.spriteBatch.drawStringCentered(lockReason, font, 0.04, txtCenter, tMenu.lockReasonColor, rotation)
+        this.spriteBatch.drawStringCentered('LOCKED', font, 0.06, txtCenter2, tMenu.lockReasonColor, rotation)
+      }
+    }
+
     // Draw the dancing text if it is currently selected
     const seconds = gameTime.totalGameTime.totalSeconds
-    if (isSelected) {
+    if (isSelected && !lockReason) {
       const textCenter = vec.add(center, tMenu.textOffsetFromCard)
-      if (item.subtext) {
+      const subtext = item.subtext
+      if (subtext) {
         const pos = vec.add(textCenter, tMenu.subtextOffset)
-        this.drawDancingMenuText(item.subtext, pos, seconds + 1, tMenu.subtextRelSize)
+        this.drawDancingMenuText(subtext, pos, seconds + 1, tMenu.subtextRelSize)
       }
       this.drawDancingMenuText(item.text, textCenter, seconds, 1)
     }
+    const ai = item.ai
+    if (isSelected && ai && !lockReason) {
+      this.drawCardStats(item, ai)
+    }
+  }
+
+  private drawCardStatLine(sL: string, sR: string, pos: Vector2, isBad: boolean) {
+    const tMenu = tweakables.menu
+    const colL = tMenu.statsColorLeft
+    const colR = isBad ? tMenu.statsColorRightBad : tMenu.statsColorRight
+    const sizeL = tMenu.statsFontSize
+    const sizeR = sizeL * tMenu.statsRightColFontMult
+    const fontL = this.display.font('regular')
+    const fontR = this.display.font('extraBold')
+    const drawOptsL: TextDrawOptions = {textAlign: 'right'}
+    const drawOptsR: TextDrawOptions = {textAlign: 'left'}
+    const posR = vec.add(pos, tMenu.statsRightColAdj)
+    this.spriteBatch.drawStringUncentered(sL, fontL, sizeL, pos, colL, 0, drawOptsL)
+    this.spriteBatch.drawStringUncentered(sR, fontR, sizeR, posR, colR, 0, drawOptsR)
+  }
+
+  private drawCardStats(item: MenuEntry, ai: KnownAi) {
+    // Stats at the bottom
+    const tMenu = tweakables.menu
+    const pos = vec.copy(tMenu.statsPosition)
+    const record = persistence.data.aiRecord[aiToName(ai)]
+    const fastestWin = record.fastestWin ?? Infinity
+    const lSpace = tMenu.statsFontSize * tMenu.statsLineSpacing
+    this.drawCardStatLine(`wins:`, `${record.wins}`, pos, record.wins < 1)
+    if (record.wins) {
+      pos.y -= lSpace
+      this.drawCardStatLine(`shutouts:`, `${record.shutoutWins}`, pos, record.shutoutWins < 1)
+      pos.y -= lSpace
+      this.drawCardStatLine(`no jump wins:`, `${record.noJumpWins}`, pos, record.noJumpWins < 1)
+      pos.y -= lSpace
+      let emoji = ''
+      for (const time of tMenu.statsFastestWinFlames) {
+        if (fastestWin < time) emoji += '🔥'
+      }
+      this.drawCardStatLine(`fastest win:`, `${fastestWin.toFixed(3)} ${emoji}`, pos, fastestWin > 60)
+    }
+    pos.y -= lSpace
+    this.drawCardStatLine(`games played:`, `${record.wins + record.losses}`, pos, false)
   }
 
   public draw(allowReturnToGame: boolean, gameTime: GameTime): void {

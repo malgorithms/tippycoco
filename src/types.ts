@@ -87,16 +87,19 @@ interface FontDef {
   weight: number
   url: string
 }
+
+interface TextDrawOptions {
+  textAlign?: CanvasTextAlign
+}
+
 enum GameState {
   PreStart,
   Intro1,
   Intro2,
   Intro3,
   MainMenu,
-  PointForPlayer0,
-  PointForPlayer1,
-  VictoryForPlayer0,
-  VictoryForPlayer1,
+  PointScored,
+  Victory,
   PreAction, // the half-second or so before they pop out of the ground; also time for player 2 to select controller
   Action,
   Paused,
@@ -124,4 +127,5 @@ export {
   ContentLoadMonitor,
   ContentLoadStats,
   MenuSelectResult,
+  TextDrawOptions,
 }

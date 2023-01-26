@@ -18,13 +18,14 @@ const aiNames = Object.keys(ais) as AiName[]
 
 type KnownAi = ValueOf<typeof ais>
 
-function aiToName(ai: AiBase): AiName {
+function aiToName(ai: AiBase | KnownAi): AiName {
   for (const k in ais) {
     const name = k as AiName
-    if (ai instanceof ais[name]) {
+    if (ai instanceof ais[name] || ai === ais[name]) {
       return name
     }
   }
+  console.log(ai)
   throw new Error('Unknown Ai.')
 }
 

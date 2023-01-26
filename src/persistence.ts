@@ -16,7 +16,7 @@ type AiRecord = {
   losses: number
   shutoutWins: number
   noJumpWins: number
-  fastestWin: number | null // milliseconds
+  fastestWin: number | null // seconds
 }
 type AiRecordDict = {
   [k in AiName]: AiRecord
@@ -42,6 +42,7 @@ class Persistence {
     const hoursAgo = (Date.now() - this.data.firstPlayed) / 3600000
     const d = this.data
     console.log(`You have played T.C.F.T.G. ${d.games.completed} time(s) in the last ${hoursAgo.toFixed(1)} hours`)
+    console.log(this.data)
   }
   public get data(): PersistentGameData {
     let o: PartialGameData = {}
@@ -68,7 +69,7 @@ class Persistence {
         losses: prevRecord[aiName]?.losses ?? 0,
         shutoutWins: prevRecord[aiName]?.shutoutWins ?? 0,
         noJumpWins: prevRecord[aiName]?.noJumpWins ?? 0,
-        fastestWin: null,
+        fastestWin: prevRecord[aiName]?.fastestWin ?? null,
       }
     }
     return data
@@ -92,6 +93,7 @@ class Persistence {
   public recordResultAgainstAi(aiName: AiName, win: boolean, shutoutWin: boolean, seconds: number, jumpCount: number) {
     const d = this.data
     const record = d.aiRecord[aiName]
+    console.log({aiName, win, shutoutWin, seconds, jumpCount})
     if (win) {
       record.wins++
       if (shutoutWin) record.shutoutWins++
@@ -100,7 +102,10 @@ class Persistence {
     } else {
       record.losses++
     }
+    console.log(`About to write`, JSON.stringify(d, null, 2))
+    console.log(`Before write:`, JSON.stringify(this.data, null, 2))
     this.writeData(d)
+    console.log(`After write:`, JSON.stringify(this.data, null, 2))
   }
   private emptyAiRecord(): AiRecordDict {
     const res: Partial<AiRecordDict> = {}

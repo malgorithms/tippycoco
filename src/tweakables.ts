@@ -50,17 +50,27 @@ export default {
     deselectedCardColor: new Color(0, 0, 0, 0.2), //  background over existing game
     cardBall1Pos: {x: 0.85, y: 0.73}, // fractional position on card's surface!
     cardBall2Pos: {x: 0.85, y: 0.58}, // fractional position on card's surface!
+    lockReasonPos: {x: 0, y: -0.4}, // fraction position on card's surface
+    lockReasonColor: new Color(1, 1, 1, 0.8),
     cardBallSize: 0.08, // fractional to card's size
     cardSizeBounce: 0.05,
     cardRotationBounce: 0.03,
-    subtextOffset: {x: 0, y: -1.0},
+    subtextOffset: {x: 0, y: -0.2},
     subtextRelSize: 0.4,
-    lockOverlayAlpha: 0.6,
+    lockOverlayAlpha: 0.8,
+    statsPosition: {x: 1, y: -0.1},
+    statsColorLeft: new Color(0.5, 1, 0, 0.5),
+    statsColorRight: new Color(0.5, 1, 0, 0.7),
+    statsColorRightBad: new Color(1, 1, 0, 0.7),
+    statsFontSize: 0.035,
+    statsLineSpacing: 1.2,
+    statsRightColAdj: {x: 0.02, y: -0.0025},
+    statsRightColFontMult: 1.1,
+    statsFastestWinFlames: [60, 45, 30, 15],
   },
   fpsSampleCount: 100, // loops
   ballPlayerLaunchTime: 0.5,
   winningScore: 5,
-  winByTwo: true,
   gameGravity: {x: 0, y: -1.9},
   timeAfterPointToFreeze: 0.5,
   timeAfterPointToReturnHome: 1.5,
@@ -123,6 +133,7 @@ export default {
     growSpeed: 0.1,
     minDiameter: 0.09,
     maxDiameter: 0.175,
+    jumpSpeedAfterPoint: 1.5,
     defaultSettings: {
       maxVel: {x: 0.8, y: 1.2},
       diameter: 0.15,

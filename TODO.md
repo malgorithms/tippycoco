@@ -7,14 +7,11 @@ Stuff
   - shutouts against each opponent
   - victory without jumping
 - menu redesign:
-  - which characters have you beaten
-    - trophies for achievements against them
-  - which characters are unlocked (and how to unlock?)
-  - give characters names
-  - more characters
+  - more characters?
   - bot template support
     - disabled but visible with explanation you can write your own
     - activated as soon as you edit something like myBot.ts
+- sharing idea: stats page with info in URL!
 - code quality and technical debt:
   - move all hard-coded constants into existing tweakables.ts. What a mess.
   - clean up all the player and playerconfig iterations in game.ts

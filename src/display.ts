@@ -263,16 +263,13 @@ class Display {
 
     this.atmosphere.draw(this.spriteBatch)
 
-    //const topLeftCorner = this.canvasManager.topLeftCorner()
-    //const bottomRightCorner = this.canvasManager.bottomRightCorner()
     const viewableRegion = this.canvasManager.viewableRegion
-    //const floorBackDim = this.spriteBatch.autoDim(gameConfig.floorBack.width, this.floorBackTexture)
 
     this.spriteBatch.drawTextureInRect(
       this.getTexture('floorBack'),
       {
-        x1: viewableRegion.x1,
-        x2: viewableRegion.x2,
+        x1: viewableRegion.x1 - 0.1,
+        x2: viewableRegion.x2 + 0.1,
         y1: tweakables.floorBack.yMin,
         y2: tweakables.floorBack.yMax,
       },
@@ -315,9 +312,9 @@ class Display {
     this.spriteBatch.drawTextureInRect(
       this.getTexture('floorFront'),
       {
-        x1: viewableRegion.x1,
-        x2: viewableRegion.x2,
-        y1: viewableRegion.y1,
+        x1: viewableRegion.x1 - 0.1,
+        x2: viewableRegion.x2 + 0.1,
+        y1: viewableRegion.y1 - 0.1,
         y2: tweakables.floorFront.yMax,
       },
       1,
@@ -377,7 +374,7 @@ class Display {
     } else if (gameState == GameState.AutoPaused) {
       this.drawCenteredDancingMessage(gameTime, 'Please reconnect your controller.', null, Colors.white)
     } else if (gameState == GameState.PreExitCredits) {
-      this.drawCenteredDancingMessage(gameTime, 'Every day is an adventure', 'tcftg.com', Colors.white)
+      this.drawCenteredDancingMessage(gameTime, 'tcftg.com', 'spread the word', Colors.white)
     }
   }
   private drawFlowers(
@@ -453,7 +450,7 @@ class Display {
   }
 
   private drawGamepadConnections(gameConfig: GameConfig, gameState: GameState, gCS: GamepadConnectSummary) {
-    const ignore = [GameState.Action, GameState.PreAction, GameState.PointForPlayer0, GameState.PointForPlayer1]
+    const ignore = [GameState.Action, GameState.PreAction, GameState.PointScored]
     if (ignore.includes(gameState)) {
       return
     }
