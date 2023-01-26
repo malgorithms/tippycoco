@@ -7,6 +7,7 @@ const app = express()
 const port = 3377
 
 app.use(morgan('combined'))
+app.enable('trust proxy')
 app.use(express.static('dist'))
 app.use(favicon(path.join(__dirname, 'dist', 'images', 'site', 'favicon.ico')))
 
