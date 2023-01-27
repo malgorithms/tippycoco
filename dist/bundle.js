@@ -136,7 +136,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
   \**************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (__WEBPACK_DEFAULT_EXPORT__)\n/* harmony export */ });\nvar _a;\nconst c = {\n    gameLoopDelayMs: 5,\n    expressPort: 3377,\n    assetUrl: `http://localhost:3377/public/`,\n    dpr: (_a = window.devicePixelRatio) !== null && _a !== void 0 ? _a : 1,\n    link: 'https://chriscoyne.com',\n    version: '0.1.1',\n    versionDateStr: '23-Jan-2023',\n};\n/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (c);\n\n\n//# sourceURL=webpack:///./src/constants.ts?");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (__WEBPACK_DEFAULT_EXPORT__)\n/* harmony export */ });\nvar _a;\nconst c = {\n    gameLoopDelayMs: 5,\n    expressPort: 3377,\n    assetUrl: `http://localhost:3377/public/`,\n    dpr: (_a = window.devicePixelRatio) !== null && _a !== void 0 ? _a : 1,\n    link: 'https://chriscoyne.com',\n    version: '0.1.3',\n    versionDateStr: '27-Jan-2023',\n};\n/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (c);\n\n\n//# sourceURL=webpack:///./src/constants.ts?");
 
 /***/ }),
 
