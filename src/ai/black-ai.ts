@@ -2,6 +2,8 @@ import {PlayerSide} from '../types'
 import {AiBase, AiThinkArg} from './base'
 import {_WhiteAi} from './white-ai'
 
+const REACTION_TIME_MS = 20
+
 //
 // TODO: replace that this is just using a green AI.
 //
@@ -13,20 +15,19 @@ class BlackAi extends AiBase {
     this.hiddenWhiteBrain = new _WhiteAi()
   }
   public think(o: AiThinkArg): void {
-    if ((o.p0Score + o.p1Score) % 3 == 0 && Math.sin(o.accumulatedPointTime / 3) < 0) {
+    if ((o.p0Score + o.p1Score) % 3 == 0 && Math.sin(o.accumulatedPointSeconds / 3) < 0) {
       this.hiddenWhiteBrain.think(o)
       return
     }
     const me = o.me
-    const dt = o.gameTime.elapsedGameTime.totalSeconds
 
     // Just jump sometimes
-    if (o.accumulatedPointTime < 1) {
-      BlackAi.jumpIfOkay(me)
+    if (o.accumulatedPointSeconds < 1) {
+      this.jumpIfPossible(o)
     }
-    BlackAi.goToSize(dt, me, 0.9)
+    this.goToSize(o, 0.9)
 
-    if (o.accumulatedPointTime < 1.0) return
+    if (o.accumulatedPointSeconds < 1.0) return
 
     let stateToWatch = o.ballPredictions[0].ballEnteringJumpRange(o.myPlayerSide)
     const amLeft = o.myPlayerSide === PlayerSide.Left
@@ -35,10 +36,9 @@ class BlackAi extends AiBase {
 
     // What to do if we have no idea
     if (!stateToWatch.isKnown) {
-      if (me.physics.center.x < o.gameConfig.net.center.x + o.gameConfig.net.width / 2 + (2 * me.physics.diameter) / 3)
-        this.moveRight(o.gameTime, me)
-      else if (me.physics.center.x > 1.0 - (2 * me.physics.diameter) / 3) this.moveLeft(o.gameTime, me)
-      else this.moveRationally(o.gameTime, me, 0.0)
+      if (me.physics.center.x < o.gameConfig.net.center.x + o.gameConfig.net.width / 2 + (2 * me.physics.diameter) / 3) this.moveRight(o)
+      else if (me.physics.center.x > 1.0 - (2 * me.physics.diameter) / 3) this.moveLeft(o)
+      else this.stopMoving(o)
       return
     }
 
@@ -49,24 +49,17 @@ class BlackAi extends AiBase {
     // At this point we know we have a state to watch
     if (!amLeft && me.physics.center.x < o.gameConfig.net.center.x - o.gameConfig.net.width / 2) {
       // keep me on my side of net
-      BlackAi.jumpIfOkay(me)
-      this.moveRight(o.gameTime, me)
-    } else if (
-      me.physics.center.x > stateToWatch.pos.x + me.physics.diameter / 10.0 &&
-      o.gameTime.totalGameTime.totalMilliseconds - this.lastMoveRight > 5
-    )
-      this.moveLeft(o.gameTime, me)
-    else if (
-      me.physics.center.x < stateToWatch.pos.x - me.physics.diameter / 10.0 &&
-      o.gameTime.totalGameTime.totalMilliseconds - this.lastMoveLeft > 5
-    )
-      this.moveRight(o.gameTime, me)
-    else this.moveRationally(o.gameTime, me, 0.0)
-
+      this.jumpIfPossible(o)
+      this.moveRight(o)
+    } else {
+      this.tryToGetToX(o, stateToWatch.pos.x, stateToWatch.time, REACTION_TIME_MS)
+    }
     const timeTillJump = me.getTimeToJumpToHeight(o.gameGravity.y, stateToWatch.pos.y)
 
     // Only jump sometimes
-    if (stateToWatch.time < timeTillJump && o.gameTime.totalGameTime.totalSeconds % 50 != 0) BlackAi.jumpIfOkay(me)
+    if (stateToWatch.time < timeTillJump && o.gameTime.totalGameTime.totalSeconds % 50 != 0) {
+      this.jumpIfPossible(o)
+    }
   }
 }
 

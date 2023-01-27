@@ -1,38 +1,44 @@
-import {unknownState} from '../future-prediction'
-import {FutureState, PlayerSide} from '../types'
-import {AiBase, AiThinkArg} from './base'
+import {PlayerSide} from '../types'
+import {AiBase, AiThinkArg, FutureBall} from './base'
+
+// not jumping right at the start of a point prevents WhiteAi from
+// getting aced with an underbelly serve
+const NO_JUMP_BEFORE = 1.5
+const REACTION_TIME_MS = 25
 
 class WhiteAi extends AiBase {
-  // not jumping right at the start of a point prevents WhiteAi from
-  // getting aced with an underbelly serve
-  private noJumpingBefore = 1.5
   constructor() {
     super()
   }
-  private jmp(o: AiThinkArg) {
-    if (o.accumulatedPointTime > this.noJumpingBefore) WhiteAi.jumpIfOkay(o.me)
+  private j(o: AiThinkArg) {
+    if (o.accumulatedPointSeconds > NO_JUMP_BEFORE) this.jumpIfPossible(o)
+  }
+
+  private timeTillICanReachLanding(o: AiThinkArg) {
+    const landing = this.getNextBallHittingOnMySide(o)
+    if (!landing) return Infinity
+    return Math.abs(landing.pos.x - o.me.physics.center.x) / o.me.maxVel.x
   }
 
   public think(o: AiThinkArg): void {
     const me = o.me
     const opponent = o.opponent
-    if (!opponent) throw new Error('bs')
-    const dt = o.gameTime.elapsedGameTime.totalSeconds
-    WhiteAi.goToSize(dt, me, 0.7)
+    this.goToSize(o, 0.7)
 
-    if (o.accumulatedPointTime < 1.0) return
+    if (o.accumulatedPointSeconds < 1.0) return
     else {
-      WhiteAi.goToSize(dt, me, 0.0)
+      this.goToSize(o, 0)
     }
+
     // PERFORM A MIRROR MANEUVER
-    if (o.accumulatedPointTime < 0.5) {
+    if (o.accumulatedPointSeconds < 0.5) {
       let offset =
         (me.physics.center.x - o.gameConfig.net.center.x - (o.gameConfig.net.center.x - opponent.physics.center.x)) / me.physics.diameter
       if (offset > 1.0) offset = 1.0
       if (offset < -1.0) offset = 1.0
-      this.moveRationally(o.gameTime, me, -offset)
+      this.moveRationally(o, -offset)
       if (opponent.physics.center.y > me.physics.center.y) {
-        this.jmp(o)
+        this.j(o)
       }
       return
     }
@@ -42,38 +48,38 @@ class WhiteAi extends AiBase {
       return
     }
 
-    let stateToWatch: FutureState = unknownState()
+    let stateToWatch: FutureBall | null = null
     const amLeft = o.myPlayerSide === PlayerSide.Left
-    const enteringMyRange = this.getNextBallEnteringMyJumpRange(o, o.myPlayerSide)
-    const landingOnMySide = this.getNextBallHittingOnMySide(o, o.myPlayerSide)
-    const timeToLanding = Math.abs(landingOnMySide.pos.x - me.physics.center.x) / me.maxVel.x
+    const enteringMyRange = this.getNextBallEnteringMyJumpRange(o)
+    const landingOnMySide = this.getNextBallHittingOnMySide(o)
+    const timeToReach = this.timeTillICanReachLanding(o)
 
-    if (landingOnMySide.isKnown && (!enteringMyRange.isKnown || landingOnMySide.time < timeToLanding + 0.1)) {
+    if (landingOnMySide && (!enteringMyRange || landingOnMySide.time < timeToReach + 0.1)) {
       stateToWatch = landingOnMySide
       stateToWatch.pos.x += ((amLeft ? -1.0 : 1.0) * me.physics.diameter) / 6.0
-    } else if (enteringMyRange.isKnown) {
-      stateToWatch = stateToWatch = enteringMyRange
+    } else if (enteringMyRange) {
+      stateToWatch = enteringMyRange
       stateToWatch.pos.x += ((amLeft ? -1.0 : 1.0) * me.physics.diameter) / 6.0
     }
 
     // What to do if we have no idea
-    if (!stateToWatch?.isKnown) {
+    if (!stateToWatch) {
       // Half the time go to the top of the net. The other half, do other crap.
-      if ((Math.floor(o.accumulatedPointTime) / 10) % 2 == 1) {
+      if ((Math.floor(o.accumulatedPointSeconds) / 10) % 2 == 1) {
         if (me.physics.center.x > o.gameConfig.net.center.x + o.gameConfig.net.width / 2) {
-          this.jmp(o)
-          this.moveLeft(o.gameTime, me)
+          this.j(o)
+          this.moveLeft(o)
         } else if (me.physics.center.x < o.gameConfig.net.center.x - o.gameConfig.net.width / 2) {
-          this.jmp(o)
-          this.moveRight(o.gameTime, me)
+          this.j(o)
+          this.moveRight(o)
         } else {
-          this.moveRationally(o.gameTime, me, (o.gameConfig.net.center.x - me.physics.center.x) / (o.gameConfig.net.width / 2))
+          const speed = (o.gameConfig.net.center.x - me.physics.center.x) / (o.gameConfig.net.width / 2)
+          this.moveRationally(o, speed)
         }
       } else {
-        if (me.physics.center.x < o.gameConfig.net.center.x + o.gameConfig.net.width / 2 + (2 * me.physics.diameter) / 3)
-          this.moveRight(o.gameTime, me)
-        else if (me.physics.center.x > 1.0 - (2 * me.physics.diameter) / 3) this.moveLeft(o.gameTime, me)
-        else this.moveRationally(o.gameTime, me, 0.0)
+        if (me.physics.center.x < o.gameConfig.net.center.x + o.gameConfig.net.width / 2 + (2 * me.physics.diameter) / 3) this.moveRight(o)
+        else if (me.physics.center.x > 1.0 - (2 * me.physics.diameter) / 3) this.moveLeft(o)
+        else this.stopMoving(o)
       }
 
       return
@@ -82,26 +88,18 @@ class WhiteAi extends AiBase {
     // At this point we know we have a state to watch
     if (!amLeft && me.physics.center.x < o.gameConfig.net.center.x - o.gameConfig.net.width / 2) {
       // keep me on my side of net
-      this.jmp(o)
-      this.moveRight(o.gameTime, me)
-    } else if (
-      me.physics.center.x > stateToWatch.pos.x + me.physics.diameter / 10.0 &&
-      o.gameTime.totalGameTime.totalMilliseconds - this.lastMoveRight > 5
-    )
-      this.moveLeft(o.gameTime, me)
-    else if (
-      me.physics.center.x < stateToWatch.pos.x - me.physics.diameter / 10.0 &&
-      o.gameTime.totalGameTime.totalMilliseconds - this.lastMoveLeft > 5
-    )
-      this.moveRight(o.gameTime, me)
-    else this.moveRationally(o.gameTime, me, 0.0)
+      this.j(o)
+      this.moveRight(o)
+    } else {
+      this.tryToGetToX(o, stateToWatch.pos.x, stateToWatch.time, REACTION_TIME_MS)
+    }
 
     const timeTillJump = me.getTimeToJumpToHeight(o.gameGravity.y, stateToWatch.pos.y)
 
     // When is it safe to jump?
     //1. when there's no known landing
-    if (stateToWatch.time < timeTillJump && !landingOnMySide.isKnown) {
-      this.jmp(o)
+    if (stateToWatch.time < timeTillJump && !landingOnMySide) {
+      this.j(o)
     }
     //2. when there's 1 known landing
     let count = 0
@@ -111,7 +109,7 @@ class WhiteAi extends AiBase {
       }
     }
     if (count <= 1 && stateToWatch.time < timeTillJump) {
-      this.jmp(o)
+      this.j(o)
     }
   }
 }

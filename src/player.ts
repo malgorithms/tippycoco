@@ -16,7 +16,9 @@ class Player {
   public targetXVel: number // desired speed, accelerates towards
   public xSpringConstant: number
   private _jumpCount: number
+  private _isInJumpPosition: boolean
   constructor(o: NewPlayerArg) {
+    this._isInJumpPosition = false
     this._jumpCount = 0
     this.physics = new CircularObject(vec.zero(), vec.zero(), o.diameter, o.mass, 0, 0, o.gravityMultiplier)
     this.maxVel = o.maxVel
@@ -25,6 +27,12 @@ class Player {
   }
   public get jumpCount() {
     return this._jumpCount
+  }
+  public get isInJumpPosition() {
+    return this._isInJumpPosition
+  }
+  public setIsInJumpPosition(canJump: boolean) {
+    this._isInJumpPosition = canJump
   }
   public deepCopy(): Player {
     const sp = new Player({
@@ -43,8 +51,10 @@ class Player {
     return sp
   }
   public jump(): void {
-    this._jumpCount++
-    this.physics.vel.y = this.maxVel.y
+    if (this.isInJumpPosition) {
+      this._jumpCount++
+      this.physics.vel.y = this.maxVel.y
+    }
   }
   public grow(dt: number, vel: number) {
     const oldDiameter = this.physics.diameter

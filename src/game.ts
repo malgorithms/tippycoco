@@ -39,8 +39,8 @@ class Game {
   private isContentLoadedYet = false
 
   public accumulatedGamePlayTime = 0 // How much the clock has run this game, in seconds, excluding pauses and between points
-  public accumulatedStateTime = 0 // Time accumulated since last gamestate change
-  public accumulatedPointTime = 0 // Accumulated play time this point (persists even if pausing it to go to menu)
+  public accumulatedStateSeconds = 0 // Time accumulated since last gamestate change
+  public accumulatedPointSeconds = 0 // Accumulated play time this point (persists even if pausing it to go to menu)
   private whenStartedDateTime = Date.now()
 
   constructor(targetDiv: HTMLDivElement, contentLoadMonitor: ContentLoadMonitor) {
@@ -171,7 +171,7 @@ class Game {
     if (gs !== GameState.PreStart) {
       // hello world
     }
-    if (gs !== this.gameState) this.accumulatedStateTime = 0.0
+    if (gs !== this.gameState) this.accumulatedStateSeconds = 0.0
     this.gameState = gs
     if (gs === GameState.PreAction || gs === GameState.Intro1) this.setUpForServe()
     if (
@@ -333,12 +333,12 @@ class Game {
     }
   }
   handleVictoryInputs(): void {
-    if (this.accumulatedStateTime > 1.0 && this.input.wasPostgameProceedJustPushed()) {
+    if (this.accumulatedStateSeconds > 1.0 && this.input.wasPostgameProceedJustPushed()) {
       this.setGameState(GameState.MainMenu)
     }
   }
   handlePointInputs(): void {
-    if (this.accumulatedStateTime > tweakables.timeAfterPointToReturnHome) {
+    if (this.accumulatedStateSeconds > tweakables.timeAfterPointToReturnHome) {
       let allBallsReset = true
       for (const ball of this.gameConfig.balls) {
         if (ball.isAlive && ball.physics.center.y > 0.0 + ball.physics.diameter / 2) {
@@ -351,7 +351,7 @@ class Game {
     }
   }
   handlePreActionInputs(): void {
-    if (this.accumulatedStateTime > 1.0) {
+    if (this.accumulatedStateSeconds > 1.0) {
       this.setGameState(GameState.Action)
     }
   }
@@ -406,7 +406,7 @@ class Game {
       if (this.input.isLeftPressed(playerSide)) player.moveLeft()
       else if (this.input.isRightPressed(playerSide)) player.moveRight()
       else if (thumbstickPos) player.moveRationally(thumbstickPos)
-      if (this.canPlayerJump(player, opponent) && this.input.isJumpPressed(playerSide)) player.jump()
+      if (player.isInJumpPosition && this.input.isJumpPressed(playerSide)) player.jump()
 
       // triggers only register over some threshold as dtermined in tweakables.triggerTolerance
       const lTrigger = this.input.getTrigger(playerSide, 'left')
@@ -428,7 +428,7 @@ class Game {
   }
 
   private canPlayerJump(player: Player, opponent: Player): boolean {
-    if (this.accumulatedStateTime < tweakables.ballPlayerLaunchTime) return false
+    if (this.accumulatedStateSeconds < tweakables.ballPlayerLaunchTime) return false
     else if (player.physics.vel.y > player.maxVel.y / 2) return false
     else if (player.isOnHeight(0.0)) return true
     else if (player.isOnRectangle(this.gameConfig.net)) return true
@@ -442,7 +442,7 @@ class Game {
       if (config.species === PlayerSpecies.Ai) {
         const aiThinkArg: AiThinkArg = {
           gameTime: this.currentGameTime,
-          accumulatedPointTime: this.accumulatedPointTime,
+          accumulatedPointSeconds: this.accumulatedPointSeconds,
           gameConfig: this.gameConfig,
           myPlayerSide: playerSide,
           balls: this.gameConfig.balls,
@@ -459,7 +459,7 @@ class Game {
   }
 
   private setUpForServe(): void {
-    this.accumulatedPointTime = 0.0
+    this.accumulatedPointSeconds = 0.0
     const playerL = this.gameConfig.player(PlayerSide.Left)
     const playerR = this.gameConfig.player(PlayerSide.Right)
 
@@ -500,7 +500,7 @@ class Game {
 
     if (
       ball0.isAlive &&
-      this.accumulatedPointTime > tweakables.ballPlayerLaunchTime &&
+      this.accumulatedPointSeconds > tweakables.ballPlayerLaunchTime &&
       ball0.physics.center.y - ball0.physics.diameter / 2 <= 0.0 &&
       ball0.physics.center.x > this.gameConfig.net.center.x
     ) {
@@ -509,7 +509,7 @@ class Game {
       this.sound.play('pointScored', 0.8, 0.0, -1.0 + 2 * ball0.physics.center.x)
     } else if (
       ball0.isAlive &&
-      this.accumulatedPointTime > tweakables.ballPlayerLaunchTime &&
+      this.accumulatedPointSeconds > tweakables.ballPlayerLaunchTime &&
       ball0.physics.center.y - ball0.physics.diameter / 2 <= 0.0 &&
       ball0.physics.center.x < this.gameConfig.net.center.x
     ) {
@@ -519,7 +519,7 @@ class Game {
     }
     if (
       ball1.isAlive &&
-      this.accumulatedPointTime > tweakables.ballPlayerLaunchTime &&
+      this.accumulatedPointSeconds > tweakables.ballPlayerLaunchTime &&
       ball1.physics.center.y - ball1.physics.diameter / 2 <= 0.0 &&
       ball1.physics.center.x > this.gameConfig.net.center.x
     ) {
@@ -528,7 +528,7 @@ class Game {
       this.sound.play('pointScored', 0.8, 0.0, -1.0 + 2 * ball1.physics.center.x)
     } else if (
       ball1.isAlive &&
-      this.accumulatedPointTime > tweakables.ballPlayerLaunchTime &&
+      this.accumulatedPointSeconds > tweakables.ballPlayerLaunchTime &&
       ball1.physics.center.y - ball1.physics.diameter / 2 <= 0.0 &&
       ball1.physics.center.x < this.gameConfig.net.center.x
     ) {
@@ -596,14 +596,14 @@ class Game {
     for (const playerSide of [PlayerSide.Left, PlayerSide.Right]) {
       const p = this.gameConfig.player(playerSide)
       // Constrain Player to Floor. In the first second of the game they float up from it. After that they stick above it.
-      if (this.accumulatedPointTime > tweakables.ballPlayerLaunchTime && p.physics.center.y < 0.0) {
+      if (this.accumulatedPointSeconds > tweakables.ballPlayerLaunchTime && p.physics.center.y < 0.0) {
         p.physics.center.y = 0.0
         if (this.gameState === GameState.Action && p.physics.vel.y < 0) p.physics.vel.y = 0
       }
 
       // Don't let left player pass under the net in beginning of point
       if (
-        this.accumulatedPointTime < tweakables.ballPlayerLaunchTime &&
+        this.accumulatedPointSeconds < tweakables.ballPlayerLaunchTime &&
         playerSide === PlayerSide.Left &&
         p.physics.center.x + p.physics.diameter / 2 >= this.gameConfig.net.center.x - this.gameConfig.net.width / 2
       ) {
@@ -611,7 +611,7 @@ class Game {
       }
       // Don't let right player pass under the net in beginning of point
       if (
-        this.accumulatedPointTime < tweakables.ballPlayerLaunchTime &&
+        this.accumulatedPointSeconds < tweakables.ballPlayerLaunchTime &&
         playerSide === PlayerSide.Right &&
         p.physics.center.x - p.physics.diameter / 2 <= this.gameConfig.net.center.x + this.gameConfig.net.width / 2
       ) {
@@ -777,7 +777,7 @@ class Game {
   }
   private postPointStep(): void {
     // For the first moments, don't move anything, but give ball & players big velocities
-    if (this.accumulatedStateTime < tweakables.timeAfterPointToFreeze) {
+    if (this.accumulatedStateSeconds < tweakables.timeAfterPointToFreeze) {
       for (const ball of this.gameConfig.balls) {
         if (ball.isAlive) {
           ball.physics.vel = {x: 0, y: ball.maxSpeed}
@@ -803,7 +803,7 @@ class Game {
           let xDestination = this.whoseServe === PlayerSide.Left ? 0.25 : 0.75
           if (isTwoBallGame) xDestination = 0.75 - 0.5 * i
           const xDistance = xDestination - ball.physics.center.x
-          const timeTillStateSwitch = tweakables.timeAfterPointToReturnHome - this.accumulatedStateTime
+          const timeTillStateSwitch = tweakables.timeAfterPointToReturnHome - this.accumulatedStateSeconds
           ball.physics.vel.x = (2 * xDistance) / timeTillStateSwitch
           ball.stepPositionAndOrientation(dt)
         }
@@ -815,7 +815,7 @@ class Game {
           player.stepVelocity(dt, tweakables.gameGravity)
           const xDestination = playerSide === PlayerSide.Left ? 0.25 : 0.75
           const xDistance = xDestination - player.physics.center.x
-          const timeTillStateSwitch = tweakables.timeAfterPointToReturnHome - this.accumulatedStateTime
+          const timeTillStateSwitch = tweakables.timeAfterPointToReturnHome - this.accumulatedStateSeconds
           player.physics.vel.x = (2 * xDistance) / timeTillStateSwitch
           player.stepPosition(dt)
         }
@@ -830,9 +830,11 @@ class Game {
       for (const playerSide of [PlayerSide.Left, PlayerSide.Right]) {
         const config = this.gameConfig.playerConfig(playerSide)
         const player = this.gameConfig.player(playerSide)
+        const opponent = player === this.playerLeft ? this.playerRight : this.playerLeft
         if (config.species !== PlayerSpecies.Off) {
           player.stepVelocity(dt, tweakables.gameGravity)
           player.stepPosition(dt)
+          player.setIsInJumpPosition(this.canPlayerJump(player, opponent))
         }
       }
       for (const ball of this.gameConfig.balls) {
@@ -1013,8 +1015,8 @@ class Game {
     this.handleUniversalInputs()
 
     const dt = gameTime.elapsedGameTime.totalMilliseconds / 1000
-    this.accumulatedStateTime += dt
-    if (this.gameState === GameState.Action) this.accumulatedPointTime += dt
+    this.accumulatedStateSeconds += dt
+    if (this.gameState === GameState.Action) this.accumulatedPointSeconds += dt
 
     switch (this.gameState) {
       case GameState.Action:

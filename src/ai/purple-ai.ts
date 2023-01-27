@@ -1,79 +1,73 @@
-import {unknownState} from '../future-prediction'
-import {FutureState, PlayerSide} from '../types'
-import {AiBase, AiThinkArg} from './base'
-//
-// TODO: replace that this is just using a green AI.
-//
+import {AiBase, AiThinkArg, FutureBall} from './base'
+
+const REACTION_TIME_MS = 25 // seconds
 
 class PurpleAi extends AiBase {
   constructor() {
     super()
   }
+  private timeTillICanReachLanding(o: AiThinkArg) {
+    const landing = this.getNextBallHittingOnMySide(o)
+    if (!landing) return Infinity
+    return Math.abs(landing.pos.x - o.me.physics.center.x) / o.me.maxVel.x
+  }
+
   public think(o: AiThinkArg): void {
     const me = o.me
-    const dt = o.gameTime.elapsedGameTime.totalSeconds
 
-    if (o.accumulatedPointTime < 1.0) return
-    PurpleAi.goToSize(dt, me, 0.0)
+    if (o.accumulatedPointSeconds < 1.0) return
+    // Gonna shrink as small as possible
+    this.goToSize(o, 0)
 
     if (o.gameConfig.balls[0].physics.vel.x == 0 && o.gameConfig.balls[0].physics.center.x == 0.25) {
       // could have it do some kind of taunting here
       return
     }
 
-    let stateToWatch: FutureState = unknownState()
-    const enteringMyRange = this.getNextBallEnteringMyJumpRange(o, o.myPlayerSide)
-    const amLeft = o.myPlayerSide === PlayerSide.Left
-    const landingOnMySide = this.getNextBallHittingOnMySide(o, o.myPlayerSide)
-    const timeToLanding = Math.abs(landingOnMySide.pos.x - me.physics.center.x) / me.maxVel.x
-
-    if (landingOnMySide.isKnown && (!enteringMyRange.isKnown || landingOnMySide.time < timeToLanding + 0.1)) {
+    const enteringMyRange = this.getNextBallEnteringMyJumpRange(o)
+    const landingOnMySide = this.getNextBallHittingOnMySide(o)
+    const timeToGetThere = this.timeTillICanReachLanding(o)
+    let stateToWatch: FutureBall | null = null
+    if (landingOnMySide && (!enteringMyRange || landingOnMySide.time < timeToGetThere + 0.1)) {
       stateToWatch = landingOnMySide
-      stateToWatch.pos.x += ((amLeft ? -1.0 : 1.0) * me.physics.diameter) / 6.0
-    } else if (enteringMyRange.isKnown) {
-      stateToWatch = stateToWatch = enteringMyRange
-      stateToWatch.pos.x += ((amLeft ? -1.0 : 1.0) * me.physics.diameter) / 6.0
+      stateToWatch.pos.x -= 0.16 * me.physics.diameter
+    } else if (enteringMyRange) {
+      stateToWatch = enteringMyRange
+      stateToWatch.pos.x -= 0.16 * me.physics.diameter
     }
 
     // What to do if we have no idea
-    if (!stateToWatch?.isKnown) {
+    if (!stateToWatch) {
       // Half the time go to the top of the net. The other half, do other crap.
-      if ((o.accumulatedPointTime / 10) % 2 == 1) {
+      if ((o.accumulatedPointSeconds / 10) % 2 == 1) {
         if (me.physics.center.x > o.gameConfig.net.center.x + o.gameConfig.net.width / 2) {
-          PurpleAi.jumpIfOkay(me)
-          this.moveLeft(o.gameTime, me)
+          this.jumpIfPossible(o)
+          this.moveLeft(o)
         } else if (me.physics.center.x < o.gameConfig.net.center.x - o.gameConfig.net.width / 2) {
-          PurpleAi.jumpIfOkay(me)
-          this.moveRight(o.gameTime, me)
+          this.jumpIfPossible(o)
+          this.moveRight(o)
         } else {
-          this.moveRationally(o.gameTime, me, (o.gameConfig.net.center.x - me.physics.center.x) / (o.gameConfig.net.width / 2))
+          const speed = (o.gameConfig.net.center.x - me.physics.center.x) / (o.gameConfig.net.width / 2)
+          this.moveRationally(o, speed)
         }
       } else {
-        if (me.physics.center.x < o.gameConfig.net.center.x + o.gameConfig.net.width / 2 + (2 * me.physics.diameter) / 3)
-          this.moveRight(o.gameTime, me)
-        else if (me.physics.center.x > 1.0 - (2 * me.physics.diameter) / 3) this.moveLeft(o.gameTime, me)
-        else this.moveRationally(o.gameTime, me, 0.0)
+        if (me.physics.center.x < o.gameConfig.net.center.x + o.gameConfig.net.width / 2 + (2 * me.physics.diameter) / 3) this.moveRight(o)
+        else if (me.physics.center.x > 1.0 - (2 * me.physics.diameter) / 3) this.moveLeft(o)
+        else {
+          //console.log(1)
+          this.stopMoving(o)
+        }
       }
-
       return
     }
-
     // At this point we know we have a state to watch
-    if (!amLeft && me.physics.center.x < o.gameConfig.net.center.x - o.gameConfig.net.width / 2) {
+    if (me.physics.center.x < o.gameConfig.net.center.x - o.gameConfig.net.width / 2) {
       // keep me on my side of net
-      PurpleAi.jumpIfOkay(me)
-      this.moveRight(o.gameTime, me)
-    } else if (
-      me.physics.center.x > stateToWatch.pos.x + me.physics.diameter / 10.0 &&
-      o.gameTime.totalGameTime.totalMilliseconds - this.lastMoveRight > 5
-    )
-      this.moveLeft(o.gameTime, me)
-    else if (
-      me.physics.center.x < stateToWatch.pos.x - me.physics.diameter / 10.0 &&
-      o.gameTime.totalGameTime.totalMilliseconds - this.lastMoveLeft > 5
-    )
-      this.moveRight(o.gameTime, me)
-    else this.moveRationally(o.gameTime, me, 0.0)
+      this.jumpIfPossible(o)
+      this.moveRight(o)
+    } else {
+      this.tryToGetToX(o, stateToWatch.pos.x, stateToWatch.time, REACTION_TIME_MS)
+    }
   }
 }
 export {PurpleAi as _PurpleAi}

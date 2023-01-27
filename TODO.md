@@ -2,6 +2,7 @@
 
 Stuff
 
+- check out white ai mirror maneuver
 - more characters?
 - menu redesign:
   - bot template support
@@ -11,7 +12,6 @@ Stuff
 - code quality and technical debt:
   - move all hard-coded constants into existing tweakables.ts. What a mess.
   - clean up all the player and playerconfig iterations in game.ts
-  - AI code is ugly
 - firefox on mac:
   - controller lag
   - button mappings different from chrome & safari
@@ -27,11 +27,13 @@ Stuff
   - explore higher physicsDt / predictionDt
 - better intro with them emerging from the ground, possibly launching debris
 - sound improvements:
+  - ball hitting ground sound
   - if ball bounces in rapid succession (fast volley?) pitch increases
   - fix ding off flower...too bell-like, echoey. Also too much pan for headphones
   - growth/shrink sounds:
     - breathe in/out, with pitch by speed?
     - fix bug where it persists on game pause or end
+- better action after ball hitting ground (maybe not freezing? keeps bouncing?)
 - exiting game shouldn't cause reload
 
 Before launching
