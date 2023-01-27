@@ -37,6 +37,11 @@ const vec = {
     }
   },
 }
+function randomByteHexString(numBytes: number) {
+  return Array.from(crypto.getRandomValues(new Uint8Array(numBytes)))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
+}
 const aspectRatio = (t: Texture2D): number => t.width / t.height
 
-export {timeout, vec, aspectRatio, sign}
+export {timeout, vec, aspectRatio, sign, randomByteHexString}

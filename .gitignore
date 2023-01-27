@@ -4,3 +4,4 @@ tests.config.ts
 yarn-error.log
 tsconfig.tsbuildinfo
 debug/
+games.log

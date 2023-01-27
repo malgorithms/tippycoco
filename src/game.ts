@@ -254,7 +254,6 @@ class Game {
   }
 
   private startNewGame(numBalls: number, ai: AiBase | null) {
-    persistence.incGamesStarted()
     this.resetScores()
     this.resetPlayers()
     this.whoseServe = ai || Math.random() < 0.5 ? PlayerSide.Left : PlayerSide.Right
@@ -262,6 +261,8 @@ class Game {
     this.playerLeftCfg.species = PlayerSpecies.Human
     this.playerRightCfg.species = ai ? PlayerSpecies.Ai : PlayerSpecies.Human
     this.playerRightCfg.ai = ai
+    const aiName = ai ? aiToName(ai) : undefined
+    persistence.incGamesStarted(numBalls, this.playerRightCfg.species, aiName)
     this.accumulatedGamePlayTime = 0.0
     this.gameConfig.balls[1].isAlive = numBalls === 2
     this.display.atmosphere.changeSkyForOpponent(this.playerRightCfg, 1)

@@ -10,6 +10,8 @@
 
 import {AiName, aiNames} from './ai/ai'
 import constants from './constants'
+import {PlayerSpecies} from './player'
+import {randomByteHexString} from './utils'
 
 type AiRecord = {
   wins: number
@@ -31,6 +33,7 @@ type PersistentGameData = {
     completed: number
   }
   aiRecord: AiRecordDict
+  playerId: string
 }
 type PartialGameData = Partial<PersistentGameData>
 
@@ -43,6 +46,7 @@ class Persistence {
     const d = this.data
     console.log(`You have played T.C.F.T.G. ${d.games.completed} time(s) in the last ${hoursAgo.toFixed(1)} hours`)
     console.log(this.data)
+    this.log('ready to play.')
   }
   public get data(): PersistentGameData {
     let o: PartialGameData = {}
@@ -61,6 +65,7 @@ class Persistence {
         completed: o.games?.completed ?? 0,
       },
       aiRecord: this.emptyAiRecord(),
+      playerId: o.playerId ?? this.randomPlayerId(),
     }
     const prevRecord = o.aiRecord || ({} as AiRecordDict)
     for (const aiName of aiNames) {
@@ -77,7 +82,8 @@ class Persistence {
   private writeData(d: PersistentGameData) {
     window.localStorage.setItem('gameData', JSON.stringify(d))
   }
-  public incGamesStarted() {
+  public incGamesStarted(numBalls: number, species: PlayerSpecies, aiName?: AiName) {
+    this.log(`game started. numBalls=${numBalls}, species=${species}, ai=${aiName || ''}`)
     const d = this.data
     const now = Date.now()
     d.lastPlayed = now
@@ -85,12 +91,14 @@ class Persistence {
     this.writeData(d)
   }
   public incGamesCompleted() {
+    this.log('game complete.')
     const d = this.data
     d.lastPlayed = Date.now()
     d.games.completed++
     this.writeData(d)
   }
   public recordResultAgainstAi(aiName: AiName, win: boolean, shutoutWin: boolean, seconds: number, jumpCount: number) {
+    this.log(`ai result. against=${aiName} win=${win} shutout=${shutoutWin} seconds=${seconds} jumps=${jumpCount}`)
     const d = this.data
     const record = d.aiRecord[aiName]
     console.log({aiName, win, shutoutWin, seconds, jumpCount})
@@ -113,6 +121,21 @@ class Persistence {
       res[aiName] = {wins: 0, losses: 0, shutoutWins: 0, noJumpWins: 0, fastestWin: null}
     }
     return res as AiRecordDict
+  }
+  private randomPlayerId(): string {
+    return randomByteHexString(16)
+  }
+  private log(text: string) {
+    const msg = {action: 'log', playerId: this.data.playerId, text}
+    const post = JSON.stringify(msg)
+    const url = '/api/persistence'
+    const xhr = new XMLHttpRequest()
+    xhr.open('POST', url, true)
+    xhr.setRequestHeader('Content-type', 'application/json; charset=UTF-8')
+    xhr.send(post)
+    xhr.onload = () => {
+      if (xhr.status === 201) console.log(`log: ${text}`)
+    }
   }
 }
 const persistence = new Persistence()
