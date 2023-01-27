@@ -34,12 +34,14 @@ function dateStr(d) {
   return `${year}-${month}-${date}-${hour}:${min}:${sec}.${ms}`
 }
 
+//
+// basic text logging of gameplay
+//
 app.post('/api/persistence', async (req, res) => {
-  const d = new Date()
   const o = req.body
   if (o?.action === 'log') {
-    const txt = (req.body?.text || '-').slice(0, 120)
-    const logLine = `${dateStr(new Date())} [${req.body?.playerId ?? 'unknown'}] ${txt}`
+    const txt = (o?.text || '-').slice(0, 120)
+    const logLine = `${dateStr(new Date())} [${o?.playerId ?? 'unknown'}] ${txt}`
     await fs.appendFile(gameLog, logLine + '\n')
     console.log(logLine)
   }
