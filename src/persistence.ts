@@ -39,8 +39,6 @@ type PartialGameData = Partial<PersistentGameData>
 
 class Persistence {
   constructor() {
-    console.log(`Initializing persistence engine.`)
-    console.log(`Writing cleansed data.`)
     this.writeData(this.data)
     const hoursAgo = (Date.now() - this.data.firstPlayed) / 3600000
     const d = this.data
