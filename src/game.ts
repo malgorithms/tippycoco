@@ -140,10 +140,10 @@ class Game {
   }
   private async runLoop() {
     const startTime = Date.now()
+    let lastDraw = Date.now()
     let lastTime = Date.now()
     while (this.gameState !== GameState.Exit) {
       this.input.updateInputStates()
-      this.updateFps()
       await timeout(constants.gameLoopDelayMs)
       const currTime = Date.now()
       const dt = currTime - lastTime
@@ -158,7 +158,11 @@ class Game {
         },
       }
       this.update(this.currentGameTime)
-      this.draw(this.currentGameTime)
+      if (Date.now() - lastDraw > tweakables.redrawTargetMs) {
+        this.updateFps()
+        this.draw(this.currentGameTime)
+        lastDraw = Date.now()
+      }
       lastTime = currTime
     }
   }
@@ -408,7 +412,7 @@ class Game {
       const rTrigger = this.input.getTrigger(playerSide, 'right')
       const triggerDiff = rTrigger - lTrigger
       if (triggerDiff) {
-        player.grow(dt, triggerDiff * tweakables.triggerGrowthMult)
+        player.grow(dt, triggerDiff * tweakables.input.triggerGrowthMult)
         this.sound.playGrowthNoise(playerSide, triggerDiff)
       } else if (this.input.isShrinkPressed(playerSide)) {
         player.grow(dt, -tweakables.keyboardGrowthRate)

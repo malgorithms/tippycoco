@@ -45,7 +45,6 @@ class Input {
     }
     return null
   }
-
   public wasMenuSelectJustPushed(owner: MenuOwnership): MenuSelectResult {
     const res: MenuSelectResult = {
       selected: false,
@@ -70,17 +69,17 @@ class Input {
   public wasMenuLeftJustPushed(owner: MenuOwnership): boolean {
     if (this.keyboard.anyKeysJustPushed(['KeyA', 'KeyJ', 'ArrowLeft'])) return true
     if (owner) {
-      return this.pads.anyButtonsPushedBy(owner, ['dPadLeft'])
+      return this.pads.anyButtonsPushedBy(owner, ['dPadLeft']) || this.pads.wasThumbstickPushedLeftBy(owner, 'left')
     } else {
-      return this.pads.anyButtonsPushedByAnyone(['dPadLeft'])
+      return this.pads.anyButtonsPushedByAnyone(['dPadLeft']) || this.pads.wasThumbstickPushedLeft('left')
     }
   }
   public wasMenuRightJustPushed(owner: MenuOwnership): boolean {
     if (this.keyboard.anyKeysJustPushed(['KeyD', 'KeyL', 'ArrowRight'])) return true
     if (owner) {
-      return this.pads.anyButtonsPushedBy(owner, ['dPadRight'])
+      return this.pads.anyButtonsPushedBy(owner, ['dPadRight']) || this.pads.wasThumbstickPushedRightBy(owner, 'left')
     } else {
-      return this.pads.anyButtonsPushedByAnyone(['dPadRight'])
+      return this.pads.anyButtonsPushedByAnyone(['dPadRight']) || this.pads.wasThumbstickPushedRight('left')
     }
   }
   public wasMenuExitJustPushed(owner: MenuOwnership): boolean {
@@ -115,7 +114,7 @@ class Input {
    */
   public getTrigger(playerSide: PlayerSide, triggerName: TriggerName): number {
     const x = this.pads.getTrigger(playerSide, triggerName)
-    if (x < tweakables.triggerTolerance) return 0
+    if (x < tweakables.input.triggerTolerance) return 0
     return x
   }
 

@@ -26,6 +26,7 @@ body.in-game {
 }
 .game-canvas {
   margin: 0;
+  cursor: none;
   /* settings this to absolute will cover link overlays such as footer */
   /*position: absolute;*/
 }

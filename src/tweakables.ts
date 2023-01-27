@@ -68,6 +68,11 @@ export default {
     statsRightColFontMult: 1.1,
     statsFastestWinFlames: [60, 45, 30, 15],
   },
+  input: {
+    triggerTolerance: 0.05, // anything this close to 0 is just 0
+    triggerGrowthMult: 0.4, //
+    thumbstickPush: 0.6, // how far stick has to go to be considered pushed like a dpad
+  },
   fpsSampleCount: 100, // loops
   ballPlayerLaunchTime: 0.5,
   winningScore: 5,
@@ -76,12 +81,11 @@ export default {
   timeAfterPointToReturnHome: 1.5,
   predictFutureEvery: 0.3,
   physicsDt: 0.002, // seconds,
+  redrawTargetMs: 4,
   predictionLookahead: 1.75,
   predictionPhysicsDt: 0.004,
   predictionStorageDt: 0.02,
   thumbstickCenterTolerance: 0.05, // anything this close to center is returned as 0
-  triggerTolerance: 0.05, // anything this close to 0 is just 0
-  triggerGrowthMult: 0.4, //
   keyboardGrowthRate: 0.1,
   fontFamilyFallback: "'Courier New', Arial",
   net: {

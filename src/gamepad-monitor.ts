@@ -1,3 +1,4 @@
+import tweakables from './tweakables'
 import {PlayerSide, Vector2} from './types'
 import {timeout} from './utils'
 
@@ -87,6 +88,43 @@ class GamepadMonitor {
     return this.currAssigned.has(playerSide)
   }
 
+  private wasThumbstickPushedXBy(playerSide: PlayerSide, stickName: ThumbstickName, x: number): boolean {
+    const gamepad = this.currAssigned.get(playerSide)
+    if (!gamepad) return false
+    const currState = this.currState.get(gamepad.id)
+    const prevState = this.prevState.get(gamepad.id)
+    let currPushed
+    let prevPushed
+    if (x < 0) {
+      currPushed = currState && currState.thumbSticks[stickName].x < x
+      prevPushed = prevState && prevState.thumbSticks[stickName].x < x
+    } else {
+      currPushed = currState && currState.thumbSticks[stickName].x > x
+      prevPushed = prevState && prevState.thumbSticks[stickName].x > x
+    }
+    if (currPushed && !prevPushed) return true
+    return false
+  }
+  public wasThumbstickPushedLeftBy(playerSide: PlayerSide, thumbstickName: ThumbstickName): boolean {
+    return this.wasThumbstickPushedXBy(playerSide, thumbstickName, -tweakables.input.thumbstickPush)
+  }
+  public wasThumbstickPushedRightBy(playerSide: PlayerSide, thumbstickName: ThumbstickName): boolean {
+    return this.wasThumbstickPushedXBy(playerSide, thumbstickName, tweakables.input.thumbstickPush)
+  }
+  public wasThumbstickPushedLeft(thumbstickName: ThumbstickName) {
+    for (const playerSide of this.currAssigned.keys()) {
+      const found = this.wasThumbstickPushedLeftBy(playerSide, thumbstickName)
+      if (found) return true
+    }
+    return false
+  }
+  public wasThumbstickPushedRight(thumbstickName: ThumbstickName) {
+    for (const playerSide of this.currAssigned.keys()) {
+      const found = this.wasThumbstickPushedRightBy(playerSide, thumbstickName)
+      if (found) return true
+    }
+    return false
+  }
   public anyButtonsPushedByAnyone(buttonNames: ButtonName[]) {
     for (const playerSide of this.currAssigned.keys()) {
       const found = this.anyButtonsPushedBy(playerSide, buttonNames)
