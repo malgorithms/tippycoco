@@ -17,7 +17,7 @@ class PurpleAi extends AiBase {
 
     if (o.accumulatedPointSeconds < 1.0) return
     // Gonna shrink as small as possible
-    this.goToSize(o, 0)
+    this.goToSize(o, 0.25)
 
     if (o.balls[0].physics.vel.x == 0 && o.balls[0].physics.center.x == 0.25) {
       // could have it do some kind of taunting here
@@ -34,6 +34,12 @@ class PurpleAi extends AiBase {
     } else if (enteringMyRange) {
       stateToWatch = enteringMyRange
       stateToWatch.pos.x -= 0.16 * me.physics.diameter
+    }
+
+    for (const b of o.balls) {
+      const deltaX = b.physics.center.x - o.me.physics.center.x
+      const deltaY = b.physics.center.y - o.me.physics.center.y
+      if (deltaX > -0.05 && deltaX < 0 && deltaY < o.me.physics.diameter * 2) this.jumpIfPossible(o)
     }
 
     // What to do if we have no idea
