@@ -1,22 +1,20 @@
+import {AiBase} from './ai/base'
 import {CircularObject} from './circular-object'
 import {RectangularObstacle} from './rectangular-obstacle'
 import tweakables from './tweakables'
-import {NewPlayerArg, Vector2} from './types'
+import {NewPlayerArg, PlayerSpecies, Vector2} from './types'
 import {vec} from './utils'
 
-enum PlayerSpecies {
-  Ai = 'ai',
-  Human = 'human',
-  Off = 'off',
-}
-
 class Player {
+  public readonly xSpringConstant: number
+  public readonly species: PlayerSpecies
+  public readonly ai: AiBase | null
   public physics: CircularObject
   public maxVel: Vector2
   public targetXVel: number // desired speed, accelerates towards
-  public xSpringConstant: number
   private _jumpCount: number
   private _isInJumpPosition: boolean
+
   constructor(o: NewPlayerArg) {
     this._isInJumpPosition = false
     this._jumpCount = 0
@@ -24,6 +22,8 @@ class Player {
     this.maxVel = o.maxVel
     this.targetXVel = o.targetXVel
     this.xSpringConstant = o.xSpringConstant
+    this.species = o.species
+    this.ai = o.ai
   }
   public get jumpCount() {
     return this._jumpCount
@@ -42,6 +42,8 @@ class Player {
       xSpringConstant: this.xSpringConstant,
       gravityMultiplier: this.physics.gravityMultiplier,
       targetXVel: this.targetXVel,
+      species: this.species,
+      ai: this.ai,
     })
     sp.physics.center = vec.copy(this.physics.center)
     sp.physics.vel = vec.copy(this.physics.vel)

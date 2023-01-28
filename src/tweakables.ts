@@ -1,5 +1,5 @@
 import {Color} from './color'
-import {KeyboardControlSet, NewPlayerArg, PlayerKeyboardSet} from './types'
+import {KeyboardControlSet, NewPlayerArg, PlayerKeyboardSet, PlayerSpecies} from './types'
 
 //
 // TODO: extract all the garbage I hard-coded in game.ts into here
@@ -138,13 +138,16 @@ export default {
     minDiameter: 0.09,
     maxDiameter: 0.175,
     jumpSpeedAfterPoint: 1.5,
-    defaultSettings: {
-      maxVel: {x: 0.8, y: 1.2},
-      diameter: 0.15,
-      mass: 3,
-      xSpringConstant: 30,
-      gravityMultiplier: 1.9, // relative to ball
-      targetXVel: 0,
-    } as NewPlayerArg,
+    defaultSettings: () =>
+      ({
+        maxVel: {x: 0.8, y: 1.2},
+        diameter: 0.15,
+        mass: 3,
+        xSpringConstant: 30,
+        gravityMultiplier: 1.9, // relative to ball
+        targetXVel: 0,
+        species: PlayerSpecies.Human,
+        ai: null,
+      } as NewPlayerArg),
   },
 } as const

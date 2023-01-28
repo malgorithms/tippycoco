@@ -5,7 +5,6 @@ import constants from './constants'
 import {ContentLoader} from './content-loader'
 import {Display} from './display'
 import {FuturePrediction, unknownState} from './future-prediction'
-import {GameConfig, PlayerConfiguration} from './game-config'
 import {HistoryManager} from './history-manager'
 import {Input} from './input'
 import {KapowManager, KapowType} from './kapow-manager'
@@ -17,6 +16,7 @@ import {ContentLoadMonitor, FutureState, GameState, GameTime, NewPlayerArg, Play
 import {timeout, vec} from './utils'
 import {persistence} from './persistence'
 import {aiToName} from './ai/ai'
+import {RectangularObstacle} from './rectangular-obstacle'
 
 class Game {
   private content: ContentLoader
@@ -24,7 +24,6 @@ class Game {
   private input!: Input
   private sound!: SoundManager
   private menu!: Menu
-  private gameConfig: GameConfig
   private kapow: KapowManager
   private history: HistoryManager
   private isGamePoint: boolean
@@ -36,6 +35,11 @@ class Game {
   private futurePredictionList: FuturePrediction[] = []
   private lastFuturePrediction: number
   private fpsTimer: number[]
+  private players: Map<PlayerSide, Player> = new Map()
+  public balls: Ball[] = []
+  public net: RectangularObstacle
+  public leftWall: RectangularObstacle
+  public rightWall: RectangularObstacle
 
   public accumulatedGamePlayTime = 0 // How much the clock has run this game, in seconds, excluding pauses and between points
   public accumulatedStateSeconds = 0 // Time accumulated since last gamestate change
@@ -44,45 +48,64 @@ class Game {
 
   constructor(targetDiv: HTMLDivElement, contentLoadMonitor: ContentLoadMonitor) {
     this.content = new ContentLoader(contentLoadMonitor)
-    this.gameConfig = new GameConfig()
     this.kapow = new KapowManager()
     this.history = new HistoryManager()
     this.lastFuturePrediction = 0
     this.fpsTimer = []
     this.isGamePoint = false
     this.currentGameTime = this.emptyGameTime()
+    this.generatePlayers(null)
+    this.setUpBalls(2)
+    this.net = new RectangularObstacle(tweakables.net.center, tweakables.net.width, tweakables.net.height)
+    this.leftWall = new RectangularObstacle(tweakables.leftWall.center, tweakables.leftWall.width, tweakables.leftWall.height)
+    this.rightWall = new RectangularObstacle(tweakables.rightWall.center, tweakables.rightWall.width, tweakables.rightWall.height)
     this.resetScores()
     this.init(targetDiv)
   }
   private async init(targetDiv: HTMLDivElement) {
     this.sound = new SoundManager(this.content)
-    this.display = new Display(this.content, targetDiv)
+    this.display = new Display(this, this.content, targetDiv)
     this.menu = new Menu(this.display)
-    this.input = new Input(this.gameConfig)
+    this.input = new Input(this)
     await this.loadContent()
     this.resetScores()
-    this.resetPlayers()
-
-    this.playerLeftCfg.species = PlayerSpecies.Human
-    this.playerRightCfg.species = PlayerSpecies.Human
-    this.display.atmosphere.changeSkyForOpponent(this.playerRightCfg, 1)
+    this.display.atmosphere.changeSkyForOpponent(this.playerRight, 1)
     this.setGameState(GameState.PreStart)
     this.futurePredictionList = []
-    for (let i = 0; i < this.gameConfig.balls.length; i++) {
+    for (let i = 0; i < this.balls.length; i++) {
       this.futurePredictionList.push(new FuturePrediction())
     }
   }
+  public player(playerSide: PlayerSide) {
+    const p = this.players.get(playerSide)
+    if (!p) throw new Error(`Pfff, player could not load`)
+    return p
+  }
   public get playerLeft(): Player {
-    return this.gameConfig.player(PlayerSide.Left)
+    return this.player(PlayerSide.Left)
   }
   public get playerRight(): Player {
-    return this.gameConfig.player(PlayerSide.Right)
+    return this.player(PlayerSide.Right)
   }
-  public get playerLeftCfg(): PlayerConfiguration {
-    return this.gameConfig.playerConfig(PlayerSide.Left)
+  public get isTwoPlayerGame(): boolean {
+    return this.playerRight.species === PlayerSpecies.Human
   }
-  public get playerRightCfg(): PlayerConfiguration {
-    return this.gameConfig.playerConfig(PlayerSide.Right)
+  private setUpBalls(numBalls: number) {
+    this.balls = []
+    for (let i = 0; i < numBalls; i++) {
+      const xPos = i ? 0.75 : 0.25
+      const yPos = -tweakables.ball.defaultSettings.diameter / 2
+      const b = new Ball(
+        {x: xPos, y: yPos}, // Position
+        {x: 0.0, y: 0.4}, // Velocity
+        tweakables.ball.defaultSettings.diameter,
+        tweakables.ball.defaultSettings.mass,
+        tweakables.ball.defaultSettings.maxSpeed,
+        0.0, // Orientation
+        0.0, // Rotation Speed
+      )
+      this.balls.push(b)
+    }
   }
 
   private emptyGameTime(): GameTime {
@@ -98,25 +121,15 @@ class Game {
     }
   }
 
-  private resetPlayers() {
-    const pLeftConfig: NewPlayerArg = {
-      maxVel: {x: 0.8, y: 1.2},
-      diameter: 0.15,
-      mass: 3,
-      xSpringConstant: 30,
-      gravityMultiplier: 1.9,
-      targetXVel: 0,
+  private generatePlayers(rightPlayerAi: AiBase | null) {
+    const pLeftConfig: NewPlayerArg = tweakables.player.defaultSettings()
+    const pRightConfig: NewPlayerArg = tweakables.player.defaultSettings()
+    if (rightPlayerAi) {
+      pRightConfig.species = PlayerSpecies.Ai
+      pRightConfig.ai = rightPlayerAi
     }
-    const pRightConfig: NewPlayerArg = {
-      maxVel: {x: 0.8, y: 1.2},
-      diameter: 0.15,
-      mass: 3,
-      xSpringConstant: 30,
-      gravityMultiplier: 1.9,
-      targetXVel: 0,
-    }
-    this.gameConfig.setPlayer(PlayerSide.Left, new Player(pLeftConfig))
-    this.gameConfig.setPlayer(PlayerSide.Right, new Player(pRightConfig))
+    this.players.set(PlayerSide.Left, new Player(pLeftConfig))
+    this.players.set(PlayerSide.Right, new Player(pRightConfig))
   }
   public async run() {
     while (!this.content.isLoaded) {
@@ -200,10 +213,9 @@ class Game {
   }
   public getPlayerName(playerSide: PlayerSide): string {
     if (playerSide === PlayerSide.Left) return 'Red'
-    const c = this.gameConfig.playerConfig(playerSide)
-    if (c.species === PlayerSpecies.Human) return 'Blue'
-    else if (c.ai) {
-      return aiToName(c.ai)
+    if (this.playerRight.species === PlayerSpecies.Human) return 'Blue'
+    else if (this.playerRight.ai) {
+      return aiToName(this.playerRight.ai)
     } else {
       return 'Unknown'
     }
@@ -216,7 +228,6 @@ class Game {
     this.display.draw(
       gameTime,
       this.gameState,
-      this.gameConfig,
       this.scoreLeftPlayer,
       this.scoreRightPlayer,
       this.futurePredictionList,
@@ -232,7 +243,7 @@ class Game {
       const secondsInt = Math.floor(seconds - minutesInt * 60)
       const time = minutesInt > 0 ? `${minutesInt} min ${secondsInt} sec` : `${seconds.toFixed(3)} seconds`
       const winner = this.scoreLeftPlayer > this.scoreRightPlayer ? PlayerSide.Left : PlayerSide.Right
-      const summ = winner === PlayerSide.Right && this.playerRightCfg.ai ? `Defeat in ${time}.` : `Victory in ${time}.`
+      const summ = winner === PlayerSide.Right && this.playerRight.ai ? `Defeat in ${time}.` : `Victory in ${time}.`
       const wPlayer = winner === PlayerSide.Right ? this.playerRight : this.playerLeft
       if (wPlayer.jumpCount === 0) {
         this.display.drawCenteredDancingMessage(gameTime, 'Without Jumping!!!', summ, Colors.white)
@@ -252,17 +263,14 @@ class Game {
 
   private startNewGame(numBalls: number, ai: AiBase | null) {
     this.resetScores()
-    this.resetPlayers()
+    this.generatePlayers(ai)
     this.whoseServe = ai || Math.random() < 0.5 ? PlayerSide.Left : PlayerSide.Right
     this.setGameState(GameState.PreAction)
-    this.playerLeftCfg.species = PlayerSpecies.Human
-    this.playerRightCfg.species = ai ? PlayerSpecies.Ai : PlayerSpecies.Human
-    this.playerRightCfg.ai = ai
     const aiName = ai ? aiToName(ai) : undefined
-    persistence.incGamesStarted(numBalls, this.playerRightCfg.species, aiName)
+    persistence.incGamesStarted(numBalls, this.playerRight.species, aiName)
     this.accumulatedGamePlayTime = 0.0
-    this.gameConfig.balls[1].isAlive = numBalls === 2
-    this.display.atmosphere.changeSkyForOpponent(this.playerRightCfg, 1)
+    this.setUpBalls(numBalls)
+    this.display.atmosphere.changeSkyForOpponent(this.playerRight, 1)
   }
 
   private handlePreExitInputs(): void {
@@ -293,7 +301,7 @@ class Game {
     // Exit this state if controller reconnected
     if (
       this.input.doesPlayerHaveGamepad(PlayerSide.Left) &&
-      (this.gameConfig.playerConfig(PlayerSide.Right).species !== PlayerSpecies.Human || this.input.doesPlayerHaveGamepad(PlayerSide.Right))
+      (this.playerRight.species !== PlayerSpecies.Human || this.input.doesPlayerHaveGamepad(PlayerSide.Right))
     ) {
       // Remove menu ownership
       this.menu.setWhoOwnsMenu(null)
@@ -337,7 +345,7 @@ class Game {
   handlePointInputs(): void {
     if (this.accumulatedStateSeconds > tweakables.timeAfterPointToReturnHome) {
       let allBallsReset = true
-      for (const ball of this.gameConfig.liveBalls) {
+      for (const ball of this.balls) {
         if (ball.physics.center.y > 0.0 + ball.physics.diameter / 2) {
           allBallsReset = false
         }
@@ -365,10 +373,7 @@ class Game {
     // AUTO-PAUSING
     if (this.input.wasPlayerJustDisconnectedFromGamepad(PlayerSide.Left)) {
       this.setGameState(GameState.AutoPaused)
-    } else if (
-      this.gameConfig.playerConfig(PlayerSide.Right).species === PlayerSpecies.Human &&
-      this.input.wasPlayerJustDisconnectedFromGamepad(PlayerSide.Right)
-    ) {
+    } else if (this.playerRight.species === PlayerSpecies.Human && this.input.wasPlayerJustDisconnectedFromGamepad(PlayerSide.Right)) {
       this.setGameState(GameState.AutoPaused)
     }
 
@@ -383,11 +388,9 @@ class Game {
     }
   }
   private handleActionInputsForPlayer(dt: number, playerSide: PlayerSide): void {
-    const player = this.gameConfig.player(playerSide)
+    const player = this.player(playerSide)
 
-    const playerConfig = this.gameConfig.playerConfig(playerSide)
-
-    if (playerConfig.species === PlayerSpecies.Human) {
+    if (player.species === PlayerSpecies.Human) {
       player.targetXVel = 0
       // the following is -1...1 and maps to 0 if near the center, as determined
       // in tweakables.thumbstickCenterTolerance
@@ -420,60 +423,61 @@ class Game {
     if (this.accumulatedStateSeconds < tweakables.ballPlayerLaunchTime) return false
     else if (player.physics.vel.y > player.maxVel.y / 2) return false
     else if (player.isOnHeight(0.0)) return true
-    else if (player.isOnRectangle(this.gameConfig.net)) return true
+    else if (player.isOnRectangle(this.net)) return true
     else if (player.isOnPlayer(opponent)) return true
     else return false
   }
 
   private aIStep(): void {
     for (const playerSide of [PlayerSide.Left, PlayerSide.Right]) {
-      const config = this.gameConfig.playerConfig(playerSide)
-      if (config.species === PlayerSpecies.Ai) {
+      const p = this.player(playerSide)
+      if (p.species === PlayerSpecies.Ai) {
         const aiThinkArg: AiThinkArg = {
           gameTime: this.currentGameTime,
           accumulatedPointSeconds: this.accumulatedPointSeconds,
-          gameConfig: this.gameConfig,
           myPlayerSide: playerSide,
-          balls: this.gameConfig.balls,
+          balls: this.balls,
           ballPredictions: this.futurePredictionList,
           gameGravity: tweakables.gameGravity,
           p0Score: this.scoreLeftPlayer,
           p1Score: this.scoreRightPlayer,
           me: playerSide === PlayerSide.Left ? this.playerLeft : this.playerRight,
           opponent: playerSide === PlayerSide.Left ? this.playerRight : this.playerLeft,
+          net: this.net,
         }
-        config.ai?.think(aiThinkArg)
+        p.ai?.think(aiThinkArg)
       }
     }
   }
 
   private setUpForServe(): void {
     this.accumulatedPointSeconds = 0.0
-    const playerL = this.gameConfig.player(PlayerSide.Left)
-    const playerR = this.gameConfig.player(PlayerSide.Right)
+    const playerL = this.playerLeft
+    const playerR = this.playerRight
 
-    playerL.physics.center = {x: 0.25, y: -playerL.physics.diameter / 2 - this.gameConfig.balls[0].physics.diameter}
+    playerL.physics.center = {x: 0.25, y: -playerL.physics.diameter / 2 - this.balls[0].physics.diameter}
     playerL.physics.vel = {x: 0, y: 0}
-    playerL.physics.vel.y = this.gameConfig.balls[0].maxSpeed
+    playerL.physics.vel.y = this.balls[0].maxSpeed
     playerL.targetXVel = 0.0
 
-    playerR.physics.center = {x: 0.75, y: -playerR.physics.diameter / 2 - this.gameConfig.balls[1].physics.diameter}
+    playerR.physics.center = {x: 0.75, y: -playerR.physics.diameter / 2 - this.balls[0].physics.diameter}
     playerR.physics.vel = {x: 0, y: 0}
-    playerR.physics.vel.y = this.gameConfig.balls[0].maxSpeed
+    playerR.physics.vel.y = this.balls[0].maxSpeed
     playerR.targetXVel = 0.0
-    this.gameConfig.net.center.x = 0.5
+    this.net.center.x = 0.5
 
-    this.gameConfig.balls[0].physics.center = {
+    this.balls[0].physics.center = {
       x: this.whoseServe === PlayerSide.Left ? 0.25 : 0.75,
-      y: -this.gameConfig.balls[0].physics.diameter / 2,
+      y: -this.balls[0].physics.diameter / 2,
     }
-    this.gameConfig.balls[0].physics.vel = {x: 0, y: this.gameConfig.balls[0].maxSpeed}
-
-    this.gameConfig.balls[1].physics.center = {
-      x: this.whoseServe === PlayerSide.Left ? 0.75 : 0.25,
-      y: -this.gameConfig.balls[1].physics.diameter / 2,
+    this.balls[0].physics.vel = {x: 0, y: this.balls[0].maxSpeed}
+    if (this.balls[1]) {
+      this.balls[1].physics.center = {
+        x: this.whoseServe === PlayerSide.Left ? 0.75 : 0.25,
+        y: -this.balls[1].physics.diameter / 2,
+      }
+      this.balls[1].physics.vel = {x: 0, y: this.balls[1].maxSpeed}
     }
-    this.gameConfig.balls[1].physics.vel = {x: 0, y: this.gameConfig.balls[1].maxSpeed}
   }
 
   private resetScores(): void {
@@ -484,10 +488,10 @@ class Game {
   checkForAndScorePoint(): boolean {
     let pointForPlayer: PlayerSide | null = null
     const enoughTime = this.accumulatedPointSeconds > tweakables.ballPlayerLaunchTime
-    for (const b of this.gameConfig.liveBalls) {
+    for (const b of this.balls) {
       const isLowEnough = b.physics.center.y - b.physics.diameter / 2 <= 0.0
       if (enoughTime && isLowEnough) {
-        pointForPlayer = b.physics.center.x > this.gameConfig.net.center.x ? PlayerSide.Left : PlayerSide.Right
+        pointForPlayer = b.physics.center.x > this.net.center.x ? PlayerSide.Left : PlayerSide.Right
         this.kapow.addAKapow(KapowType.Score, b.physics.center, Math.random() / 10, 0.4, 0.5)
         this.sound.play('pointScored', 0.8, 0.0, -1.0 + 2 * b.physics.center.x)
       }
@@ -501,9 +505,9 @@ class Game {
       this.sound.stopPlayMusic()
       this.isGamePoint = true
       this.sound.playIfNotPlaying('gamePoint', 0.6, 0.0, 0.0, false)
-      this.display.atmosphere.changeSkyForOpponent(this.playerRightCfg, 0)
+      this.display.atmosphere.changeSkyForOpponent(this.playerRight, 0)
     } else if (pointForPlayer) {
-      this.display.atmosphere.changeSkyForOpponent(this.playerRightCfg, 1)
+      this.display.atmosphere.changeSkyForOpponent(this.playerRight, 1)
     }
     return !!pointForPlayer
   }
@@ -518,8 +522,8 @@ class Game {
       this.scoreLeftPlayer++
       if (this.scoreLeftPlayer >= winScore && this.scoreLeftPlayer - this.scoreRightPlayer >= 2) {
         persistence.incGamesCompleted()
-        if (this.playerRightCfg.ai) {
-          const aiName = aiToName(this.playerRightCfg.ai)
+        if (this.playerRight.ai) {
+          const aiName = aiToName(this.playerRight.ai)
           const wasShutout = this.scoreRightPlayer === 0
           persistence.recordResultAgainstAi(aiName, true, wasShutout, sec, jumps)
         }
@@ -530,8 +534,8 @@ class Game {
       this.scoreRightPlayer++
       if (this.scoreRightPlayer >= winScore && this.scoreRightPlayer - this.scoreLeftPlayer >= 2) {
         persistence.incGamesCompleted()
-        if (this.playerRightCfg.ai) {
-          const aiName = aiToName(this.playerRightCfg.ai)
+        if (this.playerRight.ai) {
+          const aiName = aiToName(this.playerRight.ai)
           persistence.recordResultAgainstAi(aiName, false, false, sec, jumps)
         }
         this.setGameState(GameState.Victory)
@@ -545,7 +549,7 @@ class Game {
   //
   private constrainPlayers(): void {
     for (const playerSide of [PlayerSide.Left, PlayerSide.Right]) {
-      const p = this.gameConfig.player(playerSide)
+      const p = this.player(playerSide)
       // Constrain Player to Floor. In the first second of the game they float up from it. After that they stick above it.
       if (this.accumulatedPointSeconds > tweakables.ballPlayerLaunchTime && p.physics.center.y < 0.0) {
         p.physics.center.y = 0.0
@@ -565,24 +569,21 @@ class Game {
   }
 
   private manageCollisions(isSimulation: boolean): void {
-    const ball0Alive = this.gameConfig.balls[0].isAlive
-    const ball1Alive = this.gameConfig.balls[1].isAlive
-    const ball0 = this.gameConfig.balls[0]
-    const ball1 = this.gameConfig.balls[1]
-    const player0 = this.gameConfig.player(PlayerSide.Left)
-    const player1 = this.gameConfig.player(PlayerSide.Right)
+    const ball0 = this.balls[0]
+    const ball1 = this.balls[1]
+    const playerL = this.playerLeft
+    const playerR = this.playerRight
 
-    // Collide ball0 with walls, net
-    for (const b of this.gameConfig.liveBalls) {
-      if (this.gameConfig.leftWall.handleBallCollision(b.physics, 1.0) && !isSimulation)
+    // Balls with net, walls
+    for (const b of this.balls) {
+      if (this.leftWall.handleBallCollision(b.physics, 1.0) && !isSimulation)
         this.sound.playIfNotPlaying('flowerBounce', 0.6, 0.0, -0.5, false)
-      if (this.gameConfig.rightWall.handleBallCollision(b.physics, 1.0) && !isSimulation)
+      if (this.rightWall.handleBallCollision(b.physics, 1.0) && !isSimulation)
         this.sound.playIfNotPlaying('flowerBounce', 0.6, 0.0, 0.5, false)
-      if (this.gameConfig.net.handleBallCollision(b.physics, 1.0) && !isSimulation)
-        this.sound.playIfNotPlaying('thud', 0.3, 0.0, 0.0, false)
+      if (this.net.handleBallCollision(b.physics, 1.0) && !isSimulation) this.sound.playIfNotPlaying('thud', 0.3, 0.0, 0.0, false)
     }
-    // Ball-Ball collision
-    if (ball0Alive && ball1Alive) {
+    // Balls with other balls
+    if (ball0 && ball1) {
       const collision = ball0.physics.handleHittingOtherCircle(ball1.physics, 1.0)
       if (collision.didCollide && !isSimulation) {
         const hardness = Math.min(1, vec.len(collision.c2MomentumDelta) / ball0.physics.mass / 5.0)
@@ -592,32 +593,25 @@ class Game {
       }
     }
 
-    // Handle net collision for both players
-    this.gameConfig.net.handleBallCollision(player0.physics, 0.0)
-    this.gameConfig.net.handleBallCollision(player1.physics, 0.0)
+    // Players with net
+    this.net.handleBallCollision(playerL.physics, 0.0)
+    this.net.handleBallCollision(playerR.physics, 0.0)
 
-    // Ball-Player collisions
-    if (ball0Alive) {
-      this.manageBallPlayerCollision(isSimulation, ball0, player0, PlayerSide.Left)
-      this.manageBallPlayerCollision(isSimulation, ball0, player1, PlayerSide.Right)
+    // Players with balls
+    for (const b of this.balls) {
+      this.manageBallPlayerCollision(isSimulation, b, playerL, PlayerSide.Left)
+      this.manageBallPlayerCollision(isSimulation, b, playerR, PlayerSide.Right)
     }
-    if (ball1Alive) {
-      this.manageBallPlayerCollision(isSimulation, ball1, player0, PlayerSide.Left)
-      this.manageBallPlayerCollision(isSimulation, ball1, player1, PlayerSide.Right)
-    }
-
-    //
 
     for (const playerSide of [PlayerSide.Left, PlayerSide.Right]) {
       const i = playerSide === PlayerSide.Left ? 0 : 1
-      const player = this.gameConfig.player(playerSide)
-      const playerConfig = this.gameConfig.playerConfig(playerSide)
-      if (this.gameConfig.net.handleBallCollision(player.physics, 0.0) && !isSimulation) {
+      const player = this.player(playerSide)
+      if (this.net.handleBallCollision(player.physics, 0.0) && !isSimulation) {
         // do nothing; but the collision was detected and handled
       }
 
-      if (!isSimulation || playerConfig.species === PlayerSpecies.Human) {
-        for (const ball of this.gameConfig.liveBalls) {
+      if (!isSimulation || player.species === PlayerSpecies.Human) {
+        for (const ball of this.balls) {
           const collision = player.physics.handleHittingOtherCircle(ball.physics, 0.95)
           if (collision.didCollide && !isSimulation) {
             ball.setAngularVel(-300.0 + 600.0 * Math.random() * i)
@@ -635,14 +629,7 @@ class Game {
     }
 
     // Player-player collisions
-    if (
-      this.gameConfig.playerConfig(PlayerSide.Left).species !== PlayerSpecies.Off &&
-      this.gameConfig.playerConfig(PlayerSide.Right).species !== PlayerSpecies.Off
-    ) {
-      const pLeft = this.gameConfig.player(PlayerSide.Left)
-      const pRight = this.gameConfig.player(PlayerSide.Right)
-      pLeft.physics.handleHittingOtherCircle(pRight.physics, 0.0)
-    }
+    playerL.physics.handleHittingOtherCircle(playerR.physics, 0.0)
   }
 
   private manageBallPlayerCollision(isSimulation: boolean, ball: Ball, player: Player, playerSide: PlayerSide): void {
@@ -662,8 +649,8 @@ class Game {
       // Slam
       let amINearnet = false
       if (
-        player.physics.center.x > this.gameConfig.net.center.x - (3 * this.gameConfig.net.width) / 2 &&
-        player.physics.center.x < this.gameConfig.net.center.x + (3 * this.gameConfig.net.width) / 2
+        player.physics.center.x > this.net.center.x - (3 * this.net.width) / 2 &&
+        player.physics.center.x < this.net.center.x + (3 * this.net.width) / 2
       )
         amINearnet = true
       let amIHittingItDown = false
@@ -700,25 +687,22 @@ class Game {
   private postPointStep(): void {
     // For the first moments, don't move anything, but give ball & players big velocities
     if (this.accumulatedStateSeconds < tweakables.timeAfterPointToFreeze) {
-      for (const ball of this.gameConfig.liveBalls) {
+      for (const ball of this.balls) {
         ball.physics.vel = {x: 0, y: ball.maxSpeed}
       }
       for (const playerSide of [PlayerSide.Left, PlayerSide.Right]) {
-        const config = this.gameConfig.playerConfig(playerSide)
-        if (config.species !== PlayerSpecies.Off) {
-          const player = this.gameConfig.player(playerSide)
-          player.physics.vel.x = 0.0
-          player.physics.vel.y = tweakables.player.jumpSpeedAfterPoint
-        }
+        const player = this.player(playerSide)
+        player.physics.vel.x = 0.0
+        player.physics.vel.y = tweakables.player.jumpSpeedAfterPoint
       }
     }
     // Only move it after that
     else {
       const dt = this.currentGameTime.elapsedGameTime.totalMilliseconds / 1000
-      const isTwoBallGame = this.gameConfig.balls[1].isAlive
+      const isTwoBallGame = !!this.balls[1]
       for (let i = 0; i < 2; i++) {
-        const ball = this.gameConfig.balls[i]
-        if (ball.isAlive) {
+        const ball = this.balls[i]
+        if (ball) {
           ball.stepVelocity(dt, vec.scale(tweakables.gameGravity, 1.5), false)
           let xDestination = this.whoseServe === PlayerSide.Left ? 0.25 : 0.75
           if (isTwoBallGame) xDestination = 0.75 - 0.5 * i
@@ -729,16 +713,13 @@ class Game {
         }
       }
       for (const playerSide of [PlayerSide.Left, PlayerSide.Right]) {
-        const config = this.gameConfig.playerConfig(playerSide)
-        const player = this.gameConfig.player(playerSide)
-        if (config.species !== PlayerSpecies.Off) {
-          player.stepVelocity(dt, tweakables.gameGravity)
-          const xDestination = playerSide === PlayerSide.Left ? 0.25 : 0.75
-          const xDistance = xDestination - player.physics.center.x
-          const timeTillStateSwitch = tweakables.timeAfterPointToReturnHome - this.accumulatedStateSeconds
-          player.physics.vel.x = (2 * xDistance) / timeTillStateSwitch
-          player.stepPosition(dt)
-        }
+        const player = this.player(playerSide)
+        player.stepVelocity(dt, tweakables.gameGravity)
+        const xDestination = playerSide === PlayerSide.Left ? 0.25 : 0.75
+        const xDistance = xDestination - player.physics.center.x
+        const timeTillStateSwitch = tweakables.timeAfterPointToReturnHome - this.accumulatedStateSeconds
+        player.physics.vel.x = (2 * xDistance) / timeTillStateSwitch
+        player.stepPosition(dt)
       }
     }
   }
@@ -748,16 +729,13 @@ class Game {
       this.accumulatedGamePlayTime += dt
 
       for (const playerSide of [PlayerSide.Left, PlayerSide.Right]) {
-        const config = this.gameConfig.playerConfig(playerSide)
-        const player = this.gameConfig.player(playerSide)
+        const player = this.player(playerSide)
         const opponent = player === this.playerLeft ? this.playerRight : this.playerLeft
-        if (config.species !== PlayerSpecies.Off) {
-          player.stepVelocity(dt, tweakables.gameGravity)
-          player.stepPosition(dt)
-          player.setIsInJumpPosition(this.canPlayerJump(player, opponent))
-        }
+        player.stepVelocity(dt, tweakables.gameGravity)
+        player.stepPosition(dt)
+        player.setIsInJumpPosition(this.canPlayerJump(player, opponent))
       }
-      for (const ball of this.gameConfig.liveBalls) {
+      for (const ball of this.balls) {
         ball.stepVelocity(dt, tweakables.gameGravity, true)
         ball.stepPositionAndOrientation(dt)
       }
@@ -774,14 +752,11 @@ class Game {
 
   private simulateStep(dt: number): void {
     for (const playerSide of [PlayerSide.Left, PlayerSide.Right]) {
-      const config = this.gameConfig.playerConfig(playerSide)
-      const player = this.gameConfig.player(playerSide)
-      if (config.species !== PlayerSpecies.Off) {
-        player.stepVelocity(dt, tweakables.gameGravity)
-        player.stepPosition(dt)
-      }
+      const player = this.player(playerSide)
+      player.stepVelocity(dt, tweakables.gameGravity)
+      player.stepPosition(dt)
     }
-    for (const ball of this.gameConfig.liveBalls) {
+    for (const ball of this.balls) {
       ball.stepVelocity(dt, tweakables.gameGravity, true)
       ball.stepPositionAndOrientation(dt)
     }
@@ -794,13 +769,13 @@ class Game {
     //return;
     // Copy current player/ball info to temp so we can step w/o wrecking things
     const sbTemp: Ball[] = []
-    const p0Real = this.gameConfig.player(PlayerSide.Left)
-    const p1Real = this.gameConfig.player(PlayerSide.Right)
+    const p0Real = this.player(PlayerSide.Left)
+    const p1Real = this.player(PlayerSide.Right)
     const p0Copy = p0Real.deepCopy()
     const p1Copy = p1Real.deepCopy()
 
-    for (let i = 0; i < this.gameConfig.balls.length; i++) {
-      sbTemp[i] = this.gameConfig.balls[i].deepCopy()
+    for (let i = 0; i < this.balls.length; i++) {
+      sbTemp[i] = this.balls[i].deepCopy()
       const prediction = this.futurePredictionList[i]
       prediction.ballStates = []
       // Clear old important markers
@@ -820,53 +795,46 @@ class Game {
       time += tweakables.predictionPhysicsDt
       const currStep = (time + timeElapsed) / tweakables.predictionStorageDt
       const lastStep = (time - tweakables.predictionPhysicsDt + timeElapsed) / tweakables.predictionStorageDt
-      for (let i = 0; i < this.gameConfig.balls.length; i++) {
-        if (this.gameConfig.balls[i].isAlive) {
-          const state: FutureState = unknownState()
-          const ballPhysics = this.gameConfig.balls[i].physics
-          const prediction = this.futurePredictionList[i]
+      for (let i = 0; i < this.balls.length; i++) {
+        const state: FutureState = unknownState()
+        const ballPhysics = this.balls[i].physics
+        const prediction = this.futurePredictionList[i]
 
-          state.pos = ballPhysics.center
-          state.time = time
-          if (Math.round(currStep) !== Math.round(lastStep)) {
-            prediction.ballStates.push(state)
-          }
-          if (!prediction.ballHittingGround.isKnown && ballPhysics.center.y - ballPhysics.diameter / 2 <= 0.0) {
-            prediction.ballHittingGround = state
-            prediction.ballHittingGround.isKnown = true
-          } else if (
-            !prediction.ballCrossingNet.isKnown &&
-            Math.abs(ballPhysics.center.x - this.gameConfig.net.center.x) < ballPhysics.diameter / 4.0
-          ) {
-            prediction.ballCrossingNet = state
-            prediction.ballCrossingNet.isKnown = true
-          }
-          if (
-            !prediction.ballEnteringJumpRange(PlayerSide.Left).isKnown &&
-            ballPhysics.center.x < this.gameConfig.net.center.x - this.gameConfig.net.width / 2 &&
-            ballPhysics.center.y <= p0JumpHeight
-          ) {
-            state.isKnown = true
-            prediction.setBallEnteringJumpRange(PlayerSide.Left, state)
-          }
-          if (
-            !prediction.ballEnteringJumpRange(PlayerSide.Right).isKnown &&
-            ballPhysics.center.x > this.gameConfig.net.center.x + this.gameConfig.net.width / 2 &&
-            ballPhysics.center.y <= p1JumpHeight
-          ) {
-            state.isKnown = true
-            prediction.setBallEnteringJumpRange(PlayerSide.Right, state)
-          }
+        state.pos = ballPhysics.center
+        state.time = time
+        if (Math.round(currStep) !== Math.round(lastStep)) {
+          prediction.ballStates.push(state)
+        }
+        if (!prediction.ballHittingGround.isKnown && ballPhysics.center.y - ballPhysics.diameter / 2 <= 0.0) {
+          prediction.ballHittingGround = state
+          prediction.ballHittingGround.isKnown = true
+        } else if (!prediction.ballCrossingNet.isKnown && Math.abs(ballPhysics.center.x - this.net.center.x) < ballPhysics.diameter / 4.0) {
+          prediction.ballCrossingNet = state
+          prediction.ballCrossingNet.isKnown = true
+        }
+        if (
+          !prediction.ballEnteringJumpRange(PlayerSide.Left).isKnown &&
+          ballPhysics.center.x < this.net.center.x - this.net.width / 2 &&
+          ballPhysics.center.y <= p0JumpHeight
+        ) {
+          state.isKnown = true
+          prediction.setBallEnteringJumpRange(PlayerSide.Left, state)
+        }
+        if (
+          !prediction.ballEnteringJumpRange(PlayerSide.Right).isKnown &&
+          ballPhysics.center.x > this.net.center.x + this.net.width / 2 &&
+          ballPhysics.center.y <= p1JumpHeight
+        ) {
+          state.isKnown = true
+          prediction.setBallEnteringJumpRange(PlayerSide.Right, state)
         }
       }
     }
-    for (let i = 0; i < this.gameConfig.balls.length; i++) {
-      if (this.gameConfig.balls[i].isAlive) {
-        this.gameConfig.balls[i] = sbTemp[i]
-      }
+    for (let i = 0; i < this.balls.length; i++) {
+      this.balls[i] = sbTemp[i]
     }
-    this.gameConfig.setPlayer(PlayerSide.Left, p0Copy)
-    this.gameConfig.setPlayer(PlayerSide.Right, p1Copy)
+    this.players.set(PlayerSide.Left, p0Copy)
+    this.players.set(PlayerSide.Right, p1Copy)
   }
 
   runActionState(): void {
@@ -918,7 +886,7 @@ class Game {
   }
   public getMaxHeightOfAllBalls(): number {
     let highest = -Infinity
-    for (const ball of this.gameConfig.liveBalls) {
+    for (const ball of this.balls) {
       highest = Math.max(highest, ball.physics.getBallMaxHeight(tweakables.gameGravity))
     }
     return highest

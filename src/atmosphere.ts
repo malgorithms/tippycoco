@@ -2,8 +2,7 @@ import {aiToName} from './ai/ai'
 import {CanvasManager} from './canvas-manager'
 import {Cloud} from './cloud'
 import {Display} from './display'
-import {PlayerConfiguration} from './game-config'
-import {PlayerSpecies} from './player'
+import {Player, PlayerSpecies} from './player'
 import {SpriteBatch} from './sprite-batch'
 import tweakables from './tweakables'
 import {Texture2D} from './types'
@@ -67,9 +66,9 @@ class Atmosphere {
     return currSky.sunniness * f + prevSky.sunniness * (1 - f)
   }
 
-  public skyForOpponent(oppConfig: PlayerConfiguration): SkyAssignment {
-    const ai = oppConfig.ai
-    if (oppConfig.species === PlayerSpecies.Human || !ai) {
+  public skyForOpponent(opp: Player): SkyAssignment {
+    const ai = opp.ai
+    if (opp.species === PlayerSpecies.Human || !ai) {
       return {
         sunny: this.display.getTexture('sunnyBackgroundBlue'),
         dark: this.display.getTexture('darkBackground'),
@@ -99,8 +98,8 @@ class Atmosphere {
       }
   }
 
-  public changeSkyForOpponent(oppConfig: PlayerConfiguration, sunniness: 0 | 1) {
-    const textures = this.skyForOpponent(oppConfig)
+  public changeSkyForOpponent(opp: Player, sunniness: 0 | 1) {
+    const textures = this.skyForOpponent(opp)
     if (sunniness === 1) this.changeSky(textures.sunny, 1)
     else this.changeSky(textures.dark, 0)
   }

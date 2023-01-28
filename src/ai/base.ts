@@ -1,7 +1,7 @@
 import {Ball} from '../ball'
 import {FuturePrediction, unknownState} from '../future-prediction'
-import {GameConfig} from '../game-config'
 import {Player} from '../player'
+import {RectangularObstacle} from '../rectangular-obstacle'
 import tweakables from '../tweakables'
 import {FutureState, GameTime, PlayerSide, Vector2} from '../types'
 
@@ -13,7 +13,6 @@ interface FutureBall {
 interface AiThinkArg {
   gameTime: GameTime
   accumulatedPointSeconds: number
-  gameConfig: GameConfig
   myPlayerSide: PlayerSide
   balls: Ball[]
   ballPredictions: FuturePrediction[]
@@ -22,6 +21,7 @@ interface AiThinkArg {
   p1Score: number
   me: Player
   opponent: Player
+  net: RectangularObstacle
 }
 
 abstract class AiBase {
@@ -69,7 +69,7 @@ abstract class AiBase {
 
   protected getNextBallHittingOnMySide(o: AiThinkArg): FutureBall | null {
     const myPlayerSide = o.myPlayerSide
-    const net = o.gameConfig.net
+    const net = o.net
     const result: FutureState = unknownState()
     const amLeft = myPlayerSide === PlayerSide.Left
     for (const p of o.ballPredictions) {
@@ -113,11 +113,11 @@ abstract class AiBase {
   }
   protected amIAboveTheNet(o: AiThinkArg) {
     const px = o.me.physics.center.x
-    const net = o.gameConfig.net
+    const net = o.net
     return px > net.center.x - net.width / 2 && px < net.center.x + net.width / 2
   }
   protected amIOnTheWrongSide(o: AiThinkArg) {
-    const net = o.gameConfig.net
+    const net = o.net
     const px = o.me.physics.center.x
     if (o.myPlayerSide === PlayerSide.Left) return px > net.center.x + net.width / 2
     else return px < net.center.x - net.width / 2

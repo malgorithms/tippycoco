@@ -1,4 +1,4 @@
-import {GameConfig, PlayerConfiguration} from './game-config'
+import {Game} from './game'
 import {GamepadConnectSummary, GamepadMonitor, TriggerName} from './gamepad-monitor'
 import {KeyboardMonitor} from './keyboard-monitor'
 import {MenuOwnership} from './menu'
@@ -9,11 +9,10 @@ import {MenuSelectResult, PlayerSide} from './types'
 class Input {
   private pads: GamepadMonitor
   private keyboard: KeyboardMonitor
+  private game: Game
 
-  private gameConfig: GameConfig
-
-  public constructor(gameConfig: GameConfig) {
-    this.gameConfig = gameConfig
+  public constructor(game: Game) {
+    this.game = game
     this.pads = new GamepadMonitor()
     this.keyboard = new KeyboardMonitor()
   }
@@ -27,8 +26,7 @@ class Input {
   }
 
   private getKeyboardSet(pI: PlayerSide) {
-    const rightPlayerConfig = this.gameConfig.playerConfig(PlayerSide.Right) as PlayerConfiguration
-    const isTwoPlayerGame = rightPlayerConfig.species === PlayerSpecies.Human
+    const isTwoPlayerGame = this.game.playerRight.species === PlayerSpecies.Human
     const kSet = isTwoPlayerGame ? tweakables.twoPlayerControls : tweakables.onePlayerControls
     if (pI === PlayerSide.Left) return kSet.p0
     else return kSet.p1
