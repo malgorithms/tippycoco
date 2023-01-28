@@ -386,15 +386,7 @@ class Game {
     }
   }
   private handleActionInputsForPlayer(dt: number, playerSide: PlayerSide): void {
-    let player: Player
-    let opponent: Player
-    if (playerSide === PlayerSide.Left) {
-      player = this.gameConfig.player(PlayerSide.Left)
-      opponent = this.gameConfig.player(PlayerSide.Right)
-    } else {
-      player = this.gameConfig.player(PlayerSide.Right)
-      opponent = this.gameConfig.player(PlayerSide.Left)
-    }
+    const player = this.gameConfig.player(playerSide)
 
     const playerConfig = this.gameConfig.playerConfig(playerSide)
 
