@@ -66,7 +66,6 @@ class Game {
 
     this.playerLeftCfg.species = PlayerSpecies.Human
     this.playerRightCfg.species = PlayerSpecies.Human
-    console.log('setting sky')
     this.display.atmosphere.changeSkyForOpponent(this.playerRightCfg, 1)
     this.setGameState(GameState.PreStart)
     this.futurePredictionList = []
@@ -340,8 +339,8 @@ class Game {
   handlePointInputs(): void {
     if (this.accumulatedStateSeconds > tweakables.timeAfterPointToReturnHome) {
       let allBallsReset = true
-      for (const ball of this.gameConfig.balls) {
-        if (ball.isAlive && ball.physics.center.y > 0.0 + ball.physics.diameter / 2) {
+      for (const ball of this.gameConfig.liveBalls) {
+        if (ball.physics.center.y > 0.0 + ball.physics.diameter / 2) {
           allBallsReset = false
         }
       }
@@ -485,55 +484,17 @@ class Game {
   }
 
   checkForAndScorePoint(): boolean {
-    let pointForPlayer0 = false
-    let pointForPlayer1 = false
-    const ball0: Ball = this.gameConfig.balls[0]
-    const ball1: Ball = this.gameConfig.balls[1]
-
-    if (
-      ball0.isAlive &&
-      this.accumulatedPointSeconds > tweakables.ballPlayerLaunchTime &&
-      ball0.physics.center.y - ball0.physics.diameter / 2 <= 0.0 &&
-      ball0.physics.center.x > this.gameConfig.net.center.x
-    ) {
-      pointForPlayer0 = true
-      this.kapowManager.addAKapow(KapowType.Score, ball0.physics.center, Math.random() / 10, 0.4, 0.5)
-      this.sound.play('pointScored', 0.8, 0.0, -1.0 + 2 * ball0.physics.center.x)
-    } else if (
-      ball0.isAlive &&
-      this.accumulatedPointSeconds > tweakables.ballPlayerLaunchTime &&
-      ball0.physics.center.y - ball0.physics.diameter / 2 <= 0.0 &&
-      ball0.physics.center.x < this.gameConfig.net.center.x
-    ) {
-      pointForPlayer1 = true
-      this.kapowManager.addAKapow(KapowType.Score, ball0.physics.center, Math.random() / 10, 0.4, 0.5)
-      this.sound.play('pointScored', 0.8, 0.0, -1.0 + 2 * ball0.physics.center.x)
+    let pointForPlayer: PlayerSide | null = null
+    const enoughTime = this.accumulatedPointSeconds > tweakables.ballPlayerLaunchTime
+    for (const b of this.gameConfig.liveBalls) {
+      const isLowEnough = b.physics.center.y - b.physics.diameter / 2 <= 0.0
+      if (enoughTime && isLowEnough) {
+        pointForPlayer = b.physics.center.x > this.gameConfig.net.center.x ? PlayerSide.Left : PlayerSide.Right
+        this.kapowManager.addAKapow(KapowType.Score, b.physics.center, Math.random() / 10, 0.4, 0.5)
+        this.sound.play('pointScored', 0.8, 0.0, -1.0 + 2 * b.physics.center.x)
+      }
     }
-    if (
-      ball1.isAlive &&
-      this.accumulatedPointSeconds > tweakables.ballPlayerLaunchTime &&
-      ball1.physics.center.y - ball1.physics.diameter / 2 <= 0.0 &&
-      ball1.physics.center.x > this.gameConfig.net.center.x
-    ) {
-      pointForPlayer0 = true
-      this.kapowManager.addAKapow(KapowType.Score, ball1.physics.center, Math.random() / 10, 0.4, 0.5)
-      this.sound.play('pointScored', 0.8, 0.0, -1.0 + 2 * ball1.physics.center.x)
-    } else if (
-      ball1.isAlive &&
-      this.accumulatedPointSeconds > tweakables.ballPlayerLaunchTime &&
-      ball1.physics.center.y - ball1.physics.diameter / 2 <= 0.0 &&
-      ball1.physics.center.x < this.gameConfig.net.center.x
-    ) {
-      pointForPlayer1 = true
-      this.kapowManager.addAKapow(KapowType.Score, ball1.physics.center, Math.random() / 10, 0.4, 0.5)
-      this.sound.play('pointScored', 0.8, 0.0, -1.0 + 2 * ball1.physics.center.x)
-    }
-
-    if (pointForPlayer0) {
-      this.handlePointScored(PlayerSide.Left)
-    } else if (pointForPlayer1) {
-      this.handlePointScored(PlayerSide.Right)
-    }
+    if (pointForPlayer) this.handlePointScored(pointForPlayer)
     if (
       this.gameState === GameState.PointScored &&
       this.scoreLeftPlayer !== this.scoreRightPlayer &&
@@ -543,10 +504,10 @@ class Game {
       this.isGamePoint = true
       this.sound.playIfNotPlaying('gamePoint', 0.6, 0.0, 0.0, false)
       this.display.atmosphere.changeSkyForOpponent(this.playerRightCfg, 0)
-    } else if (pointForPlayer0 || pointForPlayer1) {
+    } else if (pointForPlayer) {
       this.display.atmosphere.changeSkyForOpponent(this.playerRightCfg, 1)
     }
-    return pointForPlayer0 || pointForPlayer1
+    return !!pointForPlayer
   }
 
   private handlePointScored(playerSide: PlayerSide): void {
@@ -592,24 +553,6 @@ class Game {
         p.physics.center.y = 0.0
         if (this.gameState === GameState.Action && p.physics.vel.y < 0) p.physics.vel.y = 0
       }
-
-      // Don't let left player pass under the net in beginning of point
-      if (
-        this.accumulatedPointSeconds < tweakables.ballPlayerLaunchTime &&
-        playerSide === PlayerSide.Left &&
-        p.physics.center.x + p.physics.diameter / 2 >= this.gameConfig.net.center.x - this.gameConfig.net.width / 2
-      ) {
-        p.physics.center.x = this.gameConfig.net.center.x - this.gameConfig.net.width / 2 - p.physics.diameter / 2
-      }
-      // Don't let right player pass under the net in beginning of point
-      if (
-        this.accumulatedPointSeconds < tweakables.ballPlayerLaunchTime &&
-        playerSide === PlayerSide.Right &&
-        p.physics.center.x - p.physics.diameter / 2 <= this.gameConfig.net.center.x + this.gameConfig.net.width / 2
-      ) {
-        p.physics.center.x = this.gameConfig.net.center.x + this.gameConfig.net.width / 2 + p.physics.diameter / 2
-      }
-
       // Left Wall
       if (p.physics.center.x < p.physics.diameter / 2) {
         p.physics.center.x = p.physics.diameter / 2
@@ -632,22 +575,13 @@ class Game {
     const player1 = this.gameConfig.player(PlayerSide.Right)
 
     // Collide ball0 with walls, net
-    if (ball0Alive) {
-      if (this.gameConfig.leftWall.handleBallCollision(ball0.physics, 1.0) && !isSimulation)
-        this.sound.playIfNotPlaying('thud', 0.6, 0.0, -1.0, false)
-      if (this.gameConfig.rightWall.handleBallCollision(ball0.physics, 1.0) && !isSimulation)
-        this.sound.playIfNotPlaying('thud', 0.6, 0.0, 1.0, false)
-      if (this.gameConfig.net.handleBallCollision(ball0.physics, 1.0) && !isSimulation)
-        this.sound.playIfNotPlaying('ding', 0.3, 0.0, 0.0, false)
-    }
-    // Collide ball1 with walls, net
-    if (ball1Alive) {
-      if (this.gameConfig.leftWall.handleBallCollision(ball1.physics, 1.0) && !isSimulation)
-        this.sound.playIfNotPlaying('thud', 1.0, 0.0, 1.0, false)
-      if (this.gameConfig.rightWall.handleBallCollision(ball1.physics, 1.0) && !isSimulation)
-        this.sound.playIfNotPlaying('thud', 1.0, 0.0, -1.0, false)
-      if (this.gameConfig.net.handleBallCollision(ball1.physics, 1.0) && !isSimulation)
-        this.sound.playIfNotPlaying('ding', 0.3, 0.0, 0.0, false)
+    for (const b of this.gameConfig.liveBalls) {
+      if (this.gameConfig.leftWall.handleBallCollision(b.physics, 1.0) && !isSimulation)
+        this.sound.playIfNotPlaying('flowerBounce', 0.6, 0.0, -0.5, false)
+      if (this.gameConfig.rightWall.handleBallCollision(b.physics, 1.0) && !isSimulation)
+        this.sound.playIfNotPlaying('flowerBounce', 0.6, 0.0, 0.5, false)
+      if (this.gameConfig.net.handleBallCollision(b.physics, 1.0) && !isSimulation)
+        this.sound.playIfNotPlaying('thud', 0.3, 0.0, 0.0, false)
     }
     // Ball-Ball collision
     if (ball0Alive && ball1Alive) {
@@ -656,7 +590,7 @@ class Game {
         const hardness = Math.min(1, vec.len(collision.c2MomentumDelta) / ball0.physics.mass / 5.0)
         const pan = collision.pointOfContact.x
         const pitch = 1.0
-        this.sound.playIfNotPlaying('beep', hardness, pitch, pan, false)
+        this.sound.playIfNotPlaying('thud', hardness, pitch, pan, false)
       }
     }
 
@@ -685,20 +619,18 @@ class Game {
       }
 
       if (!isSimulation || playerConfig.species === PlayerSpecies.Human) {
-        for (const ball of this.gameConfig.balls) {
-          if (ball.isAlive) {
-            const collision = player.physics.handleHittingOtherCircle(ball.physics, 0.95)
-            if (collision.didCollide && !isSimulation) {
-              ball.setAngularVel(-300.0 + 600.0 * Math.random() * i)
-              ball.setAngularVel(ball.physics.vel.x)
-              const hardness = Math.min(1, vec.len(collision.c2MomentumDelta) / ball.physics.mass / 5.0)
-              const pan = collision.pointOfContact.x - 0.5
-              const pitch =
-                1.0 -
-                (2.0 * (player.physics.diameter - tweakables.player.minDiameter)) /
-                  (tweakables.player.maxDiameter - tweakables.player.minDiameter)
-              this.sound.playIfNotPlaying('beep', hardness, pitch, pan, false)
-            }
+        for (const ball of this.gameConfig.liveBalls) {
+          const collision = player.physics.handleHittingOtherCircle(ball.physics, 0.95)
+          if (collision.didCollide && !isSimulation) {
+            ball.setAngularVel(-300.0 + 600.0 * Math.random() * i)
+            ball.setAngularVel(ball.physics.vel.x)
+            const hardness = Math.min(1, vec.len(collision.c2MomentumDelta) / ball.physics.mass / 5.0)
+            const pan = collision.pointOfContact.x - 0.5
+            const pitch =
+              1.0 -
+              (2.0 * (player.physics.diameter - tweakables.player.minDiameter)) /
+                (tweakables.player.maxDiameter - tweakables.player.minDiameter)
+            this.sound.playIfNotPlaying('thud', hardness, pitch, pan, false)
           }
         }
       }
@@ -728,7 +660,7 @@ class Game {
       const pitch =
         1.0 -
         (2.0 * (player.physics.diameter - tweakables.player.minDiameter)) / (tweakables.player.maxDiameter - tweakables.player.minDiameter)
-      this.sound.playIfNotPlaying('beep', hardness, pitch, pan, false)
+      this.sound.playIfNotPlaying('thud', hardness, pitch, pan, false)
       // Slam
       let amINearnet = false
       if (
@@ -770,10 +702,8 @@ class Game {
   private postPointStep(): void {
     // For the first moments, don't move anything, but give ball & players big velocities
     if (this.accumulatedStateSeconds < tweakables.timeAfterPointToFreeze) {
-      for (const ball of this.gameConfig.balls) {
-        if (ball.isAlive) {
-          ball.physics.vel = {x: 0, y: ball.maxSpeed}
-        }
+      for (const ball of this.gameConfig.liveBalls) {
+        ball.physics.vel = {x: 0, y: ball.maxSpeed}
       }
       for (const playerSide of [PlayerSide.Left, PlayerSide.Right]) {
         const config = this.gameConfig.playerConfig(playerSide)
@@ -829,11 +759,9 @@ class Game {
           player.setIsInJumpPosition(this.canPlayerJump(player, opponent))
         }
       }
-      for (const ball of this.gameConfig.balls) {
-        if (ball.isAlive) {
-          ball.stepVelocity(dt, tweakables.gameGravity, true)
-          ball.stepPositionAndOrientation(dt)
-        }
+      for (const ball of this.gameConfig.liveBalls) {
+        ball.stepVelocity(dt, tweakables.gameGravity, true)
+        ball.stepPositionAndOrientation(dt)
       }
       this.manageCollisions(false)
       this.handleActionInputs(dt)
@@ -855,11 +783,9 @@ class Game {
         player.stepPosition(dt)
       }
     }
-    for (const ball of this.gameConfig.balls) {
-      if (ball.isAlive) {
-        ball.stepVelocity(dt, tweakables.gameGravity, true)
-        ball.stepPositionAndOrientation(dt)
-      }
+    for (const ball of this.gameConfig.liveBalls) {
+      ball.stepVelocity(dt, tweakables.gameGravity, true)
+      ball.stepPositionAndOrientation(dt)
     }
 
     this.manageCollisions(true)
@@ -993,9 +919,9 @@ class Game {
     }
   }
   public getMaxHeightOfAllBalls(): number {
-    let highest = -10.0
-    for (const ball of this.gameConfig.balls) {
-      if (ball.isAlive) highest = Math.max(highest, ball.physics.getBallMaxHeight(tweakables.gameGravity))
+    let highest = -Infinity
+    for (const ball of this.gameConfig.liveBalls) {
+      highest = Math.max(highest, ball.physics.getBallMaxHeight(tweakables.gameGravity))
     }
     return highest
   }

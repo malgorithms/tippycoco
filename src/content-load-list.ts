@@ -60,8 +60,8 @@ const textureSources = {
 
 const soundSources = {
   themeSong: 'sounds/ThemeSong.mp3',
-  beep: 'sounds/Beep1.mp3',
-  slam: 'sounds/Slam01.mp3',
+  flowerBounce: 'sounds/FlowerBounce.mp3',
+  slam: 'sounds/Slam.mp3',
   rejected: 'sounds/Rejected.mp3',
   pointScored: 'sounds/PointScored.mp3',
   gamePlayMusic: 'sounds/GamePlay02.mp3',
@@ -69,8 +69,8 @@ const soundSources = {
   p2Growth: 'sounds/SizeChange1.mp3',
   p1Shrinkage: 'sounds/SizeChange2.mp3',
   p2Shrinkage: 'sounds/SizeChange1.mp3',
-  thud: 'sounds/Hit1.mp3',
-  ding: 'sounds/Hit1.mp3',
+  thud: 'sounds/Thud.mp3',
+  ceramicBounce: 'sounds/CeramicBounce.mp3',
   gamePoint: 'sounds/GamePoint.mp3',
 } as const
 

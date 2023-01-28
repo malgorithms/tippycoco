@@ -34,6 +34,9 @@ class GameConfig {
   public setPlayer(playerSide: PlayerSide, p: Player): void {
     this.players.set(playerSide, p)
   }
+  public get liveBalls(): Ball[] {
+    return this.balls.filter((b) => b.isAlive)
+  }
   constructor() {
     this.playerConfigurations = new Map()
     this.playerConfigurations.set(PlayerSide.Left, new PlayerConfiguration())
