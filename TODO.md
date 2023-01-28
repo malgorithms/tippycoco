@@ -4,6 +4,8 @@ Stuff
 
 - check out white ai mirror maneuver
 - more characters?
+- orange player
+- figure out rare bug where you can force a ball through the flower
 - menu redesign:
   - bot template support
     - disabled but visible with explanation you can write your own

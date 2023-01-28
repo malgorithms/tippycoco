@@ -1,5 +1,5 @@
 import {Color} from './color'
-import {KeyboardControlSet, NewPlayerArg, PlayerKeyboardSet, PlayerSpecies} from './types'
+import {Dims, KeyboardControlSet, NewPlayerArg, PlayerKeyboardSet, PlayerSpecies} from './types'
 
 //
 // TODO: extract all the garbage I hard-coded in game.ts into here
@@ -35,43 +35,35 @@ const onePlayerControls: KeyboardControlSet = {
   p1: p0Set,
 }
 
+//
+// Understanding game coordinate system. The game is played on its own coordinate system,
+// with the ground at y=0 and the net at x=0.
+// Also, positive Y is UP, unlike how comptuer graphics typically work. So if a ball is at,
+// say (0.5, 0.5), that means it's to the right and up, relative to the net.
+
+// how far between the walls' edges (not their centers). In other words, this describes
+// the width of the playable area.
+const courtWidth = 1.4
+const flowerDims: Dims = {w: 0.258, h: 1.0}
+
 export default {
+  courtWidth,
   twoPlayerControls,
   onePlayerControls,
-  menu: {
-    bpm: 87, // beats per minute for menu, to match the music
-    cardWidth: 0.7, // game units
-    cardWidthSelected: 1.0, // selected card this much bigger
-    cardStackStart: {x: 0.5, y: 0.5},
-    cardStackSpacing: {x: 0.2, y: 0.0}, // game units
-    textOffsetFromCard: {x: 0, y: 0.4},
-    afterChosenOffset: {x: 0.1, y: -0.1},
-    coverColor: new Color(0, 0, 0, 0.3), //  background over existing game
-    deselectedCardColor: new Color(0, 0, 0, 0.2), //  background over existing game
-    cardBall1Pos: {x: 0.85, y: 0.73}, // fractional position on card's surface!
-    cardBall2Pos: {x: 0.85, y: 0.58}, // fractional position on card's surface!
-    lockReasonPos: {x: 0, y: -0.4}, // fraction position on card's surface
-    lockReasonColor: new Color(1, 1, 1, 0.8),
-    cardBallSize: 0.08, // fractional to card's size
-    cardSizeBounce: 0.05,
-    cardRotationBounce: 0.03,
-    subtextOffset: {x: 0, y: -0.2},
-    subtextRelSize: 0.4,
-    lockOverlayAlpha: 0.8,
-    statsPosition: {x: 1, y: -0.1},
-    statsColorLeft: new Color(0.5, 1, 0, 0.5),
-    statsColorRight: new Color(0.5, 1, 0, 0.7),
-    statsColorRightBad: new Color(1, 1, 0, 0.7),
-    statsFontSize: 0.035,
-    statsLineSpacing: 1.2,
-    statsRightColAdj: {x: 0.02, y: -0.0025},
-    statsRightColFontMult: 1.1,
-    statsFastestWinFlames: [60, 45, 30, 15],
-  },
   input: {
     triggerTolerance: 0.05, // anything this close to 0 is just 0
-    triggerGrowthMult: 0.4, //
+    triggerGrowthMult: 0.4, // how fast the trigger scales/shrinks character
     thumbstickPush: 0.6, // how far stick has to go to be considered pushed like a dpad
+  },
+  display: {
+    zoomCenter: {x: 0, y: 0.3},
+    zoomScale: {
+      min: 0.45,
+      start: 0.8,
+      max: 0.8,
+      springConstant: 1,
+      ballHeightMult: 1.05, // multiplies expected ball height by this to get zoom scale
+    },
   },
   fpsSampleCount: 100, // loops
   ballPlayerLaunchTime: 0.5,
@@ -80,28 +72,28 @@ export default {
   timeAfterPointToFreeze: 0.5,
   timeAfterPointToReturnHome: 1.5,
   predictFutureEvery: 0.3,
-  physicsDt: 0.002, // seconds,
-  redrawTargetMs: 4,
-  predictionLookahead: 1.75,
-  predictionPhysicsDt: 0.004,
-  predictionStorageDt: 0.02,
+  physicsDtSec: 0.002, // seconds,
+  redrawTargetMs: 4, // every game loop, if this much time has gone by, we redraw
+  predictionLookaheadSec: 1.75,
+  predictionPhysicsDtSec: 0.004,
+  predictionStorageDtSec: 0.02,
   thumbstickCenterTolerance: 0.05, // anything this close to center is returned as 0
   keyboardGrowthRate: 0.1,
   fontFamilyFallback: "'Courier New', Arial",
   net: {
-    center: {x: 0.5, y: 0.025},
+    center: {x: 0, y: 0.025},
     width: 0.08,
     height: 0.055,
   },
   leftWall: {
-    center: {x: -0.129, y: 0.5},
-    width: 0.2579,
-    height: 1.0,
+    center: {x: -courtWidth / 2 - flowerDims.w / 2, y: 0.5},
+    width: flowerDims.w,
+    height: flowerDims.h,
   },
   rightWall: {
-    center: {x: 1.129, y: 0.5},
-    width: 0.2579,
-    height: 1.0,
+    center: {x: courtWidth / 2 + flowerDims.w / 2, y: 0.5},
+    width: flowerDims.w,
+    height: flowerDims.h,
   },
   floorFront: {
     yMax: 0, // draws below this line
@@ -138,6 +130,16 @@ export default {
     minDiameter: 0.09,
     maxDiameter: 0.175,
     jumpSpeedAfterPoint: 1.5,
+    eyes: {
+      // for drawing
+      leftOffset: {x: -0.113, y: 0.14},
+      rightOffset: {x: 0.1195, y: 0.144},
+      leftScale: 0.24 * 0.67,
+      rightScale: 0.28 * 0.67,
+      blinkScale: 0.1,
+      blinkEveryMs: 5000,
+      blinkDurationMs: 100,
+    },
     defaultSettings: () =>
       ({
         maxVel: {x: 0.8, y: 1.2},
@@ -149,5 +151,35 @@ export default {
         species: PlayerSpecies.Human,
         ai: null,
       } as NewPlayerArg),
+  },
+  menu: {
+    bpm: 87, // beats per minute for menu, to match the music
+    cardWidth: 0.7, // game units
+    cardWidthSelected: 1.0, // selected card this much bigger
+    cardStackStart: {x: 0, y: 0.5},
+    cardStackSpacing: {x: 0.2, y: 0.0},
+    textOffsetFromCard: {x: 0, y: 0.4},
+    afterChosenOffset: {x: 0.1, y: -0.1},
+    coverColor: new Color(0, 0, 0, 0.3), //  background over existing game
+    deselectedCardColor: new Color(0, 0, 0, 0.2), //  background over existing game
+    cardBall1Pos: {x: 0.85, y: 0.73}, // fractional position on card's surface
+    cardBall2Pos: {x: 0.85, y: 0.58}, // fractional position on card's surface
+    lockReasonPos: {x: 0, y: -0.4}, // fraction position on card's surface
+    lockReasonColor: new Color(1, 1, 1, 0.8),
+    cardBallSize: 0.08, // fractional to card's size
+    cardSizeBounce: 0.05,
+    cardRotationBounce: 0.03,
+    subtextOffset: {x: 0, y: -0.2},
+    subtextRelSize: 0.4,
+    lockOverlayAlpha: 0.8,
+    statsPosition: {x: 0.5, y: -0.1},
+    statsColorLeft: new Color(0.5, 1, 0, 0.5),
+    statsColorRight: new Color(0.5, 1, 0, 0.7),
+    statsColorRightBad: new Color(1, 1, 0, 0.7),
+    statsFontSize: 0.035,
+    statsLineSpacing: 1.2,
+    statsRightColAdj: {x: 0.02, y: -0.0025},
+    statsRightColFontMult: 1.1,
+    statsFastestWinFlames: [60, 45, 30, 15],
   },
 } as const

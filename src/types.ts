@@ -43,7 +43,7 @@ interface Vector2 {
   x: number
   y: number
 }
-interface Dim {
+interface Dims {
   w: number
   h: number
 }
@@ -128,7 +128,7 @@ export {
   FutureState,
   CircleCircleCollision,
   NewPlayerArg,
-  Dim,
+  Dims,
   FontDef,
   Texture2D,
   Rectangle,

@@ -1,7 +1,7 @@
 import {CanvasManager} from './canvas-manager'
 import {Color} from './color'
 import tweakables from './tweakables'
-import {Dim, FontDef, Rectangle, TextDrawOptions, Texture2D, Vector2} from './types'
+import {Dims, FontDef, Rectangle, TextDrawOptions, Texture2D, Vector2} from './types'
 
 class SpriteBatch {
   private canvasManager: CanvasManager
@@ -15,7 +15,7 @@ class SpriteBatch {
    * draws a texture on the canvasManager, scaled appropriately. So none of the params
    * here are dealing with pixels, but actual game units
    */
-  public drawTextureCentered(t: Texture2D, center: Vector2, dim: Dim, rot: number, alpha: number) {
+  public drawTextureCentered(t: Texture2D, center: Vector2, dim: Dims, rot: number, alpha: number) {
     if (alpha <= 0) return
     this.ctx.save()
     // we need to rotate about center, so let's translate to center, rotate, translate back
@@ -84,7 +84,7 @@ class SpriteBatch {
    * @param texture2d
    * @returns
    */
-  public autoDim(width: number, texture2d: Texture2D): Dim {
+  public autoDim(width: number, texture2d: Texture2D): Dims {
     return {
       w: width,
       h: (width * texture2d.height) / texture2d.width,

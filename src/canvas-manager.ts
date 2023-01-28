@@ -1,4 +1,5 @@
 import constants from './constants'
+import tweakables from './tweakables'
 import {Rectangle, Vector2} from './types'
 import {vec} from './utils'
 
@@ -7,12 +8,7 @@ class CanvasManager {
   private canvas!: HTMLCanvasElement
   private _ctx!: CanvasRenderingContext2D
 
-  // TODO move to tweakables
-  private minZoomLevel = 0.45
-  private maxZoomLevel = 0.8
-  private zoomSpringConstant = 1
-  private startZoomScale = this.maxZoomLevel // higher number = can see more
-  private center: Vector2
+  private readonly center: Vector2
 
   private _currViewRegion: Rectangle
   private _currOnePixel: number
@@ -20,8 +16,8 @@ class CanvasManager {
   public _zoomScale: number
 
   constructor(parentEl: HTMLElement) {
-    this.center = {x: 0.5, y: 0.3}
-    this._zoomScale = this.startZoomScale
+    this.center = tweakables.display.zoomCenter
+    this._zoomScale = tweakables.display.zoomScale.start
     this.parentEl = parentEl
     this._currViewRegion = {x1: -Infinity, x2: Infinity, y1: -Infinity, y2: Infinity}
     this._currOnePixel = 1
@@ -106,10 +102,11 @@ class CanvasManager {
     return this._currOnePixel * pixels
   }
   public adjustZoomLevel(maxBallHeight: number, dt: number) {
-    let idealZoomLevel = 1.05 * maxBallHeight
-    if (idealZoomLevel > this.maxZoomLevel) idealZoomLevel = this.maxZoomLevel
-    else if (idealZoomLevel < this.minZoomLevel) idealZoomLevel = this.minZoomLevel
-    this._zoomScale += (idealZoomLevel - this.zoomScale) * dt * this.zoomSpringConstant
+    const cfg = tweakables.display.zoomScale
+    let idealZoomLevel = cfg.ballHeightMult * maxBallHeight
+    if (idealZoomLevel > cfg.max) idealZoomLevel = cfg.max
+    else if (idealZoomLevel < cfg.min) idealZoomLevel = cfg.min
+    this._zoomScale += (idealZoomLevel - this.zoomScale) * dt * cfg.springConstant
     this.recalcCtxTransform()
   }
 }
