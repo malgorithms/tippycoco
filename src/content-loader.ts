@@ -10,6 +10,9 @@ class ContentLoader {
     this.audioContext = new AudioContext()
     this.loadMonitor = loadMonitor
   }
+  public get isLoaded() {
+    return this.loadStats.total === this.loadStats.done
+  }
   public async loadFont(familyName: string, url: string, weight: number) {
     this.loadStats.total++
     const ffd: FontFaceDescriptors = {weight: `${weight}`}

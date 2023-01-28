@@ -25,8 +25,8 @@ class Game {
   private sound!: SoundManager
   private menu!: Menu
   private gameConfig: GameConfig
-  private kapowManager: KapowManager
-  private historyManager: HistoryManager
+  private kapow: KapowManager
+  private history: HistoryManager
   private isGamePoint: boolean
   private scoreLeftPlayer = 0
   private scoreRightPlayer = 0
@@ -36,7 +36,6 @@ class Game {
   private futurePredictionList: FuturePrediction[] = []
   private lastFuturePrediction: number
   private fpsTimer: number[]
-  private isContentLoadedYet = false
 
   public accumulatedGamePlayTime = 0 // How much the clock has run this game, in seconds, excluding pauses and between points
   public accumulatedStateSeconds = 0 // Time accumulated since last gamestate change
@@ -46,8 +45,8 @@ class Game {
   constructor(targetDiv: HTMLDivElement, contentLoadMonitor: ContentLoadMonitor) {
     this.content = new ContentLoader(contentLoadMonitor)
     this.gameConfig = new GameConfig()
-    this.kapowManager = new KapowManager()
-    this.historyManager = new HistoryManager()
+    this.kapow = new KapowManager()
+    this.history = new HistoryManager()
     this.lastFuturePrediction = 0
     this.fpsTimer = []
     this.isGamePoint = false
@@ -120,7 +119,7 @@ class Game {
     this.gameConfig.setPlayer(PlayerSide.Right, new Player(pRightConfig))
   }
   public async run() {
-    while (!this.isContentLoadedYet) {
+    while (!this.content.isLoaded) {
       await timeout(100)
     }
     this.whenStartedDateTime = Date.now()
@@ -198,7 +197,6 @@ class Game {
     console.log(`Starting to load content`)
     await Promise.all([this.sound.loadContent(), this.display.loadContent()])
     console.log(`Finished loading content ${Date.now() - contentStartTime}ms`)
-    this.isContentLoadedYet = true
   }
   public getPlayerName(playerSide: PlayerSide): string {
     if (playerSide === PlayerSide.Left) return 'Red'
@@ -213,7 +211,7 @@ class Game {
 
   public draw(gameTime: GameTime): void {
     const dt = gameTime.elapsedGameTime.totalSeconds
-    this.kapowManager.step(dt)
+    this.kapow.step(dt)
 
     this.display.draw(
       gameTime,
@@ -222,7 +220,7 @@ class Game {
       this.scoreLeftPlayer,
       this.scoreRightPlayer,
       this.futurePredictionList,
-      this.kapowManager,
+      this.kapow,
       this.getCurrentFps(),
       this.input.gamepadConnectSummary(),
     )
@@ -490,7 +488,7 @@ class Game {
       const isLowEnough = b.physics.center.y - b.physics.diameter / 2 <= 0.0
       if (enoughTime && isLowEnough) {
         pointForPlayer = b.physics.center.x > this.gameConfig.net.center.x ? PlayerSide.Left : PlayerSide.Right
-        this.kapowManager.addAKapow(KapowType.Score, b.physics.center, Math.random() / 10, 0.4, 0.5)
+        this.kapow.addAKapow(KapowType.Score, b.physics.center, Math.random() / 10, 0.4, 0.5)
         this.sound.play('pointScored', 0.8, 0.0, -1.0 + 2 * b.physics.center.x)
       }
     }
@@ -678,24 +676,24 @@ class Game {
         amINearnet &&
         amIHittingItDown &&
         amIHighEnough &&
-        !this.historyManager.hasHappenedRecently(`Kapow-Slam-Player-${isLeft ? 0 : 1}`, this.currentGameTime, 0.75)
+        !this.history.hasHappenedRecently(`Kapow-Slam-Player-${isLeft ? 0 : 1}`, this.currentGameTime, 0.75)
       ) {
         this.sound.play('slam', 0.3, 0.0, pan)
         const dest: Vector2 = vec.add(collision.pointOfContact, {x: 0, y: 2 * ball.physics.diameter})
-        this.kapowManager.addAKapow(KapowType.Slam, dest, 0.0, 0.3, 1.5)
-        this.historyManager.recordEvent(`Kapow-Slam-Player-${isLeft ? 0 : 1}`, this.currentGameTime)
+        this.kapow.addAKapow(KapowType.Slam, dest, 0.0, 0.3, 1.5)
+        this.history.recordEvent(`Kapow-Slam-Player-${isLeft ? 0 : 1}`, this.currentGameTime)
       }
 
       // Rejection
       else if (
         hardness > 0.1 &&
         ball.physics.vel.y > 1.0 &&
-        this.historyManager.hasHappenedRecently(`Kapow-Slam-Player-${isLeft ? 1 : 0}`, this.currentGameTime, 0.5) &&
-        !this.historyManager.hasHappenedRecently(`Kapow-Rejected-Player-${isLeft ? 0 : 1}`, this.currentGameTime, 0.25)
+        this.history.hasHappenedRecently(`Kapow-Slam-Player-${isLeft ? 1 : 0}`, this.currentGameTime, 0.5) &&
+        !this.history.hasHappenedRecently(`Kapow-Rejected-Player-${isLeft ? 0 : 1}`, this.currentGameTime, 0.25)
       ) {
         this.sound.playIfNotPlaying('rejected', 0.4, 0.1, 0.0, false)
-        this.kapowManager.addAKapow(KapowType.Rejected, collision.pointOfContact, 0.0, 0.3, 1.5)
-        this.historyManager.recordEvent(`Kapow-Rejected-Player-${isLeft ? 0 : 1}`, this.currentGameTime)
+        this.kapow.addAKapow(KapowType.Rejected, collision.pointOfContact, 0.0, 0.3, 1.5)
+        this.history.recordEvent(`Kapow-Rejected-Player-${isLeft ? 0 : 1}`, this.currentGameTime)
       }
     }
   }
