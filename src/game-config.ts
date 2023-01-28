@@ -9,9 +9,8 @@ class PlayerConfiguration {
   public species: PlayerSpecies = PlayerSpecies.Human
   public ai: AiBase | null = null
   public playerSide: PlayerSide = PlayerSide.Left
-  public controllerAssigned: boolean
   constructor() {
-    this.controllerAssigned = false
+    /* gonna remove this */
   }
 }
 class GameConfig {
