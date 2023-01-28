@@ -36,18 +36,18 @@ class BlackAi extends AiBase {
 
     // What to do if we have no idea
     if (!stateToWatch.isKnown) {
-      if (me.physics.center.x < o.gameConfig.net.center.x + o.gameConfig.net.width / 2 + (2 * me.physics.diameter) / 3) this.moveRight(o)
+      if (me.physics.center.x < o.net.center.x + o.net.width / 2 + (2 * me.physics.diameter) / 3) this.moveRight(o)
       else if (me.physics.center.x > 1.0 - (2 * me.physics.diameter) / 3) this.moveLeft(o)
       else this.stopMoving(o)
       return
     }
 
     // Let's add some randomness for stupidity
-    stateToWatch.pos.x += (o.gameConfig.balls[0].physics.diameter * Math.sin(o.gameTime.elapsedGameTime.totalSeconds)) / 6
-    stateToWatch.pos.y += (o.gameConfig.balls[0].physics.diameter * Math.sin(o.gameTime.elapsedGameTime.totalSeconds)) / 6
+    stateToWatch.pos.x += (o.balls[0].physics.diameter * Math.sin(o.gameTime.elapsedGameTime.totalSeconds)) / 6
+    stateToWatch.pos.y += (o.balls[0].physics.diameter * Math.sin(o.gameTime.elapsedGameTime.totalSeconds)) / 6
 
     // At this point we know we have a state to watch
-    if (!amLeft && me.physics.center.x < o.gameConfig.net.center.x - o.gameConfig.net.width / 2) {
+    if (!amLeft && me.physics.center.x < o.net.center.x - o.net.width / 2) {
       // keep me on my side of net
       this.jumpIfPossible(o)
       this.moveRight(o)

@@ -32,8 +32,7 @@ class WhiteAi extends AiBase {
 
     // PERFORM A MIRROR MANEUVER
     if (o.accumulatedPointSeconds < 0.5) {
-      let offset =
-        (me.physics.center.x - o.gameConfig.net.center.x - (o.gameConfig.net.center.x - opponent.physics.center.x)) / me.physics.diameter
+      let offset = (me.physics.center.x - o.net.center.x - (o.net.center.x - opponent.physics.center.x)) / me.physics.diameter
       if (offset > 1.0) offset = 1.0
       if (offset < -1.0) offset = 1.0
       this.moveRationally(o, -offset)
@@ -43,7 +42,7 @@ class WhiteAi extends AiBase {
       return
     }
 
-    if (o.gameConfig.balls[0].physics.vel.x == 0 && o.gameConfig.balls[0].physics.center.x == 0.25) {
+    if (o.balls[0].physics.vel.x == 0 && o.balls[0].physics.center.x == 0.25) {
       // Don't move if opponent hasn't.
       return
     }
@@ -66,18 +65,18 @@ class WhiteAi extends AiBase {
     if (!stateToWatch) {
       // Half the time go to the top of the net. The other half, do other crap.
       if ((Math.floor(o.accumulatedPointSeconds) / 10) % 2 == 1) {
-        if (me.physics.center.x > o.gameConfig.net.center.x + o.gameConfig.net.width / 2) {
+        if (me.physics.center.x > o.net.center.x + o.net.width / 2) {
           this.j(o)
           this.moveLeft(o)
-        } else if (me.physics.center.x < o.gameConfig.net.center.x - o.gameConfig.net.width / 2) {
+        } else if (me.physics.center.x < o.net.center.x - o.net.width / 2) {
           this.j(o)
           this.moveRight(o)
         } else {
-          const speed = (o.gameConfig.net.center.x - me.physics.center.x) / (o.gameConfig.net.width / 2)
+          const speed = (o.net.center.x - me.physics.center.x) / (o.net.width / 2)
           this.moveRationally(o, speed)
         }
       } else {
-        if (me.physics.center.x < o.gameConfig.net.center.x + o.gameConfig.net.width / 2 + (2 * me.physics.diameter) / 3) this.moveRight(o)
+        if (me.physics.center.x < o.net.center.x + o.net.width / 2 + (2 * me.physics.diameter) / 3) this.moveRight(o)
         else if (me.physics.center.x > 1.0 - (2 * me.physics.diameter) / 3) this.moveLeft(o)
         else this.stopMoving(o)
       }
@@ -86,7 +85,7 @@ class WhiteAi extends AiBase {
     }
 
     // At this point we know we have a state to watch
-    if (!amLeft && me.physics.center.x < o.gameConfig.net.center.x - o.gameConfig.net.width / 2) {
+    if (!amLeft && me.physics.center.x < o.net.center.x - o.net.width / 2) {
       // keep me on my side of net
       this.j(o)
       this.moveRight(o)

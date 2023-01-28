@@ -1,8 +1,14 @@
+import {AiBase} from './ai/base'
+
 enum PlayerSide {
   Left = 'left',
   Right = 'right',
 }
 
+enum PlayerSpecies {
+  Ai = 'ai',
+  Human = 'human',
+}
 type ValueOf<T> = T[keyof T]
 
 type KeyboardKeyCode = string // as seen in event.code; ' ' for space, etc.
@@ -68,6 +74,8 @@ interface NewPlayerArg {
   xSpringConstant: number
   gravityMultiplier: number
   targetXVel: number
+  species: PlayerSpecies
+  ai: AiBase | null
 }
 
 interface MenuSelectResult {
@@ -128,4 +136,5 @@ export {
   ContentLoadStats,
   MenuSelectResult,
   TextDrawOptions,
+  PlayerSpecies,
 }

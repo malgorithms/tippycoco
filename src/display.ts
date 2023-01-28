@@ -7,8 +7,7 @@ import {TextureName, textureSources} from './content-load-list'
 import {ContentLoader} from './content-loader'
 import {FontManager, FontName} from './font-manager'
 import {FuturePrediction} from './future-prediction'
-import {GameState} from './game'
-import {GameConfig, PlayerConfiguration} from './game-config'
+import {Game, GameState} from './game'
 import {GamepadConnectSummary} from './gamepad-monitor'
 import {KapowManager, KapowType} from './kapow-manager'
 import {Player, PlayerSpecies} from './player'
@@ -34,8 +33,10 @@ class Display {
   public atmosphere: Atmosphere
   private lastCloudDraw: number
   private _fontManager: FontManager
+  private game: Game
 
-  public constructor(content: ContentLoader, targetDiv: HTMLDivElement) {
+  public constructor(game: Game, content: ContentLoader, targetDiv: HTMLDivElement) {
+    this.game = game
     this.textures = new Map()
     this.lastCloudDraw = 0
     this.inDebugView = false
@@ -96,19 +97,12 @@ class Display {
     if (playerSide == PlayerSide.Left) this.p0ScoreCard.bounce()
     else this.p1ScoreCard.bounce()
   }
-  private isSkarball(pc: PlayerConfiguration): boolean {
-    if (pc.species === PlayerSpecies.Ai && pc.ai && aiToName(pc.ai) === 'White') return true
+  private isSkarball(p: Player): boolean {
+    if (p.species === PlayerSpecies.Ai && p.ai && aiToName(p.ai) === 'White') return true
     return false
   }
-  private drawPlayer(
-    gameTime: GameTime,
-    playerSide: PlayerSide,
-    player: Player,
-    playerConfig: PlayerConfiguration,
-    playerTexture: Texture2D,
-    ball: Ball,
-  ): void {
-    const isSkarball = this.isSkarball(playerConfig)
+  private drawPlayer(gameTime: GameTime, playerSide: PlayerSide, player: Player, playerTexture: Texture2D, ball: Ball): void {
+    const isSkarball = this.isSkarball(player)
     const leftEyeOffset = vec.scale({x: -0.113, y: 0.14}, player.physics.diameter)
     const rightEyeOffset = vec.scale({x: 0.1195, y: 0.144}, player.physics.diameter)
     let leftEyePosition = vec.add(player.physics.center, leftEyeOffset)
@@ -196,9 +190,10 @@ class Display {
     this.spriteBatch.drawStringCentered(text, font, height, destination, color, rot)
   }
 
-  private getPlayerTexture(playerConfig: PlayerConfiguration, playerSide: PlayerSide): Texture2D {
-    if (playerConfig.ai) {
-      const aiName = aiToName(playerConfig.ai)
+  private getPlayerTexture(playerSide: PlayerSide): Texture2D {
+    const player = this.game.player(playerSide)
+    if (player.ai) {
+      const aiName = aiToName(player.ai)
       if (aiName === 'Black') return this.getTexture('blackPlayer')
       else if (aiName === 'Green') return this.getTexture('greenPlayer')
       else if (aiName === 'Purple') return this.getTexture('purplePlayer')
@@ -242,7 +237,6 @@ class Display {
   public draw(
     gameTime: GameTime,
     gameState: GameState,
-    gameConfig: GameConfig,
     p0Score: number,
     p1Score: number,
     futurePrediction: FuturePrediction[],
@@ -251,9 +245,11 @@ class Display {
     gamepadConnectSummary: GamepadConnectSummary,
   ) {
     this.canvasManager.clearCanvas()
+    const playerLeft = this.game.playerLeft
+    const playerRight = this.game.playerRight
     const playerTextures: Map<PlayerSide, Texture2D> = new Map()
-    playerTextures.set(PlayerSide.Left, this.getPlayerTexture(gameConfig.playerConfig(PlayerSide.Left), PlayerSide.Left))
-    playerTextures.set(PlayerSide.Right, this.getPlayerTexture(gameConfig.playerConfig(PlayerSide.Right), PlayerSide.Right))
+    playerTextures.set(PlayerSide.Left, this.getPlayerTexture(PlayerSide.Left))
+    playerTextures.set(PlayerSide.Right, this.getPlayerTexture(PlayerSide.Right))
 
     const dt = (gameTime.totalGameTime.totalMilliseconds - this.lastCloudDraw) / 1000.0
     this.p0ScoreCard.update(dt)
@@ -283,30 +279,27 @@ class Display {
       gameState != GameState.Intro3 &&
       gameState != GameState.MainMenu
     ) {
-      this.drawPlayerShadowBehind(gameConfig.player(PlayerSide.Left))
-      this.drawPlayerShadowBehind(gameConfig.player(PlayerSide.Right))
+      this.drawPlayerShadowBehind(playerLeft)
+      this.drawPlayerShadowBehind(playerRight)
 
       this.drawKapows(kapowManager)
 
-      for (const side of [PlayerSide.Left, PlayerSide.Right]) {
-        const player = gameConfig.player(side)
-        const playerConfig = gameConfig.playerConfig(side)
-        let closestBall = gameConfig.balls[0]
+      for (const playerSide of [PlayerSide.Left, PlayerSide.Right]) {
+        const player = this.game.player(playerSide)
+        let closestBall = this.game.balls[0]
         let closestDistance = Infinity
-        for (const ball of gameConfig.balls) {
-          if (ball.isAlive) {
-            const distance = vec.lenSq(vec.sub(ball.physics.center, player.physics.center))
-            if (distance < closestDistance) {
-              closestDistance = distance
-              closestBall = ball
-            }
+        for (const ball of this.game.balls) {
+          const distance = vec.lenSq(vec.sub(ball.physics.center, player.physics.center))
+          if (distance < closestDistance) {
+            closestDistance = distance
+            closestBall = ball
           }
         }
-        const texture = playerTextures.get(side) ?? this.getTexture('redPlayer')
-        this.drawPlayer(gameTime, side, player, playerConfig, texture, closestBall)
+        const texture = playerTextures.get(playerSide) ?? this.getTexture('redPlayer')
+        this.drawPlayer(gameTime, playerSide, player, texture, closestBall)
       }
-      for (let i = 0; i < gameConfig.balls.length; i++) {
-        this.drawBall(gameConfig.balls[i], i)
+      for (let i = 0; i < this.game.balls.length; i++) {
+        this.drawBall(this.game.balls[i], i)
       }
     }
     this.spriteBatch.drawTextureInRect(
@@ -327,26 +320,20 @@ class Display {
       gameState != GameState.Intro3 &&
       gameState != GameState.MainMenu
     ) {
-      this.drawPlayerShadowFront(gameConfig.player(PlayerSide.Left))
-      this.drawPlayerShadowFront(gameConfig.player(PlayerSide.Right))
+      this.drawPlayerShadowFront(playerLeft)
+      this.drawPlayerShadowFront(playerRight)
     }
 
-    const leftTreeTopWidth = gameConfig.leftWall.width * 2.5
+    const leftTreeTopWidth = this.game.leftWall.width * 2.5
     const leftFlowerTop = this.getTexture('leftFlowerTop')
     const rightFlowerTop = this.getTexture('rightFlowerTop')
     const leftTreeTopHeight = (leftTreeTopWidth * leftFlowerTop.height) / leftFlowerTop.width
-    const rightTreeTopWidth = gameConfig.rightWall.width * 2.5
+    const rightTreeTopWidth = this.game.rightWall.width * 2.5
     const rightTreeTopHeight = (rightTreeTopWidth * rightFlowerTop.height) / rightFlowerTop.width
+    const net = this.game.net
+    this.spriteBatch.drawTextureCentered(this.getTexture('net'), net.center, {w: net.width, h: net.height}, 0, 1)
 
-    this.spriteBatch.drawTextureCentered(
-      this.getTexture('net'),
-      gameConfig.net.center,
-      {w: gameConfig.net.width, h: gameConfig.net.height},
-      0,
-      1,
-    )
-
-    this.drawFlowers(gameConfig, leftTreeTopWidth, leftTreeTopHeight, rightTreeTopWidth, rightTreeTopHeight)
+    this.drawFlowers(leftTreeTopWidth, leftTreeTopHeight, rightTreeTopWidth, rightTreeTopHeight)
 
     if (
       gameState != GameState.MainMenu &&
@@ -360,8 +347,8 @@ class Display {
       this.drawScores(p0Score, p1Score, gameTime)
     }
 
-    this.drawDebugView(gameConfig, futurePrediction, currentFps)
-    this.drawGamepadConnections(gameConfig, gameState, gamepadConnectSummary)
+    this.drawDebugView(futurePrediction, currentFps)
+    this.drawGamepadConnections(gameState, gamepadConnectSummary)
 
     if (gameState == GameState.PreExitMessage) {
       this.drawCenteredDancingMessage(gameTime, 'They went back to the ground.', null, Colors.white)
@@ -377,42 +364,26 @@ class Display {
       this.drawCenteredDancingMessage(gameTime, 'tcftg.com', 'spread the word', Colors.white)
     }
   }
-  private drawFlowers(
-    gameConfig: GameConfig,
-    leftTreeTopWidth: number,
-    leftTreeTopHeight: number,
-    rightTreeTopWidth: number,
-    rightTreeTopHeight: number,
-  ) {
-    this.spriteBatch.drawTextureCentered(
-      this.getTexture('leftFlower'),
-      gameConfig.leftWall.center,
-      {w: gameConfig.leftWall.width, h: gameConfig.leftWall.height},
-      0,
-      1,
-    )
+  private drawFlowers(leftTreeTopWidth: number, leftTreeTopHeight: number, rightTreeTopWidth: number, rightTreeTopHeight: number) {
+    const leftWall = this.game.leftWall
+    const rightWall = this.game.rightWall
+    this.spriteBatch.drawTextureCentered(this.getTexture('leftFlower'), leftWall.center, {w: leftWall.width, h: leftWall.height}, 0, 1)
 
     this.spriteBatch.drawTextureCentered(
       this.getTexture('leftFlowerTop'),
-      {x: gameConfig.leftWall.center.x + gameConfig.leftWall.width / 3, y: gameConfig.leftWall.center.y + gameConfig.leftWall.height / 2},
+      {x: leftWall.center.x + leftWall.width / 3, y: leftWall.center.y + leftWall.height / 2},
       {w: leftTreeTopWidth, h: leftTreeTopHeight},
       0,
       1,
     )
 
-    this.spriteBatch.drawTextureCentered(
-      this.getTexture('rightFlower'),
-      gameConfig.rightWall.center,
-      {w: gameConfig.rightWall.width, h: gameConfig.rightWall.height},
-      0,
-      1,
-    )
+    this.spriteBatch.drawTextureCentered(this.getTexture('rightFlower'), rightWall.center, {w: rightWall.width, h: rightWall.height}, 0, 1)
 
     this.spriteBatch.drawTextureCentered(
       this.getTexture('rightFlowerTop'),
       {
-        x: gameConfig.rightWall.center.x - gameConfig.rightWall.width / 3,
-        y: gameConfig.rightWall.center.y + gameConfig.rightWall.height / 2,
+        x: rightWall.center.x - rightWall.width / 3,
+        y: rightWall.center.y + rightWall.height / 2,
       },
       {w: rightTreeTopWidth, h: rightTreeTopHeight},
       0,
@@ -421,35 +392,14 @@ class Display {
   }
 
   private drawBall(ball: Ball, i: number) {
-    if (ball.isAlive) {
-      if (i % 2 == 0)
-        this.spriteBatch.drawTextureCentered(
-          this.getTexture('ball1'),
-          ball.physics.center,
-          {w: ball.physics.diameter, h: ball.physics.diameter},
-          ball.physics.orientation,
-          1,
-        )
-      else
-        this.spriteBatch.drawTextureCentered(
-          this.getTexture('ball2'),
-          ball.physics.center,
-          {w: ball.physics.diameter, h: ball.physics.diameter},
-          ball.physics.orientation,
-          1,
-        )
-
-      this.spriteBatch.drawTextureCentered(
-        this.getTexture('ballShadow'),
-        ball.physics.center,
-        {w: ball.physics.diameter, h: ball.physics.diameter},
-        0,
-        1,
-      )
-    }
+    const bp = ball.physics
+    if (i % 2 == 0)
+      this.spriteBatch.drawTextureCentered(this.getTexture('ball1'), bp.center, {w: bp.diameter, h: bp.diameter}, bp.orientation, 1)
+    else this.spriteBatch.drawTextureCentered(this.getTexture('ball2'), bp.center, {w: bp.diameter, h: bp.diameter}, bp.orientation, 1)
+    this.spriteBatch.drawTextureCentered(this.getTexture('ballShadow'), bp.center, {w: bp.diameter, h: bp.diameter}, 0, 1)
   }
 
-  private drawGamepadConnections(gameConfig: GameConfig, gameState: GameState, gCS: GamepadConnectSummary) {
+  private drawGamepadConnections(gameState: GameState, gCS: GamepadConnectSummary) {
     const ignore = [GameState.Action, GameState.PreAction, GameState.PointScored]
     if (ignore.includes(gameState)) {
       return
@@ -500,7 +450,7 @@ class Display {
     //console.log(kbLeftRect)
   }
 
-  private drawDebugView(gameConfig: GameConfig, futurePrediction: FuturePrediction[], currentFps: number) {
+  private drawDebugView(futurePrediction: FuturePrediction[], currentFps: number) {
     // draw FPS in bottom rigth corner
     const view = this.canvasManager.viewableRegion
     const onePixel = this.canvasManager.onePixel
@@ -526,7 +476,8 @@ class Display {
 
     if (this.inDebugView) {
       const alpha = (s: FutureState) => 1 - Math.sqrt(s.time / tweakables.predictionLookahead)
-      for (let i = 0; i < gameConfig.balls.length; i++) {
+      for (let i = 0; i < this.game.balls.length; i++) {
+        const ball = this.game.balls[i]
         const prediction = futurePrediction[i]
         for (const state of prediction.ballStates ?? []) {
           this.spriteBatch.drawTextureCentered(this.getTexture('predictionDot'), state.pos, {w: 0.01, h: 0.01}, 0, alpha(state))
@@ -538,7 +489,7 @@ class Display {
             this.spriteBatch.drawTextureCentered(
               this.getTexture('kapowScore'),
               entrance.pos,
-              {w: gameConfig.balls[i].physics.diameter, h: gameConfig.balls[i].physics.diameter},
+              {w: ball.physics.diameter, h: ball.physics.diameter},
               0,
               alpha(entrance),
             )
@@ -548,7 +499,7 @@ class Display {
           this.spriteBatch.drawTextureCentered(
             this.getTexture('kapowScore'),
             prediction.ballHittingGround.pos,
-            {w: gameConfig.balls[i].physics.diameter, h: gameConfig.balls[i].physics.diameter},
+            {w: ball.physics.diameter, h: ball.physics.diameter},
             0,
             alpha(groundHit),
           )

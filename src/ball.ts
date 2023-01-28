@@ -5,20 +5,9 @@ import {vec} from './utils'
 class Ball {
   public physics: CircularObject
   public maxSpeed: number
-  public isAlive: boolean
-  constructor(
-    center: Vector2,
-    vel: Vector2,
-    diameter: number,
-    mass: number,
-    maxSpeed: number,
-    orientation: number,
-    angularVel: number,
-    isAlive: boolean,
-  ) {
+  constructor(center: Vector2, vel: Vector2, diameter: number, mass: number, maxSpeed: number, orientation: number, angularVel: number) {
     this.physics = new CircularObject(center, vel, diameter, mass, orientation, angularVel, 1.0)
     this.maxSpeed = maxSpeed
-    this.isAlive = isAlive
   }
   public deepCopy(): Ball {
     return new Ball(
@@ -29,7 +18,6 @@ class Ball {
       this.maxSpeed,
       this.physics.orientation,
       this.physics.angularVel,
-      this.isAlive,
     )
   }
   public trimSpeedIfNecessary(): void {

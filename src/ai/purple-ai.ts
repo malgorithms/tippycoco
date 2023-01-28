@@ -19,7 +19,7 @@ class PurpleAi extends AiBase {
     // Gonna shrink as small as possible
     this.goToSize(o, 0)
 
-    if (o.gameConfig.balls[0].physics.vel.x == 0 && o.gameConfig.balls[0].physics.center.x == 0.25) {
+    if (o.balls[0].physics.vel.x == 0 && o.balls[0].physics.center.x == 0.25) {
       // could have it do some kind of taunting here
       return
     }
@@ -40,18 +40,18 @@ class PurpleAi extends AiBase {
     if (!stateToWatch) {
       // Half the time go to the top of the net. The other half, do other crap.
       if ((o.accumulatedPointSeconds / 10) % 2 == 1) {
-        if (me.physics.center.x > o.gameConfig.net.center.x + o.gameConfig.net.width / 2) {
+        if (me.physics.center.x > o.net.center.x + o.net.width / 2) {
           this.jumpIfPossible(o)
           this.moveLeft(o)
-        } else if (me.physics.center.x < o.gameConfig.net.center.x - o.gameConfig.net.width / 2) {
+        } else if (me.physics.center.x < o.net.center.x - o.net.width / 2) {
           this.jumpIfPossible(o)
           this.moveRight(o)
         } else {
-          const speed = (o.gameConfig.net.center.x - me.physics.center.x) / (o.gameConfig.net.width / 2)
+          const speed = (o.net.center.x - me.physics.center.x) / (o.net.width / 2)
           this.moveRationally(o, speed)
         }
       } else {
-        if (me.physics.center.x < o.gameConfig.net.center.x + o.gameConfig.net.width / 2 + (2 * me.physics.diameter) / 3) this.moveRight(o)
+        if (me.physics.center.x < o.net.center.x + o.net.width / 2 + (2 * me.physics.diameter) / 3) this.moveRight(o)
         else if (me.physics.center.x > 1.0 - (2 * me.physics.diameter) / 3) this.moveLeft(o)
         else {
           //console.log(1)
@@ -61,7 +61,7 @@ class PurpleAi extends AiBase {
       return
     }
     // At this point we know we have a state to watch
-    if (me.physics.center.x < o.gameConfig.net.center.x - o.gameConfig.net.width / 2) {
+    if (me.physics.center.x < o.net.center.x - o.net.width / 2) {
       // keep me on my side of net
       this.jumpIfPossible(o)
       this.moveRight(o)

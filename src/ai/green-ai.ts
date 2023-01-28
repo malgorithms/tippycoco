@@ -47,8 +47,8 @@ class GreenAi extends AiBase {
         // Let's add some randomness for stupidity, but have that randomness a function of the
         // current time, so it's not flickering all over the place.
         const err = Math.sin(o.gameTime.totalGameTime.totalSeconds)
-        target.pos.x += (o.gameConfig.balls[0].physics.diameter * err) / 1.5
-        target.pos.y += (o.gameConfig.balls[0].physics.diameter * err) / 1.5
+        target.pos.x += (o.balls[0].physics.diameter * err) / 1.5
+        target.pos.y += (o.balls[0].physics.diameter * err) / 1.5
 
         // At this point we know we have a state to watch
         // keep me on my side of net
