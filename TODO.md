@@ -11,9 +11,6 @@ Stuff
     - disabled but visible with explanation you can write your own
     - activated as soon as you edit something like myBot.ts
 - sharing idea: stats page with info in URL!
-- code quality and technical debt:
-  - move all hard-coded constants into existing tweakables.ts. What a mess.
-  - clean up all the player and playerconfig iterations in game.ts
 - firefox on mac:
   - controller lag
   - button mappings different from chrome & safari

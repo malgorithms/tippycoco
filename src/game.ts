@@ -552,8 +552,7 @@ class Game {
   //
   private constrainPlayers(): void {
     const wallBorder = tweakables.courtWidth / 2
-    for (const playerSide of [PlayerSide.Left, PlayerSide.Right]) {
-      const p = this.player(playerSide)
+    for (const p of this.players.values()) {
       // Constrain Player to Floor. In the first second of the game they float up from it. After that they stick above it.
       if (this.accumulatedPointSeconds > tweakables.ballPlayerLaunchTime && p.physics.center.y < 0.0) {
         p.physics.center.y = 0.0
@@ -694,10 +693,9 @@ class Game {
       for (const ball of this.balls) {
         ball.physics.vel = {x: 0, y: ball.maxSpeed}
       }
-      for (const playerSide of [PlayerSide.Left, PlayerSide.Right]) {
-        const player = this.player(playerSide)
-        player.physics.vel.x = 0.0
-        player.physics.vel.y = tweakables.player.jumpSpeedAfterPoint
+      for (const p of this.players.values()) {
+        p.physics.vel.x = 0.0
+        p.physics.vel.y = tweakables.player.jumpSpeedAfterPoint
       }
     }
     // Only move it after that
@@ -755,10 +753,9 @@ class Game {
   }
 
   private simulateStep(dt: number): void {
-    for (const playerSide of [PlayerSide.Left, PlayerSide.Right]) {
-      const player = this.player(playerSide)
-      player.stepVelocity(dt, tweakables.gameGravity)
-      player.stepPosition(dt)
+    for (const p of this.players.values()) {
+      p.stepVelocity(dt, tweakables.gameGravity)
+      p.stepPosition(dt)
     }
     for (const ball of this.balls) {
       ball.stepVelocity(dt, tweakables.gameGravity, true)
