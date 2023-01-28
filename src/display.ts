@@ -102,20 +102,20 @@ class Display {
     return false
   }
   private drawPlayer(gameTime: GameTime, playerSide: PlayerSide, player: Player, playerTexture: Texture2D, ball: Ball): void {
+    const cfg = tweakables.player
     const isSkarball = this.isSkarball(player)
-    const leftEyeOffset = vec.scale({x: -0.113, y: 0.14}, player.physics.diameter)
-    const rightEyeOffset = vec.scale({x: 0.1195, y: 0.144}, player.physics.diameter)
+    const leftEyeOffset = vec.scale(cfg.eyes.leftOffset, player.physics.diameter)
+    const rightEyeOffset = vec.scale(cfg.eyes.rightOffset, player.physics.diameter)
     let leftEyePosition = vec.add(player.physics.center, leftEyeOffset)
     let rightEyePosition = vec.add(player.physics.center, rightEyeOffset)
-    const leftEyeWidth = 0.24 * 0.67 * player.physics.diameter
-    const rightEyeWidth = 0.28 * 0.67 * player.physics.diameter
+    const leftEyeWidth = cfg.eyes.leftScale * player.physics.diameter
+    const rightEyeWidth = cfg.eyes.rightScale * player.physics.diameter
     let leftEyeHeight = leftEyeWidth
     let rightEyeHeight = rightEyeWidth
     const blinkFactor = playerSide === PlayerSide.Left ? 0 : 1
-    if (gameTime.totalGameTime.totalMilliseconds % (5000 + blinkFactor * 1000) < 200) {
-      // blink
-      leftEyeHeight *= 0.1
-      rightEyeHeight *= isSkarball ? 1 : 0.1
+    if (gameTime.totalGameTime.totalMilliseconds % (cfg.eyes.blinkEveryMs + blinkFactor * 1000) < cfg.eyes.blinkDurationMs) {
+      leftEyeHeight *= cfg.eyes.blinkScale
+      rightEyeHeight *= isSkarball ? 1 : cfg.eyes.blinkScale
     }
     let leftEyeBallDirection = vec.sub(ball.physics.center, leftEyePosition)
     let rightEyeBallDirection = vec.sub(ball.physics.center, rightEyePosition)
@@ -165,7 +165,7 @@ class Display {
     const height = avgHeight + heightDev * (Math.sin(beat / 2) / 2 + Math.sin(beat / 8) / 2)
     const rot = -0.1 + Math.sin(beat) / 50.0
 
-    const destination: Vector2 = {x: 0.5, y: 0.4}
+    const destination: Vector2 = {x: 0, y: 0.4}
     const shift = this.canvasManager.pixelWidth(2)
     const subFont = this.font('regular')
     const font = this.font('extraBold')
@@ -205,7 +205,7 @@ class Display {
   public drawControllerInstructions() {
     // TODO
     const c = new Color(1, 1, 1, 1)
-    this.spriteBatch.drawStringCentered('Instructions soon', this.font('regular'), 0.1, {x: 0.5, y: 0.1}, c, 0)
+    this.spriteBatch.drawStringCentered('Instructions soon', this.font('regular'), 0.1, {x: 0, y: 0.1}, c, 0)
   }
 
   public drawCredits(gameTime: GameTime) {
@@ -475,7 +475,7 @@ class Display {
     currentFps
 
     if (this.inDebugView) {
-      const alpha = (s: FutureState) => 1 - Math.sqrt(s.time / tweakables.predictionLookahead)
+      const alpha = (s: FutureState) => 1 - Math.sqrt(s.time / tweakables.predictionLookaheadSec)
       for (let i = 0; i < this.game.balls.length; i++) {
         const ball = this.game.balls[i]
         const prediction = futurePrediction[i]

@@ -93,7 +93,7 @@ class Game {
   private setUpBalls(numBalls: number) {
     this.balls = []
     for (let i = 0; i < numBalls; i++) {
-      const xPos = i ? 0.75 : 0.25
+      const xPos = i ? this.serveFrom : -this.serveFrom
       const yPos = -tweakables.ball.defaultSettings.diameter / 2
       const b = new Ball(
         {x: xPos, y: yPos}, // Position
@@ -450,30 +450,33 @@ class Game {
     }
   }
 
+  private get serveFrom() {
+    return tweakables.courtWidth / 4
+  }
+
   private setUpForServe(): void {
     this.accumulatedPointSeconds = 0.0
     const playerL = this.playerLeft
     const playerR = this.playerRight
 
-    playerL.physics.center = {x: 0.25, y: -playerL.physics.diameter / 2 - this.balls[0].physics.diameter}
+    playerL.physics.center = {x: -this.serveFrom, y: -playerL.physics.diameter / 2 - this.balls[0].physics.diameter}
     playerL.physics.vel = {x: 0, y: 0}
     playerL.physics.vel.y = this.balls[0].maxSpeed
     playerL.targetXVel = 0.0
 
-    playerR.physics.center = {x: 0.75, y: -playerR.physics.diameter / 2 - this.balls[0].physics.diameter}
+    playerR.physics.center = {x: this.serveFrom, y: -playerR.physics.diameter / 2 - this.balls[0].physics.diameter}
     playerR.physics.vel = {x: 0, y: 0}
     playerR.physics.vel.y = this.balls[0].maxSpeed
     playerR.targetXVel = 0.0
-    this.net.center.x = 0.5
 
     this.balls[0].physics.center = {
-      x: this.whoseServe === PlayerSide.Left ? 0.25 : 0.75,
+      x: this.whoseServe === PlayerSide.Left ? -this.serveFrom : this.serveFrom,
       y: -this.balls[0].physics.diameter / 2,
     }
     this.balls[0].physics.vel = {x: 0, y: this.balls[0].maxSpeed}
     if (this.balls[1]) {
       this.balls[1].physics.center = {
-        x: this.whoseServe === PlayerSide.Left ? 0.75 : 0.25,
+        x: this.whoseServe === PlayerSide.Left ? this.serveFrom : -this.serveFrom,
         y: -this.balls[1].physics.diameter / 2,
       }
       this.balls[1].physics.vel = {x: 0, y: this.balls[1].maxSpeed}
@@ -493,7 +496,7 @@ class Game {
       if (enoughTime && isLowEnough) {
         pointForPlayer = b.physics.center.x > this.net.center.x ? PlayerSide.Left : PlayerSide.Right
         this.kapow.addAKapow(KapowType.Score, b.physics.center, Math.random() / 10, 0.4, 0.5)
-        this.sound.play('pointScored', 0.8, 0.0, -1.0 + 2 * b.physics.center.x)
+        this.sound.play('pointScored', 0.8, 0.0, b.physics.center.x)
       }
     }
     if (pointForPlayer) this.handlePointScored(pointForPlayer)
@@ -548,6 +551,7 @@ class Game {
   // Keeps players constrained by floor and walls
   //
   private constrainPlayers(): void {
+    const wallBorder = tweakables.courtWidth / 2
     for (const playerSide of [PlayerSide.Left, PlayerSide.Right]) {
       const p = this.player(playerSide)
       // Constrain Player to Floor. In the first second of the game they float up from it. After that they stick above it.
@@ -556,13 +560,13 @@ class Game {
         if (this.gameState === GameState.Action && p.physics.vel.y < 0) p.physics.vel.y = 0
       }
       // Left Wall
-      if (p.physics.center.x < p.physics.diameter / 2) {
-        p.physics.center.x = p.physics.diameter / 2
+      if (p.physics.center.x < -wallBorder + p.physics.diameter / 2) {
+        p.physics.center.x = -wallBorder + p.physics.diameter / 2
         if (p.physics.vel.x < 0) p.physics.vel.x = 0.0
       }
       // Right Wall
-      if (p.physics.center.x > 1.0 - p.physics.diameter / 2) {
-        p.physics.center.x = 1.0 - p.physics.diameter / 2
+      if (p.physics.center.x > wallBorder - p.physics.diameter / 2) {
+        p.physics.center.x = wallBorder - p.physics.diameter / 2
         if (p.physics.vel.x > 0) p.physics.vel.x = 0.0
       }
     }
@@ -617,7 +621,7 @@ class Game {
             ball.setAngularVel(-300.0 + 600.0 * Math.random() * i)
             ball.setAngularVel(ball.physics.vel.x)
             const hardness = Math.min(1, vec.len(collision.c2MomentumDelta) / ball.physics.mass / 5.0)
-            const pan = collision.pointOfContact.x - 0.5
+            const pan = collision.pointOfContact.x
             const pitch =
               1.0 -
               (2.0 * (player.physics.diameter - tweakables.player.minDiameter)) /
@@ -641,7 +645,7 @@ class Game {
       ball.setAngularVel(-300.0 + 600.0 * Math.random() * (isLeft ? 0 : 1))
       ball.setAngularVel(ball.physics.vel.x)
       const hardness = Math.min(1, vec.len(collision.c2MomentumDelta) / ball.physics.mass / 5.0)
-      const pan = collision.pointOfContact.x - 0.5
+      const pan = collision.pointOfContact.x
       const pitch =
         1.0 -
         (2.0 * (player.physics.diameter - tweakables.player.minDiameter)) / (tweakables.player.maxDiameter - tweakables.player.minDiameter)
@@ -704,8 +708,8 @@ class Game {
         const ball = this.balls[i]
         if (ball) {
           ball.stepVelocity(dt, vec.scale(tweakables.gameGravity, 1.5), false)
-          let xDestination = this.whoseServe === PlayerSide.Left ? 0.25 : 0.75
-          if (isTwoBallGame) xDestination = 0.75 - 0.5 * i
+          let xDestination = this.whoseServe === PlayerSide.Left ? -this.serveFrom : this.serveFrom
+          if (isTwoBallGame) xDestination = this.serveFrom - 2 * this.serveFrom
           const xDistance = xDestination - ball.physics.center.x
           const timeTillStateSwitch = tweakables.timeAfterPointToReturnHome - this.accumulatedStateSeconds
           ball.physics.vel.x = (2 * xDistance) / timeTillStateSwitch
@@ -715,7 +719,7 @@ class Game {
       for (const playerSide of [PlayerSide.Left, PlayerSide.Right]) {
         const player = this.player(playerSide)
         player.stepVelocity(dt, tweakables.gameGravity)
-        const xDestination = playerSide === PlayerSide.Left ? 0.25 : 0.75
+        const xDestination = playerSide === PlayerSide.Left ? -this.serveFrom : this.serveFrom
         const xDistance = xDestination - player.physics.center.x
         const timeTillStateSwitch = tweakables.timeAfterPointToReturnHome - this.accumulatedStateSeconds
         player.physics.vel.x = (2 * xDistance) / timeTillStateSwitch
@@ -790,11 +794,11 @@ class Game {
     const p0JumpHeight = p0Copy.getMaxJumpHeight(tweakables.gameGravity.y)
     const p1JumpHeight = p1Copy.getMaxJumpHeight(tweakables.gameGravity.y)
 
-    while (time < tweakables.predictionLookahead) {
-      this.simulateStep(tweakables.predictionPhysicsDt)
-      time += tweakables.predictionPhysicsDt
-      const currStep = (time + timeElapsed) / tweakables.predictionStorageDt
-      const lastStep = (time - tweakables.predictionPhysicsDt + timeElapsed) / tweakables.predictionStorageDt
+    while (time < tweakables.predictionLookaheadSec) {
+      this.simulateStep(tweakables.predictionPhysicsDtSec)
+      time += tweakables.predictionPhysicsDtSec
+      const currStep = (time + timeElapsed) / tweakables.predictionStorageDtSec
+      const lastStep = (time - tweakables.predictionPhysicsDtSec + timeElapsed) / tweakables.predictionStorageDtSec
       for (let i = 0; i < this.balls.length; i++) {
         const state: FutureState = unknownState()
         const ballPhysics = this.balls[i].physics
@@ -848,7 +852,7 @@ class Game {
     }
 
     while (physicsDtCountdown > 0 && !pointScored) {
-      const delta = Math.min(tweakables.physicsDt, physicsDtCountdown)
+      const delta = Math.min(tweakables.physicsDtSec, physicsDtCountdown)
       pointScored = this.gameStep(delta)
       physicsDtCountdown -= delta
     }
