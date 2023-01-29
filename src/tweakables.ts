@@ -43,7 +43,7 @@ const onePlayerControls: KeyboardControlSet = {
 
 // how far between the walls' edges (not their centers). In other words, this describes
 // the width of the playable area.
-const courtWidth = 1.4
+const courtWidth = 1.1
 const flowerDims: Dims = {w: 0.258, h: 1.0}
 
 export default {
