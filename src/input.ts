@@ -7,14 +7,12 @@ import tweakables from './tweakables'
 import {MenuSelectResult, PlayerSide} from './types'
 
 class Input {
-  private pads: GamepadMonitor
-  private keyboard: KeyboardMonitor
+  private pads = new GamepadMonitor()
+  private keyboard = new KeyboardMonitor()
   private game: Game
 
   public constructor(game: Game) {
     this.game = game
-    this.pads = new GamepadMonitor()
-    this.keyboard = new KeyboardMonitor()
   }
   public updateInputStates(): void {
     this.keyboard.update()

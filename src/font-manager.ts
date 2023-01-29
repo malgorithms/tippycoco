@@ -11,11 +11,10 @@ type FontName = keyof typeof fontsToLoad
 class FontManager {
   private content: ContentLoader
 
-  private fonts: Map<string, FontDef>
+  private fonts = new Map<string, FontDef>()
 
   public constructor(content: ContentLoader) {
     this.content = content
-    this.fonts = new Map()
   }
   public getFont(name: FontName): FontDef {
     const res = this.fonts.get(name)

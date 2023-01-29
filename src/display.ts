@@ -21,32 +21,27 @@ class Display {
   private canvasManager: CanvasManager
 
   // Properties
-  public inDebugView: boolean
+  public inDebugView = false
 
   // Members
-  private p0ScoreCard: ScoreCard
-  private p1ScoreCard: ScoreCard
+  private p0ScoreCard = new ScoreCard()
+  private p1ScoreCard = new ScoreCard()
 
   private content: ContentLoader
   private spriteBatch: SpriteBatch
-  private textures: Map<TextureName, Texture2D>
-  public atmosphere: Atmosphere
-  private lastCloudDraw: number
-  private _fontManager: FontManager
+  private textures = new Map<TextureName, Texture2D>()
+  private _atmosphere: Atmosphere
+  private lastCloudDraw = 0
+  private fontManager: FontManager
   private game: Game
 
   public constructor(game: Game, content: ContentLoader, targetDiv: HTMLDivElement) {
     this.game = game
-    this.textures = new Map()
-    this.lastCloudDraw = 0
-    this.inDebugView = false
     this.content = content
     this.canvasManager = new CanvasManager(targetDiv)
     this.spriteBatch = new SpriteBatch(this.canvasManager)
-    this.atmosphere = new Atmosphere(this, this.canvasManager)
-    this.p0ScoreCard = new ScoreCard()
-    this.p1ScoreCard = new ScoreCard()
-    this._fontManager = new FontManager(this.content)
+    this._atmosphere = new Atmosphere(this, this.canvasManager)
+    this.fontManager = new FontManager(this.content)
   }
 
   private async loadTexture(path: string, name: TextureName) {
@@ -54,7 +49,10 @@ class Display {
     this.textures.set(name, t)
   }
   public font(fontName: FontName) {
-    return this._fontManager.getFont(fontName)
+    return this.fontManager.getFont(fontName)
+  }
+  public get atmosphere(): Atmosphere {
+    return this._atmosphere
   }
   public get canvasWidth(): number {
     return this.canvasManager.width
@@ -76,7 +74,7 @@ class Display {
 
     const p: Promise<any>[] = []
     Object.entries(textureSources).forEach(([name, source]) => p.push(this.loadTexture(source, name as TextureName)))
-    p.push(this._fontManager.loadContent())
+    p.push(this.fontManager.loadContent())
     await Promise.all(p)
 
     for (let i = 1; i <= 5; i++) {
@@ -404,7 +402,7 @@ class Display {
     if (ignore.includes(gameState)) {
       return
     }
-    // draw FPS in bottom rigth corner
+    // draw FPS in bottom right corner
     const view = this.canvasManager.viewableRegion
     //const tlC = this.canvasManager.topLeftCorner()
     //const bRC = this.canvasManager.bottomRightCorner()
@@ -451,7 +449,7 @@ class Display {
   }
 
   private drawDebugView(futurePrediction: FuturePrediction[], currentFps: number) {
-    // draw FPS in bottom rigth corner
+    // draw FPS in bottom right corner
     const view = this.canvasManager.viewableRegion
     const onePixel = this.canvasManager.onePixel
     const height = onePixel * 36

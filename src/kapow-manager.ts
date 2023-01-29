@@ -7,7 +7,7 @@ enum KapowType {
 }
 
 class Kapow {
-  public age: number
+  public age = 0
   public maxAge: number
   public kapowType: KapowType
   public pos: Vector2
@@ -15,7 +15,6 @@ class Kapow {
   public size: number
 
   public constructor(kapowType: KapowType, pos: Vector2, orientation: number, size: number, maxAge: number) {
-    this.age = 0
     this.kapowType = kapowType
     this.pos = pos
     this.orientation = orientation
@@ -32,10 +31,7 @@ class Kapow {
   }
 }
 class KapowManager {
-  public kapows: Kapow[]
-  public constructor() {
-    this.kapows = []
-  }
+  public kapows = new Array<Kapow>()
   public addAKapow(kapowType: KapowType, pos: Vector2, orientation: number, size: number, maxAge: number): void {
     this.kapows.push(new Kapow(kapowType, pos, orientation, size, maxAge))
   }

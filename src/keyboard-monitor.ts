@@ -1,9 +1,7 @@
 class KeyboardMonitor {
-  keysDown: Set<string>
-  prevKeysDown: Set<string>
+  keysDown = new Set<string>()
+  prevKeysDown = new Set<string>()
   constructor() {
-    this.keysDown = new Set()
-    this.prevKeysDown = new Set()
     this.registerKeyboardActions()
   }
 

@@ -5,9 +5,8 @@ import {timeout} from './utils'
 class PageUi {
   parentEl: HTMLElement
   private game: Game
-  private runYet: boolean
+  private runYet = false
   constructor(parentEl: HTMLElement) {
-    this.runYet = false
     this.parentEl = parentEl
     this.generateLayout()
     const canvasWrapper = this.findDiv('#game-canvas-wrapper')

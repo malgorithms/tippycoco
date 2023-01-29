@@ -24,41 +24,32 @@ class Game {
   private input!: Input
   private sound!: SoundManager
   private menu!: Menu
-  private kapow: KapowManager
-  private history: HistoryManager
-  private isGamePoint: boolean
+  private kapow = new KapowManager()
+  private history = new HistoryManager()
+  private isGamePoint = false
   private scoreLeftPlayer = 0
   private scoreRightPlayer = 0
   private whoseServe = PlayerSide.Left
   private gameState = GameState.PreStart
-  private currentGameTime: GameTime
+  private currentGameTime = this.emptyGameTime()
   private futurePredictionList: FuturePrediction[] = []
-  private lastFuturePrediction: number
-  private fpsTimer: number[]
+  private lastFuturePrediction = 0
+  private fpsTimer = new Array<number>()
   private players: Map<PlayerSide, Player> = new Map()
   public balls: Ball[] = []
-  public net: RectangularObstacle
-  public leftWall: RectangularObstacle
-  public rightWall: RectangularObstacle
+  public net = new RectangularObstacle(tweakables.net.center, tweakables.net.width, tweakables.net.height)
+  public leftWall = new RectangularObstacle(tweakables.leftWall.center, tweakables.leftWall.width, tweakables.leftWall.height)
+  public rightWall = new RectangularObstacle(tweakables.rightWall.center, tweakables.rightWall.width, tweakables.rightWall.height)
 
-  public accumulatedGamePlayTime = 0 // How much the clock has run this game, in seconds, excluding pauses and between points
-  public accumulatedStateSeconds = 0 // Time accumulated since last gamestate change
-  public accumulatedPointSeconds = 0 // Accumulated play time this point (persists even if pausing it to go to menu)
+  private accumulatedGamePlayTime = 0 // How much the clock has run this game, in seconds, excluding pauses and between points
+  private accumulatedStateSeconds = 0 // Time accumulated since last gamestate change
+  private accumulatedPointSeconds = 0 // Accumulated play time this point (persists even if pausing it to go to menu)
   private whenStartedDateTime = Date.now()
 
   constructor(targetDiv: HTMLDivElement, contentLoadMonitor: ContentLoadMonitor) {
     this.content = new ContentLoader(contentLoadMonitor)
-    this.kapow = new KapowManager()
-    this.history = new HistoryManager()
-    this.lastFuturePrediction = 0
-    this.fpsTimer = []
-    this.isGamePoint = false
-    this.currentGameTime = this.emptyGameTime()
     this.generatePlayers(null)
     this.setUpBalls(2)
-    this.net = new RectangularObstacle(tweakables.net.center, tweakables.net.width, tweakables.net.height)
-    this.leftWall = new RectangularObstacle(tweakables.leftWall.center, tweakables.leftWall.width, tweakables.leftWall.height)
-    this.rightWall = new RectangularObstacle(tweakables.rightWall.center, tweakables.rightWall.width, tweakables.rightWall.height)
     this.resetScores()
     this.init(targetDiv)
   }
@@ -87,7 +78,7 @@ class Game {
   public get playerRight(): Player {
     return this.player(PlayerSide.Right)
   }
-  public get isTwoPlayerGame(): boolean {
+  private get isTwoPlayerGame(): boolean {
     return this.playerRight.species === PlayerSpecies.Human
   }
   private setUpBalls(numBalls: number) {
@@ -122,8 +113,8 @@ class Game {
   }
 
   private generatePlayers(rightPlayerAi: AiBase | null) {
-    const pLeftConfig: NewPlayerArg = tweakables.player.defaultSettings()
-    const pRightConfig: NewPlayerArg = tweakables.player.defaultSettings()
+    const pLeftConfig = tweakables.player.defaultSettings()
+    const pRightConfig = tweakables.player.defaultSettings()
     if (rightPlayerAi) {
       pRightConfig.species = PlayerSpecies.Ai
       pRightConfig.ai = rightPlayerAi
@@ -145,7 +136,7 @@ class Game {
       this.fpsTimer.splice(0, 1)
     }
   }
-  public getCurrentFps(): number {
+  private getCurrentFps(): number {
     const len = this.fpsTimer.length
     return len <= 1 ? 0 : 1000 / ((this.fpsTimer[len - 1] - this.fpsTimer[0]) / len)
   }
@@ -178,7 +169,7 @@ class Game {
     }
   }
 
-  public setGameState(gs: GameState) {
+  private setGameState(gs: GameState) {
     if (gs !== GameState.PreStart) {
       // hello world
     }
@@ -205,13 +196,13 @@ class Game {
       this.sound.stopPlayMusic()
     }
   }
-  public async loadContent() {
+  private async loadContent() {
     const contentStartTime = Date.now()
     console.log(`Starting to load content`)
     await Promise.all([this.sound.loadContent(), this.display.loadContent()])
     console.log(`Finished loading content ${Date.now() - contentStartTime}ms`)
   }
-  public getPlayerName(playerSide: PlayerSide): string {
+  private getPlayerName(playerSide: PlayerSide): string {
     if (playerSide === PlayerSide.Left) return 'Red'
     if (this.playerRight.species === PlayerSpecies.Human) return 'Blue'
     else if (this.playerRight.ai) {
@@ -221,7 +212,7 @@ class Game {
     }
   }
 
-  public draw(gameTime: GameTime): void {
+  private draw(gameTime: GameTime): void {
     const dt = gameTime.elapsedGameTime.totalSeconds
     this.kapow.step(dt)
 
@@ -337,12 +328,12 @@ class Game {
       if (this.input.wasMenuExitJustPushed(owner)) this.setGameState(GameState.Action)
     }
   }
-  handleVictoryInputs(): void {
+  private handleVictoryInputs(): void {
     if (this.accumulatedStateSeconds > 1.0 && this.input.wasPostgameProceedJustPushed()) {
       this.setGameState(GameState.MainMenu)
     }
   }
-  handlePointInputs(): void {
+  private handlePointInputs(): void {
     if (this.accumulatedStateSeconds > tweakables.timeAfterPointToReturnHome) {
       let allBallsReset = true
       for (const ball of this.balls) {
@@ -355,18 +346,18 @@ class Game {
       }
     }
   }
-  handlePreActionInputs(): void {
+  private handlePreActionInputs(): void {
     if (this.accumulatedStateSeconds > 1.0) {
       this.setGameState(GameState.Action)
     }
   }
-  pauseTheGame(playerSide: PlayerSide | null): void {
+  private pauseTheGame(playerSide: PlayerSide | null): void {
     this.menu.setWhoOwnsMenu(playerSide)
     this.setGameState(GameState.Paused)
     this.menu.select(MenuAction.ReturnToGame, playerSide)
   }
 
-  handleActionInputs(dt: number): void {
+  private handleActionInputs(dt: number): void {
     this.handleActionInputsForPlayer(dt, PlayerSide.Left)
     this.handleActionInputsForPlayer(dt, PlayerSide.Right)
 
@@ -488,7 +479,7 @@ class Game {
     this.scoreRightPlayer = 0
   }
 
-  checkForAndScorePoint(): boolean {
+  private checkForAndScorePoint(): boolean {
     let pointForPlayer: PlayerSide | null = null
     const enoughTime = this.accumulatedPointSeconds > tweakables.ballPlayerLaunchTime
     for (const b of this.balls) {
@@ -838,7 +829,7 @@ class Game {
     this.players.set(PlayerSide.Right, p1Copy)
   }
 
-  runActionState(): void {
+  private runActionState(): void {
     const dt = this.currentGameTime.elapsedGameTime.totalMilliseconds / 1000
 
     let physicsDtCountdown = dt
@@ -855,37 +846,37 @@ class Game {
     }
     this.aIStep()
   }
-  runMainMenuState() {
+  private runMainMenuState() {
     this.handleMenuInputs()
   }
-  runPreExitState() {
+  private runPreExitState() {
     this.handlePreExitInputs()
   }
-  runIntroState() {
+  private runIntroState() {
     this.handleIntroInputs()
   }
-  runPausedState() {
+  private runPausedState() {
     this.handleMenuInputs()
   }
-  runAutoPausedState() {
+  private runAutoPausedState() {
     this.handleAutoPausedInputs()
   }
-  runPointState() {
+  private runPointState() {
     this.postPointStep()
     this.handlePointInputs()
   }
-  runPreActionState() {
+  private runPreActionState() {
     this.handlePreActionInputs()
   }
-  runVictoryState() {
+  private runVictoryState() {
     this.handleVictoryInputs()
   }
-  handleUniversalInputs() {
+  private handleUniversalInputs() {
     if (this.input.wasDebugKeyJustPushed()) {
       this.display.inDebugView = !this.display.inDebugView
     }
   }
-  public getMaxHeightOfAllBalls(): number {
+  private getMaxHeightOfAllBalls(): number {
     let highest = -Infinity
     for (const ball of this.balls) {
       highest = Math.max(highest, ball.physics.getBallMaxHeight(tweakables.gameGravity))
@@ -893,7 +884,7 @@ class Game {
     return highest
   }
 
-  public update(gameTime: GameTime): boolean {
+  private update(gameTime: GameTime): boolean {
     if (this.gameState === GameState.PreStart) {
       this.setGameState(GameState.Intro1)
     }

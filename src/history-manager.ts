@@ -1,10 +1,7 @@
 import {GameTime} from './types'
 
 class HistoryManager {
-  private lastTimeRecorder: Map<string, number>
-  constructor() {
-    this.lastTimeRecorder = new Map()
-  }
+  private lastTimeRecorder = new Map<string, number>()
   public recordEvent(eventName: string, gameTime: GameTime) {
     this.lastTimeRecorder.set(eventName, gameTime.totalGameTime.totalSeconds)
   }

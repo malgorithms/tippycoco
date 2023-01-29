@@ -96,16 +96,13 @@ type MenuOwnership = PlayerSide | null
 class Menu {
   private display: Display
   private menuItems: MenuEntry[]
-  private selectedMenuIndex: number
-  private allowReturnToGame: boolean
-  private playerOwnsMenu: MenuOwnership // If this is null, any controller can control menu.
+  private selectedMenuIndex = 2
+  private allowReturnToGame = true
+  private playerOwnsMenu: MenuOwnership = null // If this is null, any controller can control menu.
 
   public constructor(display: Display) {
-    this.allowReturnToGame = true
     this.display = display
     this.menuItems = allMenuItems
-    this.selectedMenuIndex = 2
-    this.playerOwnsMenu = null
   }
   private get spriteBatch(): SpriteBatch {
     return this.display.getSpriteBatch()

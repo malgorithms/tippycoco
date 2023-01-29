@@ -27,17 +27,13 @@ class Atmosphere {
   private numClouds = tweakables.cloud.num
 
   private display: Display
-  private clouds: Cloud[]
-  private activeSkies: ActiveSky[]
-  private sunnyCloudTextures: Texture2D[] // has a 1-1 relationship with DarkCloudTextures list
-  private darkCloudTextures: Texture2D[] // has a 1-1 relationship with SunnyCloudTextures list
+  private clouds = new Array<Cloud>()
+  private activeSkies = new Array<ActiveSky>()
+  private sunnyCloudTextures = new Array<Texture2D>() // has a 1-1 relationship with DarkCloudTextures list
+  private darkCloudTextures = new Array<Texture2D>() // has a 1-1 relationship with SunnyCloudTextures list
   private canvasManager: CanvasManager
 
   public constructor(display: Display, canvasManager: CanvasManager) {
-    this.activeSkies = []
-    this.clouds = []
-    this.sunnyCloudTextures = []
-    this.darkCloudTextures = []
     this.display = display
     this.canvasManager = canvasManager
   }
@@ -66,7 +62,7 @@ class Atmosphere {
     return currSky.sunniness * f + prevSky.sunniness * (1 - f)
   }
 
-  public skyForOpponent(opp: Player): SkyAssignment {
+  private skyForOpponent(opp: Player): SkyAssignment {
     const ai = opp.ai
     if (opp.species === PlayerSpecies.Human || !ai) {
       return {
@@ -74,28 +70,25 @@ class Atmosphere {
         dark: this.display.getTexture('darkBackground'),
       }
     }
+
+    const sunnyTextures = {
+      Green: 'sunnyBackgroundGreen',
+      Black: 'sunnyBackgroundBlack',
+      White: 'sunnyBackgroundFire',
+      Purple: 'sunnyBackgroundPurplish',
+    } as const
+    const darkTextures = {
+      Green: 'darkBackground',
+      Black: 'darkBackground',
+      White: 'darkBackground',
+      Purple: 'darkBackground',
+    } as const
+
     const aiName = aiToName(ai)
-    if (aiName === 'Green')
-      return {
-        sunny: this.display.getTexture('sunnyBackgroundGreen'),
-        dark: this.display.getTexture('darkBackground'),
-      }
-    else if (aiName === 'Black')
-      return {
-        sunny: this.display.getTexture('sunnyBackgroundBlack'),
-        dark: this.display.getTexture('darkBackground'),
-      }
-    else if (aiName === 'White')
-      return {
-        sunny: this.display.getTexture('sunnyBackgroundFire'),
-        dark: this.display.getTexture('darkBackground'),
-      }
-    // purple
-    else
-      return {
-        sunny: this.display.getTexture('sunnyBackgroundPurplish'),
-        dark: this.display.getTexture('darkBackground'),
-      }
+    return {
+      sunny: this.display.getTexture(sunnyTextures[aiName]),
+      dark: this.display.getTexture(darkTextures[aiName]),
+    }
   }
 
   public changeSkyForOpponent(opp: Player, sunniness: 0 | 1) {
@@ -104,7 +97,7 @@ class Atmosphere {
     else this.changeSky(textures.dark, 0)
   }
 
-  public changeSky(texture: Texture2D, sunniess: 0 | 1) {
+  private changeSky(texture: Texture2D, sunniess: 0 | 1) {
     this.activeSkies.push({
       texture,
       whenSpawned: Date.now(),

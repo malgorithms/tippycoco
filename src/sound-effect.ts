@@ -11,11 +11,10 @@ interface SoundEffectInstance {
 class SoundEffect {
   private audioBuffer: AudioBuffer
   private audioContext: AudioContext
-  private playingSources: AudioBufferSourceNode[]
+  private playingSources = new Array<AudioBufferSourceNode>()
   constructor(audioBuffer: AudioBuffer, audioContext: AudioContext) {
     this.audioBuffer = audioBuffer
     this.audioContext = audioContext
-    this.playingSources = []
   }
   public get isPlaying(): boolean {
     return this.playingSources.length > 0

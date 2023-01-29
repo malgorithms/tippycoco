@@ -1,5 +1,5 @@
 import {Color} from './color'
-import {Dims, KeyboardControlSet, NewPlayerArg, PlayerKeyboardSet, PlayerSpecies} from './types'
+import {Dims, KeyboardControlSet, NewPlayerArg, PlayerKeyboardSet, PlayerSpecies, Vector2} from './types'
 
 //
 // TODO: extract all the garbage I hard-coded in game.ts into here
@@ -56,7 +56,7 @@ export default {
     thumbstickPush: 0.6, // how far stick has to go to be considered pushed like a dpad
   },
   display: {
-    zoomCenter: {x: 0, y: 0.3},
+    zoomCenter: {x: 0, y: 0.3} as Vector2,
     zoomScale: {
       min: 0.45,
       start: 0.8,
@@ -68,7 +68,7 @@ export default {
   fpsSampleCount: 100, // loops
   ballPlayerLaunchTime: 0.5,
   winningScore: 5,
-  gameGravity: {x: 0, y: -1.9},
+  gameGravity: {x: 0, y: -1.9} as Vector2,
   timeAfterPointToFreeze: 0.5,
   timeAfterPointToReturnHome: 1.5,
   predictFutureEvery: 0.3,
@@ -81,17 +81,17 @@ export default {
   keyboardGrowthRate: 0.1,
   fontFamilyFallback: "'Courier New', Arial",
   net: {
-    center: {x: 0, y: 0.025},
+    center: {x: 0, y: 0.025} as Vector2,
     width: 0.08,
     height: 0.055,
   },
   leftWall: {
-    center: {x: -courtWidth / 2 - flowerDims.w / 2, y: 0.5},
+    center: {x: -courtWidth / 2 - flowerDims.w / 2, y: 0.5} as Vector2,
     width: flowerDims.w,
     height: flowerDims.h,
   },
   rightWall: {
-    center: {x: courtWidth / 2 + flowerDims.w / 2, y: 0.5},
+    center: {x: courtWidth / 2 + flowerDims.w / 2, y: 0.5} as Vector2,
     width: flowerDims.w,
     height: flowerDims.h,
   },
@@ -181,5 +181,14 @@ export default {
     statsRightColAdj: {x: 0.02, y: -0.0025},
     statsRightColFontMult: 1.1,
     statsFastestWinFlames: [60, 45, 30, 15],
+  },
+  scoreCard: {
+    bounceVelocity: 2.5,
+    dampeningConstant: 1.5,
+    maxSizeMultiplier: 3.0,
+    minSizeMultiplier: 0.25,
+    sizeMultiplier: 1,
+    sizeVelocity: 0,
+    springConstant: 24.0,
   },
 } as const

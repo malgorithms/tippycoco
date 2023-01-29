@@ -1,22 +1,15 @@
-class ScoreCard {
-  // TODO: move these constants to tweakables
-  public sizeMultiplier: number
-  public sizeVelocity: number
-  private readonly springConstant: number
-  private readonly dampeningConstant: number
-  private readonly bounceVelocity: number
-  private readonly minSizeMultiplier: number
-  private readonly maxSizeMultiplier: number
+import tweakables from './tweakables'
+const {scoreCard} = tweakables
 
-  public constructor() {
-    this.sizeMultiplier = 1
-    this.sizeVelocity = 0
-    this.springConstant = 24.0
-    this.dampeningConstant = 1.5
-    this.bounceVelocity = 2.5
-    this.minSizeMultiplier = 0.25
-    this.maxSizeMultiplier = 3.0
-  }
+class ScoreCard {
+  public sizeMultiplier: number = scoreCard.sizeMultiplier
+  public sizeVelocity: number = scoreCard.sizeVelocity
+  private readonly springConstant = scoreCard.springConstant
+  private readonly dampeningConstant = scoreCard.dampeningConstant
+  private readonly bounceVelocity = scoreCard.bounceVelocity
+  private readonly minSizeMultiplier = scoreCard.minSizeMultiplier
+  private readonly maxSizeMultiplier = scoreCard.maxSizeMultiplier
+
   public update(dt: number) {
     const force = (1.0 - this.sizeMultiplier) * this.springConstant - this.sizeVelocity * this.dampeningConstant
     this.sizeVelocity += force * dt
