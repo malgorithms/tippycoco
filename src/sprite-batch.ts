@@ -3,6 +3,8 @@ import {Color} from './color'
 import tweakables from './tweakables'
 import {Dims, FontDef, Rectangle, TextDrawOptions, Texture2D, Vector2} from './types'
 
+const textSizeCache = new Map<string, TextMetrics>()
+
 class SpriteBatch {
   private canvasManager: CanvasManager
   constructor(canvasManager: CanvasManager) {
@@ -36,7 +38,11 @@ class SpriteBatch {
     this.ctx.save()
     const pxCenter = this.canvasManager.canvasToPixelPos(center)
     this.ctx.font = this.fontDescriptor(font, size)
-    const boxTm = this.ctx.measureText(s)
+    let boxTm = textSizeCache.get(s)
+    if (!boxTm) {
+      boxTm = this.ctx.measureText(s)
+      textSizeCache.set(s, boxTm)
+    }
     const boxWidth = boxTm.width
     const boxHeight = boxTm.actualBoundingBoxAscent + boxTm.actualBoundingBoxDescent
     this.ctx.resetTransform()
