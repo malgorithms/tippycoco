@@ -88,14 +88,14 @@ class GamepadMonitor {
     if (!gamepad) return false
     const currState = this.currState.get(gamepad.id)
     const prevState = this.prevState.get(gamepad.id)
-    let currPushed
-    let prevPushed
+    let currPushed: boolean
+    let prevPushed: boolean
     if (x < 0) {
-      currPushed = currState && currState.thumbSticks[stickName].x < x
-      prevPushed = prevState && prevState.thumbSticks[stickName].x < x
+      currPushed = currState ? currState.thumbSticks[stickName].x < x : false
+      prevPushed = prevState ? prevState.thumbSticks[stickName].x < x : false
     } else {
-      currPushed = currState && currState.thumbSticks[stickName].x > x
-      prevPushed = prevState && prevState.thumbSticks[stickName].x > x
+      currPushed = currState ? currState.thumbSticks[stickName].x > x : false
+      prevPushed = prevState ? prevState.thumbSticks[stickName].x > x : false
     }
     if (currPushed && !prevPushed) return true
     return false
