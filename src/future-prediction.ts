@@ -1,25 +1,21 @@
 import {FutureState, PlayerSide} from './types'
 
-const unknownState = (): FutureState => ({
-  pos: {x: Infinity, y: Infinity},
-  time: Infinity,
-  isKnown: false,
-})
+const unknownState = () =>
+  ({
+    pos: {x: Infinity, y: Infinity},
+    time: Infinity,
+    isKnown: false,
+  } as FutureState)
 
 class FuturePrediction {
-  public ballStates: FutureState[]
-  public ballHittingGround: FutureState
-  public ballCrossingNet: FutureState
-  private ballEnteringPlayerJumpRange: Map<PlayerSide, FutureState>
+  public ballStates = new Array<FutureState>()
+  public ballHittingGround = unknownState()
+  public ballCrossingNet = unknownState()
+  private ballEnteringPlayerJumpRange = new Map<PlayerSide, FutureState>([
+    [PlayerSide.Left, unknownState()],
+    [PlayerSide.Right, unknownState()],
+  ])
 
-  constructor() {
-    this.ballStates = []
-    this.ballHittingGround = unknownState()
-    this.ballCrossingNet = unknownState()
-    this.ballEnteringPlayerJumpRange = new Map()
-    this.ballEnteringPlayerJumpRange.set(PlayerSide.Left, unknownState())
-    this.ballEnteringPlayerJumpRange.set(PlayerSide.Right, unknownState())
-  }
   public ballEnteringJumpRange(playerSide: PlayerSide): FutureState {
     const res = this.ballEnteringPlayerJumpRange.get(playerSide)
     if (!res) throw new Error(`Could not check jump range for ${playerSide}`)

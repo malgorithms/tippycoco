@@ -10,7 +10,7 @@ function timeout(ms: number): Promise<void> {
 function sign(n: number) {
   if (n > 0) return 1
   else if (n < 0) return -1
-  else throw new Error(`0 is unsigned`)
+  else throw new Error(`0 (Nan, etc) is unsigned`)
 }
 const vec = {
   copy: (v: Vector2): Vector2 => ({x: v.x, y: v.y}),

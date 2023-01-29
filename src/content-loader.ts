@@ -2,12 +2,10 @@ import {SoundEffect} from './sound-effect'
 import {ContentLoadMonitor, ContentLoadStats, Texture2D} from './types'
 
 class ContentLoader {
-  private audioContext: AudioContext
-  private loadStats: ContentLoadStats
+  private audioContext = new AudioContext()
+  private loadStats: ContentLoadStats = {total: 0, done: 0}
   private loadMonitor: ContentLoadMonitor
   constructor(loadMonitor: ContentLoadMonitor) {
-    this.loadStats = {total: 0, done: 0}
-    this.audioContext = new AudioContext()
     this.loadMonitor = loadMonitor
   }
   public get isLoaded() {
@@ -15,7 +13,7 @@ class ContentLoader {
   }
   public async loadFont(familyName: string, url: string, weight: number) {
     this.loadStats.total++
-    const ffd: FontFaceDescriptors = {weight: `${weight}`}
+    const ffd = {weight: `${weight}`}
     const ff = new FontFace(`${familyName}`, `url(${url})`, ffd)
     document.fonts.add(ff)
     await ff.load()

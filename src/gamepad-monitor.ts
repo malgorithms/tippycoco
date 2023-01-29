@@ -37,24 +37,19 @@ type ThumbstickName = keyof GamePadState['thumbSticks']
 type TriggerName = keyof GamePadState['triggers']
 
 class GamepadMonitor {
-  private currAssigned: Map<PlayerSide, Gamepad>
-  private prevAssigned: Map<PlayerSide, Gamepad>
-  private unassigned: Gamepad[]
-  private currState: Map<GamepadId, GamePadState>
-  private prevState: Map<GamepadId, GamePadState>
+  private currAssigned = new Map<PlayerSide, Gamepad>()
+  private prevAssigned = new Map<PlayerSide, Gamepad>()
+  private unassigned = new Array<Gamepad>()
+  private currState = new Map<GamepadId, GamePadState>()
+  private prevState = new Map<GamepadId, GamePadState>()
 
   constructor() {
-    this.unassigned = []
-    this.currAssigned = new Map()
-    this.prevAssigned = new Map()
-    this.prevState = new Map()
-    this.currState = new Map()
     window.addEventListener('gamepadconnected', (e) => this.connect(e.gamepad))
     window.addEventListener('gamepaddisconnected', (e) => this.disconnect(e.gamepad))
     this.pollingLoop()
   }
 
-  public update(): void {
+  public update() {
     this.prevState = new Map()
     for (const [gamepadId, gamepadState] of this.currState.entries()) {
       this.prevState.set(gamepadId, gamepadState)
@@ -201,16 +196,16 @@ class GamepadMonitor {
         right: {x: axes[2], y: axes[3]},
       },
       buttons: {
-        dPadUp: buttons[12]?.pressed || false,
-        dPadDown: buttons[13]?.pressed || false,
-        dPadLeft: buttons[14]?.pressed || false,
-        dPadRight: buttons[15]?.pressed || false,
-        psX: gamepad.buttons[0]?.pressed || false,
-        psO: gamepad.buttons[1]?.pressed || false,
-        start: gamepad.buttons[9]?.pressed || false,
-        leftStick: gamepad.buttons[10]?.pressed || false,
-        rightStick: gamepad.buttons[11]?.pressed || false,
-        rightShoulder: gamepad.buttons[5]?.pressed || false,
+        dPadUp: buttons[12]?.pressed ?? false,
+        dPadDown: buttons[13]?.pressed ?? false,
+        dPadLeft: buttons[14]?.pressed ?? false,
+        dPadRight: buttons[15]?.pressed ?? false,
+        psX: gamepad.buttons[0]?.pressed ?? false,
+        psO: gamepad.buttons[1]?.pressed ?? false,
+        start: gamepad.buttons[9]?.pressed ?? false,
+        leftStick: gamepad.buttons[10]?.pressed ?? false,
+        rightStick: gamepad.buttons[11]?.pressed ?? false,
+        rightShoulder: gamepad.buttons[5]?.pressed ?? false,
       },
     }
   }
@@ -220,7 +215,10 @@ class GamepadMonitor {
   private async pollingLoop() {
     while (true) {
       await timeout(500)
-      const gamepads = navigator.getGamepads().filter((gp) => gp !== null) as Gamepad[]
+      const gamepads = navigator.getGamepads().reduce((arr, gp) => {
+        gp && arr.push(gp)
+        return arr
+      }, new Array<Gamepad>())
       // notice anything new connected
       for (const gamepad of gamepads) {
         if (!this.isKnownYet(gamepad)) {

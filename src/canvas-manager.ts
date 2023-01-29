@@ -8,20 +8,15 @@ class CanvasManager {
   private canvas!: HTMLCanvasElement
   private _ctx!: CanvasRenderingContext2D
 
-  private readonly center: Vector2
+  private readonly center = tweakables.display.zoomCenter
 
-  private _currViewRegion: Rectangle
-  private _currOnePixel: number
-  private _currInverseTransform: DOMMatrix
-  public _zoomScale: number
+  private _currViewRegion: Rectangle = {x1: -Infinity, x2: Infinity, y1: -Infinity, y2: Infinity}
+  private _currOnePixel = 1
+  private _currInverseTransform = new DOMMatrix()
+  private _zoomScale = tweakables.display.zoomScale.start
 
   constructor(parentEl: HTMLElement) {
-    this.center = tweakables.display.zoomCenter
-    this._zoomScale = tweakables.display.zoomScale.start
     this.parentEl = parentEl
-    this._currViewRegion = {x1: -Infinity, x2: Infinity, y1: -Infinity, y2: Infinity}
-    this._currOnePixel = 1
-    this._currInverseTransform = new DOMMatrix()
   }
   public initialDraw() {
     this.generateCanvas()
@@ -76,7 +71,9 @@ class CanvasManager {
     this._ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D
     this.canvas.style.opacity = '1.0'
     this.setCanvasDims()
-    window.addEventListener('resize', (): void => this.onWindowResize())
+    window.addEventListener('resize', () => {
+      this.onWindowResize()
+    })
   }
   private setCanvasDims() {
     const c = this.canvas

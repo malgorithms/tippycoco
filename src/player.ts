@@ -12,12 +12,10 @@ class Player {
   public physics: CircularObject
   public maxVel: Vector2
   public targetXVel: number // desired speed, accelerates towards
-  private _jumpCount: number
-  private _isInJumpPosition: boolean
+  private _jumpCount = 0
+  private _isInJumpPosition = false
 
   constructor(o: NewPlayerArg) {
-    this._isInJumpPosition = false
-    this._jumpCount = 0
     this.physics = new CircularObject(vec.zero(), vec.zero(), o.diameter, o.mass, 0, 0, o.gravityMultiplier)
     this.maxVel = o.maxVel
     this.targetXVel = o.targetXVel

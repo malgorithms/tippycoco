@@ -5,13 +5,11 @@ import {PlayerSide} from './types'
 
 class SoundManager {
   private content: ContentLoader
-  public instances: Map<SoundEffect, SoundEffectInstance>
-  private sounds: Map<SoundName, SoundEffect>
+  public instances = new Map<SoundEffect, SoundEffectInstance>()
+  private sounds = new Map<SoundName, SoundEffect>()
 
   public constructor(content: ContentLoader) {
     this.content = content
-    this.sounds = new Map()
-    this.instances = new Map()
   }
   private async loadSound(path: string, name: SoundName) {
     const eff = await this.content.loadSoundEffect(path)
