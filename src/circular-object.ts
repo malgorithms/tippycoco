@@ -49,9 +49,6 @@ class CircularObject {
     if (!this.canSpin) this._angularVel = 0
     else this._angularVel = Math.max(-vMax, Math.min(x, vMax))
   }
-  private radiansToDistance(radians: number) {
-    return radians * this.radius
-  }
   private distanceToRadians(dist: number) {
     return dist / this.radius
   }
