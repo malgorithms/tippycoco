@@ -709,7 +709,7 @@ class Game {
       let physicsDtCountdown = dt
       while (physicsDtCountdown > 0) {
         const delta = Math.min(tweakables.physicsDtSec, physicsDtCountdown)
-        this.postPointPhysicsStep(delta)
+        this.simulateStep(delta)
         physicsDtCountdown -= delta
       }
     }
@@ -758,20 +758,6 @@ class Game {
         }
       }
     }
-  }
-
-  private postPointPhysicsStep(dt: number) {
-    for (const p of this.players.values()) {
-      p.stepVelocity(dt, tweakables.gameGravity)
-      p.stepPosition(dt)
-    }
-    for (const b of this.balls) {
-      b.stepVelocity(dt, tweakables.gameGravity, true)
-      b.stepPositionAndOrientation(dt)
-    }
-    this.manageCollisions(true)
-    this.constrainPlayers()
-    this.constrainBalls()
   }
 
   private gameStep(dt: number): boolean {
