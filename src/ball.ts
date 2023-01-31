@@ -1,4 +1,5 @@
 import {CircularObject} from './circular-object'
+import tweakables from './tweakables'
 import {Vector2} from './types'
 import {vec} from './utils'
 
@@ -6,7 +7,18 @@ class Ball {
   public physics: CircularObject
   public maxSpeed: number
   constructor(center: Vector2, vel: Vector2, diameter: number, mass: number, maxSpeed: number, orientation: number, angularVel: number) {
-    this.physics = new CircularObject(center, vel, diameter, mass, orientation, angularVel, 1.0)
+    this.physics = new CircularObject(
+      center,
+      vel,
+      diameter,
+      mass,
+      orientation,
+      angularVel,
+      1.0,
+      true,
+      tweakables.physics.ballSpinElasticityOffFrictionPoints,
+      tweakables.physics.ballSpinVelocityBumpOffFrictionPoints,
+    )
     this.maxSpeed = maxSpeed
   }
   public deepCopy(): Ball {
@@ -30,14 +42,12 @@ class Ball {
     const shift = vec.scale(gravity, dt * this.physics.gravityMultiplier)
     this.physics.vel = vec.add(this.physics.vel, shift)
     if (trimSpeedIfNecessary) this.trimSpeedIfNecessary()
+    this.physics.angularVel -= this.physics.angularVel * dt * tweakables.physics.ballAngularFriction
   }
   public stepPositionAndOrientation(dt: number) {
     const centerShift = vec.scale(this.physics.vel, dt)
     this.physics.center = vec.add(this.physics.center, centerShift)
     this.physics.orientation += dt * this.physics.angularVel
-  }
-  public setAngularVel(av: number) {
-    this.physics.angularVel = av
   }
 }
 export {Ball}

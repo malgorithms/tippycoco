@@ -128,7 +128,7 @@ class Display {
       playerTexture,
       player.physics.center,
       {w: player.physics.diameter, h: player.physics.diameter},
-      0,
+      player.physics.orientation,
       1,
     )
     const pupil = this.getTexture('pupil')
@@ -545,13 +545,17 @@ class Display {
     const p0h = this.p0ScoreCard.sizeMultiplier * scoreCardHeight
     this.spriteBatch.drawTextureCentered(this.getTexture('scoreCard'), box1Center, {w: p0h, h: p0h}, rotation, 1)
     const font = this.font('extraBold')
-    this.spriteBatch.drawStringCentered(text1, font, p0h * 0.9 * this.p0ScoreCard.sizeMultiplier, box1Center, Colors.black, rotation)
+    const t0Center = vec.add(box1Center, tweakables.display.scorecard.textOffset)
+    const t0Size = 0.9 * p0h * this.p1ScoreCard.sizeMultiplier
+    this.spriteBatch.drawStringCentered(text1, font, t0Size, t0Center, Colors.black, -rotation)
 
     const text2 = `${p1Score}`
 
     const p1h = this.p1ScoreCard.sizeMultiplier * scoreCardHeight
     this.spriteBatch.drawTextureCentered(this.getTexture('scoreCard'), box2Center, {w: p1h, h: p1h}, rotation, 1)
-    this.spriteBatch.drawStringCentered(text2, font, p1h * 0.9 * this.p1ScoreCard.sizeMultiplier, box2Center, Colors.black, rotation)
+    const t1Center = vec.add(box2Center, tweakables.display.scorecard.textOffset)
+    const t1Size = 0.9 * p1h * this.p1ScoreCard.sizeMultiplier
+    this.spriteBatch.drawStringCentered(text2, font, t1Size, t1Center, Colors.black, -rotation)
   }
 
   public adjustZoomLevel(maxBallHeight: number, dt: number) {

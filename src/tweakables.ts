@@ -35,11 +35,14 @@ const onePlayerControls: KeyboardControlSet = {
   p1: p0Set,
 }
 
+// THE GAME COORDINATE SYSTEM
+// The game is played on its own coordinate system, which is typical euclidean.
+// With the ground at y=0 and the net at x=0.
+// Also, positive Y is UP, like most math, but unlike most comptuer graphics
+// So if a ball is at (0.5, 0.5), that means it's to the right and up, relative to the net.
 //
-// Understanding game coordinate system. The game is played on its own coordinate system,
-// with the ground at y=0 and the net at x=0.
-// Also, positive Y is UP, unlike how comptuer graphics typically work. So if a ball is at,
-// say (0.5, 0.5), that means it's to the right and up, relative to the net.
+// rotations are counter-clockwise and in radians. As you'd expect!
+//
 
 // how far between the walls' edges (not their centers). In other words, this describes
 // the width of the playable area.
@@ -50,6 +53,17 @@ export default {
   courtWidth,
   twoPlayerControls,
   onePlayerControls,
+  physics: {
+    ballPlayerElasticity: 0.95,
+    ballAngularFriction: 0.5,
+    ballFloorElasticity: 0.5,
+    maxAngVel: 100,
+    ballSpinElasticityOffFrictionPoints: 0.5,
+    ballSpinVelocityBumpOffFrictionPoints: 0.45,
+    ballOnBallFrictionSpin: 0.95, // higher values allow players to add more spin to balls
+    ballOnBallFrictionBump: 0.5, // higher values cause more redirection from spin hits
+    minRelSpeedToAllowBallSpins: 0.25,
+  },
   input: {
     triggerTolerance: 0.05, // anything this close to 0 is just 0
     triggerGrowthMult: 0.4, // how fast the trigger scales/shrinks character
@@ -61,19 +75,23 @@ export default {
       min: 0.45,
       start: 0.8,
       max: 0.8,
-      springConstant: 1,
+      springConstant: 0.5,
       ballHeightMult: 1.05, // multiplies expected ball height by this to get zoom scale
+    },
+    scorecard: {
+      textOffset: {x: 0, y: 0},
     },
   },
   fpsSampleCount: 100, // loops
-  ballPlayerLaunchTime: 0.5,
+  ballPlayerLaunchTime: 1,
   winningScore: 5,
   gameGravity: {x: 0, y: -1.9} as Vector2,
-  timeAfterPointToFreeze: 0.5,
-  timeAfterPointToReturnHome: 1.5,
-  predictFutureEvery: 0.3,
+  timeOnServeFloorDisappears: 0.15,
+  afterPointKeepMovingSec: 1,
+  afterPointFreezeSec: 0.01,
+  predictFutureEveryMs: 10, // update every this often ms
   physicsDtSec: 0.002, // seconds,
-  redrawTargetMs: 4, // every game loop, if this much time has gone by, we redraw
+  redrawTargetMs: 3, // every game loop, if this much time has gone by, we redraw
   predictionLookaheadSec: 1.75,
   predictionPhysicsDtSec: 0.004,
   predictionStorageDtSec: 0.02,
@@ -84,6 +102,11 @@ export default {
     center: {x: 0, y: 0.025} as Vector2,
     width: 0.08,
     height: 0.055,
+  },
+  invisibleFloor: {
+    center: {x: 0, y: -0.5},
+    width: courtWidth * 2,
+    height: 1,
   },
   leftWall: {
     center: {x: -courtWidth / 2 - flowerDims.w / 2, y: 0.5} as Vector2,
@@ -129,7 +152,8 @@ export default {
     growSpeed: 0.1,
     minDiameter: 0.09,
     maxDiameter: 0.175,
-    jumpSpeedAfterPoint: 1.5,
+    jumpSpeedAfterPoint: 1.85,
+    afterPointJumpDelay: 0.15,
     eyes: {
       // for drawing
       leftOffset: {x: -0.113, y: 0.14},
