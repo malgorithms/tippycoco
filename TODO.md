@@ -30,7 +30,6 @@ Stuff
   - growth/shrink sounds:
     - breathe in/out, with pitch by speed?
     - fix bug where it persists on game pause or end
-- better action after ball hitting ground (maybe not freezing? keeps bouncing?)
 - exiting game shouldn't cause reload
 
 Before launching
