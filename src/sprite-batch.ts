@@ -3,8 +3,6 @@ import {Color} from './color'
 import tweakables from './tweakables'
 import {Dims, FontDef, Rectangle, TextDrawOptions, Texture2D, Vector2} from './types'
 
-const textSizeCache = new Map<string, TextMetrics>()
-
 class SpriteBatch {
   private canvasManager: CanvasManager
   constructor(canvasManager: CanvasManager) {
@@ -34,32 +32,7 @@ class SpriteBatch {
     this.ctx.restore()
   }
   public drawStringCentered(s: string, font: FontDef, size: number, center: Vector2, color: Color, rot: number) {
-    // unfortunately the below single line should work but seems choppier. it would be nice, because
-    // the alternative, my calling `ctx.measureText()` is somewhat computational expensive
-
-    //this.drawStringUncentered(s, font, size, center, color, rot, {textAlign: 'center', textBaseline: 'middle'})
-
-    // so we do it manually
-    if (color.a === 0) return
-    this.ctx.save()
-    const pxCenter = this.canvasManager.canvasToPixelPos(center)
-    this.ctx.font = this.fontDescriptor(font, size)
-    let boxTm = textSizeCache.get(s)
-    if (!boxTm) {
-      boxTm = this.ctx.measureText(s)
-      textSizeCache.set(s, boxTm)
-    }
-    const boxWidth = boxTm.width
-    const boxHeight = boxTm.actualBoundingBoxAscent + boxTm.actualBoundingBoxDescent
-    this.ctx.resetTransform()
-    const rotCenterX2 = boxWidth / 2
-    const rotCenterY2 = -boxHeight / 2
-    this.ctx.translate(pxCenter.x, pxCenter.y)
-    this.ctx.rotate(rot ?? 0)
-    this.ctx.translate(-rotCenterX2, -rotCenterY2)
-    this.ctx.fillStyle = color.toHtmlRgb()
-    this.ctx.fillText(s, 0, 0)
-    this.ctx.restore()
+    this.drawStringUncentered(s, font, size, center, color, rot, {textAlign: 'center', textBaseline: 'middle'})
   }
   public drawStringUncentered(s: string, font: FontDef, size: number, pos: Vector2, color: Color, rot: number, opts?: TextDrawOptions) {
     opts ??= {}
