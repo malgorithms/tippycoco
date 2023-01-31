@@ -15,7 +15,7 @@ import tweakables from './tweakables'
 import {ContentLoadMonitor, FutureState, GameState, GameTime, PlayerSide, Vector2} from './types'
 import {timeout, vec} from './utils'
 import {persistence} from './persistence'
-import {aiToName} from './ai/ai'
+import {aiToName, aiToNickname} from './ai/ai'
 import {RectangularObstacle} from './rectangular-obstacle'
 
 class Game {
@@ -198,11 +198,11 @@ class Game {
     await Promise.all([this.sound.loadContent(), this.display.loadContent()])
     console.log(`Finished loading content ${Date.now() - contentStartTime}ms`)
   }
-  private getPlayerName(playerSide: PlayerSide): string {
+  private getPlayerNickname(playerSide: PlayerSide): string {
     if (playerSide === PlayerSide.Left) return 'Red'
     if (this.playerRight.species === PlayerSpecies.Human) return 'Blue'
     else if (this.playerRight.ai) {
-      return aiToName(this.playerRight.ai)
+      return aiToNickname(this.playerRight.ai)
     } else {
       return 'Unknown'
     }
@@ -237,7 +237,7 @@ class Game {
       } else if (this.scoreLeftPlayer === 0 || this.scoreRightPlayer === 0) {
         this.display.drawCenteredDancingMessage(gameTime, 'Shutout!', summ, Colors.white)
       } else {
-        this.display.drawCenteredDancingMessage(gameTime, this.getPlayerName(winner) + ' Wins!', summ, Colors.white)
+        this.display.drawCenteredDancingMessage(gameTime, this.getPlayerNickname(winner) + ' Wins!', summ, Colors.white)
       }
     }
     if (this.gameState === GameState.PointScored) {
