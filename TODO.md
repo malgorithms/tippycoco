@@ -5,6 +5,7 @@ Stuff
 - more characters?
 - orange player
 - menu redesign:
+  - hmm, maybe consider grid of them rather than stacking
   - bot template support
     - disabled but visible with explanation you can write your own
     - activated as soon as you edit something like myBot.ts
@@ -20,7 +21,6 @@ Stuff
   - consider no clouds on slow framerate
   - check if not drawing off-screen clouds affects things
   - test on old iMac
-  - consider caching localstorage (persistence.ts) lookups when drawing menu
   - explore higher physicsDt / predictionDt
 - better intro with them emerging from the ground, possibly launching debris
 - sound improvements:
