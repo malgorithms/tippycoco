@@ -12,6 +12,6 @@
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
-    "noEmit": false
+    "noEmit": true
   }
 }
