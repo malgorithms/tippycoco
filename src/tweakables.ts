@@ -91,7 +91,7 @@ export default {
   afterPointFreezeSec: 0.01,
   predictFutureEveryMs: 10, // update every this often ms
   physicsDtSec: 0.002, // seconds,
-  redrawTargetMs: 3, // every game loop, if this much time has gone by, we redraw
+  redrawTargetMs: 4, // every game loop, if this much time has gone by, we redraw
   predictionLookaheadSec: 1.75,
   predictionPhysicsDtSec: 0.004,
   predictionStorageDtSec: 0.02,
