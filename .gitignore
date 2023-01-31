@@ -5,3 +5,4 @@ yarn-error.log
 tsconfig.tsbuildinfo
 debug/
 games.log
+dist/bundle.js
