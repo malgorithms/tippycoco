@@ -181,7 +181,7 @@ export default {
     cardWidth: 0.7, // game units
     cardWidthSelected: 1.0, // selected card this much bigger
     cardStackStart: {x: 0, y: 0.5},
-    cardStackSpacing: {x: 0.2, y: 0.0},
+    cardStackSpacing: {x: 0.4, y: -0.1},
     textOffsetFromCard: {x: 0, y: 0.4},
     afterChosenOffset: {x: 0.1, y: -0.1},
     coverColor: new Color(0, 0, 0, 0.3), //  background over existing game
@@ -190,12 +190,12 @@ export default {
     cardBall2Pos: {x: 0.85, y: 0.58}, // fractional position on card's surface
     lockReasonPos: {x: 0, y: -0.4}, // fraction position on card's surface
     lockReasonColor: new Color(1, 1, 1, 0.8),
+    lockOverlayAlpha: 0.6,
     cardBallSize: 0.08, // fractional to card's size
     cardSizeBounce: 0.05,
     cardRotationBounce: 0.03,
     subtextOffset: {x: 0, y: -0.2},
     subtextRelSize: 0.4,
-    lockOverlayAlpha: 0.8,
     statsPosition: {x: 0.5, y: -0.1},
     statsColorLeft: new Color(0.5, 1, 0, 0.5),
     statsColorRight: new Color(0.5, 1, 0, 0.7),

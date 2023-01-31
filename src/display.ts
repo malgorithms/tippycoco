@@ -194,6 +194,7 @@ class Display {
       const aiName = aiToName(player.ai)
       if (aiName === 'Black') return this.getTexture('blackPlayer')
       else if (aiName === 'Green') return this.getTexture('greenPlayer')
+      else if (aiName === 'Orange') return this.getTexture('orangePlayer')
       else if (aiName === 'Purple') return this.getTexture('purplePlayer')
       else return this.getTexture('whitePlayer')
     } else if (playerSide == PlayerSide.Left) return this.getTexture('redPlayer')
@@ -473,7 +474,7 @@ class Display {
     currentFps
 
     if (this.inDebugView) {
-      const alpha = (s: FutureState) => 1 - Math.sqrt(s.time / tweakables.predictionLookaheadSec)
+      const alpha = (s: FutureState) => 1 - s.time / tweakables.predictionLookaheadSec
       for (let i = 0; i < this.game.balls.length; i++) {
         const ball = this.game.balls[i]
         const prediction = futurePrediction[i]

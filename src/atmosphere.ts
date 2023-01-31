@@ -71,23 +71,25 @@ class Atmosphere {
       }
     }
 
-    const sunnyTextures = {
+    const sunnyAiTextures = {
       Green: 'sunnyBackgroundGreen',
       Black: 'sunnyBackgroundBlack',
       White: 'sunnyBackgroundFire',
       Purple: 'sunnyBackgroundPurplish',
+      Orange: 'sunnyBackgroundBlue',
     } as const
-    const darkTextures = {
+    const darkAiTextures = {
       Green: 'darkBackground',
       Black: 'darkBackground',
       White: 'darkBackground',
       Purple: 'darkBackground',
+      Orange: 'darkBackground',
     } as const
 
     const aiName = aiToName(ai)
     return {
-      sunny: this.display.getTexture(sunnyTextures[aiName]),
-      dark: this.display.getTexture(darkTextures[aiName]),
+      sunny: this.display.getTexture(sunnyAiTextures[aiName]),
+      dark: this.display.getTexture(darkAiTextures[aiName]),
     }
   }
 

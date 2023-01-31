@@ -3,7 +3,7 @@
 Stuff
 
 - more characters?
-- orange player
+- yellow player who likes to catch the ball
 - menu redesign:
   - hmm, maybe consider grid of them rather than stacking
   - bot template support

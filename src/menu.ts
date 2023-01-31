@@ -1,4 +1,4 @@
-import {AiName, ais, aiToName, KnownAi} from './ai/ai'
+import {AiName, ais, aiToName, aiToNickname, KnownAi} from './ai/ai'
 import {Color, Colors} from './color'
 import {Display, TextureName} from './display'
 import {persistence} from './persistence'
@@ -28,25 +28,11 @@ interface MenuEntry {
   unlockRequirement?: UnlockRequirement
 }
 
+const returnToGameEntry: MenuEntry = {text: 'Return to Game', action: MenuAction.ReturnToGame, card: 'menuCardReturnToGame'}
 const allMenuItems: MenuEntry[] = [
   {text: 'Quit', action: MenuAction.Exit, card: 'menuCardExit'},
-  {text: 'Return to Game', action: MenuAction.ReturnToGame, card: 'menuCardReturnToGame'},
   {
-    text: 'Human v. Human',
-    action: MenuAction.Play,
-    card: 'menuCardHuman1Ball',
-    opponentType: PlayerSpecies.Human,
-    numBalls: 1,
-  },
-  {
-    text: 'Human v. Human',
-    action: MenuAction.Play,
-    card: 'menuCardHuman2Balls',
-    opponentType: PlayerSpecies.Human,
-    numBalls: 2,
-  },
-  {
-    text: 'Challenge Green',
+    text: aiToNickname(ais.Green),
     ai: ais.Green,
     action: MenuAction.Play,
     card: 'menuCardPlayGreen',
@@ -54,19 +40,31 @@ const allMenuItems: MenuEntry[] = [
     numBalls: 1,
   },
   {
-    text: 'Challenge Purple',
-    ai: ais.Purple,
+    text: aiToNickname(ais.Orange),
+    ai: ais.Orange,
     action: MenuAction.Play,
-    card: 'menuCardPlayPurple',
+    card: 'menuCardPlayOrange',
     opponentType: PlayerSpecies.Ai,
-    numBalls: 2,
+    numBalls: 1,
     unlockRequirement: {
       defeat: 'Green',
       defeatType: 'win',
     },
   },
   {
-    text: 'Challenge Black',
+    text: aiToNickname(ais.Purple),
+    ai: ais.Purple,
+    action: MenuAction.Play,
+    card: 'menuCardPlayPurple',
+    opponentType: PlayerSpecies.Ai,
+    numBalls: 2,
+    unlockRequirement: {
+      defeat: 'Orange',
+      defeatType: 'win',
+    },
+  },
+  {
+    text: aiToNickname(ais.Black),
     ai: ais.Black,
     action: MenuAction.Play,
     card: 'menuCardPlayBlack',
@@ -78,7 +76,7 @@ const allMenuItems: MenuEntry[] = [
     },
   },
   {
-    text: 'Challenge White',
+    text: aiToNickname(ais.White),
     ai: ais.White,
     action: MenuAction.Play,
     card: 'menuCardPlayWhite',
@@ -89,6 +87,20 @@ const allMenuItems: MenuEntry[] = [
       defeatType: 'shutout',
     },
   },
+  {
+    text: '1 v. 1',
+    action: MenuAction.Play,
+    card: 'menuCardHuman1Ball',
+    opponentType: PlayerSpecies.Human,
+    numBalls: 1,
+  },
+  {
+    text: '1 v. 1',
+    action: MenuAction.Play,
+    card: 'menuCardHuman2Balls',
+    opponentType: PlayerSpecies.Human,
+    numBalls: 2,
+  },
 ]
 
 type MenuOwnership = PlayerSide | null
@@ -96,8 +108,7 @@ type MenuOwnership = PlayerSide | null
 class Menu {
   private display: Display
   private menuItems: MenuEntry[]
-  private selectedMenuIndex = 2
-  private allowReturnToGame = true
+  private selectedMenuIndex = 1
   private playerOwnsMenu: MenuOwnership = null // If this is null, any controller can control menu.
 
   public constructor(display: Display) {
@@ -138,13 +149,13 @@ class Menu {
     const d = persistence.data.aiRecord[ur.defeat]
     if (ur.defeatType === 'win') {
       if (d.wins > 0) return false
-      else return `defeat ${ur.defeat}`
+      else return `defeat ${aiToNickname(ur.defeat)}`
     } else if (ur.defeatType === 'no-jumping') {
       if (d.noJumpWins > 0) return false
-      else return `beat ${ur.defeat} without jumping`
+      else return `beat ${aiToNickname(ur.defeat)} without jumping`
     } else if (ur.defeatType === 'shutout') {
       if (d.shutoutWins > 0) return false
-      else return `shut out ${ur.defeat}`
+      else return `shut out ${aiToNickname(ur.defeat)}`
     } else {
       throw new Error(`unknown unlock requirement ${ur.defeatType}`)
     }
@@ -162,7 +173,7 @@ class Menu {
   private drawDancingMenuText(s: string, destination: Vector2, totalSeconds: number, relSize: number) {
     /* dancing stuff */
     const beat = this.beat(totalSeconds)
-    const sizeMultiplier = 0.3 + Math.sin(beat / 2) / 100 + Math.sin(beat / 8) / 100
+    const sizeMultiplier = 0.2 + Math.sin(beat / 2) / 100 + Math.sin(beat / 8) / 100
     const size = sizeMultiplier * relSize
     const rotation = -0.1 + Math.sin(beat / 16) / 32
     const backgroundColor = new Color(0.0, 0.0, 0.0, 0.75)
@@ -253,15 +264,15 @@ class Menu {
       if (isSelected) {
         const txtCenter = relPos(tMenu.lockReasonPos)
         const txtCenter2 = relPos({x: 0, y: -0})
-        const font = this.display.font('regular')
-        this.spriteBatch.drawStringCentered(lockReason, font, 0.04, txtCenter, tMenu.lockReasonColor, rotation)
-        this.spriteBatch.drawStringCentered('LOCKED', font, 0.06, txtCenter2, tMenu.lockReasonColor, rotation)
+        const font = this.display.font('extraBold')
+        this.spriteBatch.drawStringCentered(lockReason, font, 0.08, txtCenter, tMenu.lockReasonColor, -2 * rotation)
+        this.spriteBatch.drawStringCentered('* LOCKED *', font, 0.12, txtCenter2, tMenu.lockReasonColor, -2 * rotation)
       }
     }
 
     // Draw the dancing text if it is currently selected
     const seconds = gameTime.totalGameTime.totalSeconds
-    if (isSelected && !lockReason) {
+    if (isSelected /*&& !lockReason*/) {
       const textCenter = vec.add(center, tMenu.textOffsetFromCard)
       const subtext = item.subtext
       if (subtext) {
@@ -315,11 +326,18 @@ class Menu {
     this.drawCardStatLine(`games played:`, `${record.wins + record.losses}`, pos, false)
   }
 
-  public draw(allowReturnToGame: boolean, gameTime: GameTime): void {
-    this.allowReturnToGame = allowReturnToGame
-    if (!allowReturnToGame && this.selection === MenuAction.ReturnToGame) {
-      this.moveRight(this.playerOwnsMenu)
+  public enforceAllowReturn(allow: boolean) {
+    if (allow && this.menuItems[1] !== returnToGameEntry) {
+      this.menuItems.splice(1, 0, returnToGameEntry)
+      this.selectedMenuIndex = 1
     }
+    if (!allow && this.menuItems[1] === returnToGameEntry) {
+      this.menuItems.splice(1, 1)
+    }
+  }
+
+  public draw(allowReturnToGame: boolean, gameTime: GameTime): void {
+    this.enforceAllowReturn(allowReturnToGame)
     const tMenu = tweakables.menu
 
     // draw a cover over the existing game
@@ -331,7 +349,6 @@ class Menu {
     )
     for (const k of drawOrder) {
       const i = parseInt(k)
-      if (this.action(i) === MenuAction.ReturnToGame && !this.allowReturnToGame) continue
       const center = this.cardCenter(i)
       if (i === this.selectedMenuIndex) {
         // draw a second cover over the non-selected ones
@@ -350,17 +367,11 @@ class Menu {
   public moveRight(owner: MenuOwnership): void {
     if (this.playerOwnsMenu === null || this.playerOwnsMenu === owner) {
       this.selectedMenuIndex = (this.selectedMenuIndex + 1) % this.menuItems.length
-      if (this.selection === MenuAction.ReturnToGame && !this.allowReturnToGame) {
-        this.selectedMenuIndex++
-      }
     }
   }
   public moveLeft(owner: MenuOwnership): void {
     if (this.playerOwnsMenu === null || this.playerOwnsMenu === owner) {
       this.selectedMenuIndex--
-      if (this.selectedMenuIndex >= 0 && this.selection === MenuAction.ReturnToGame && !this.allowReturnToGame) {
-        this.selectedMenuIndex--
-      }
       if (this.selectedMenuIndex < 0) {
         this.selectedMenuIndex = this.menuItems.length - 1
       }
