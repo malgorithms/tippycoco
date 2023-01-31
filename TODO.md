@@ -2,7 +2,6 @@
 
 Stuff
 
-- check out white ai mirror maneuver
 - more characters?
 - orange player
 - menu redesign:

@@ -25,33 +25,32 @@ class WhiteAi extends AiBase {
     const opponent = o.opponent
     this.goToSize(o, 0.7)
 
-    if (o.accumulatedPointSeconds < 1.0) return
-    else {
-      this.goToSize(o, 0)
-    }
+    let stateToWatch: FutureBall | null = null
+    const amLeft = o.myPlayerSide === PlayerSide.Left
+    const enteringMyRange = this.getNextBallEnteringMyJumpRange(o)
+    const landingOnMySide = this.getNextBallHittingOnMySide(o)
+    const timeToReach = this.timeTillICanReachLanding(o)
 
-    // PERFORM A MIRROR MANEUVER
-    if (o.accumulatedPointSeconds < 0.5) {
-      let offset = (me.physics.center.x - o.net.center.x - (o.net.center.x - opponent.physics.center.x)) / me.physics.diameter
-      if (offset > 1.0) offset = 1.0
-      if (offset < -1.0) offset = 1.0
-      this.moveRationally(o, -offset)
-      if (opponent.physics.center.y > me.physics.center.y) {
-        this.j(o)
+    // IF NOTHING IS THREATENING MY SIDE, SOMETIMES
+    // PERFORM MIRROR MANEUVER
+    if ((o.p0Score + o.p1Score) % 3 === 1) {
+      if (o.accumulatedPointSeconds < 4.5 && !landingOnMySide) {
+        const oppX = opponent.physics.center.x
+        const myX = me.physics.center.x
+        const myIdealX = -oppX
+        if (myX < myIdealX) me.moveRight()
+        else if (myX > myIdealX) me.moveLeft()
+        if (opponent.physics.center.y > me.physics.center.y) {
+          this.jumpIfPossible(o)
+        }
+        return
       }
-      return
     }
 
     if (o.balls[0].physics.vel.x == 0 && o.balls[0].physics.center.x == 0.25) {
       // Don't move if opponent hasn't.
       return
     }
-
-    let stateToWatch: FutureBall | null = null
-    const amLeft = o.myPlayerSide === PlayerSide.Left
-    const enteringMyRange = this.getNextBallEnteringMyJumpRange(o)
-    const landingOnMySide = this.getNextBallHittingOnMySide(o)
-    const timeToReach = this.timeTillICanReachLanding(o)
 
     if (landingOnMySide && (!enteringMyRange || landingOnMySide.time < timeToReach + 0.1)) {
       stateToWatch = landingOnMySide
