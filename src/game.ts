@@ -169,12 +169,9 @@ class Game {
   }
 
   private setGameState(gs: GameState) {
-    if (gs !== GameState.PreStart) {
-      // hello world
-    }
     if (gs !== this.gameState) this.accumulatedStateSeconds = 0.0
     this.gameState = gs
-    if (gs === GameState.Action || gs === GameState.PreAction) this.setUpForServe()
+    if (gs === GameState.PreAction) this.setUpForServe()
     if (
       gs === GameState.MainMenu ||
       gs === GameState.Paused ||
