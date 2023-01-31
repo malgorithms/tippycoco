@@ -98,23 +98,24 @@ interface FontDef {
 
 interface TextDrawOptions {
   textAlign?: CanvasTextAlign
+  textBaseline?: CanvasTextBaseline
 }
 
 enum GameState {
-  PreStart,
-  Intro1,
-  Intro2,
-  Intro3,
-  MainMenu,
-  PointScored,
-  Victory,
-  PreAction, // the half-second or so before they pop out of the ground; also time for player 2 to select controller
-  Action,
-  Paused,
-  AutoPaused, // happens if player disconnects controller
-  PreExitMessage,
-  PreExitCredits,
-  Exit,
+  PreStart = 'pre-start',
+  Intro1 = 'intro1',
+  Intro2 = 'intro2',
+  Intro3 = 'intro3',
+  MainMenu = 'main-menu',
+  PointScored = 'point-scored',
+  Victory = 'victory',
+  PreAction = 'pre-action', // the half-second or so before they pop out of the ground; also time for player 2 to select controller
+  Action = 'action',
+  Paused = 'paused',
+  AutoPaused = 'auto-paused', // happens if player disconnects controller
+  PreExitMessage = 'pre-exit-message',
+  PreExitCredits = 'pre-exit-credts',
+  Exit = 'exit',
 }
 
 export {

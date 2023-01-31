@@ -16,7 +16,7 @@ class Player {
   private _isInJumpPosition = false
 
   constructor(o: NewPlayerArg) {
-    this.physics = new CircularObject(vec.zero(), vec.zero(), o.diameter, o.mass, 0, 0, o.gravityMultiplier)
+    this.physics = new CircularObject(vec.zero(), vec.zero(), o.diameter, o.mass, 0, 0, o.gravityMultiplier, false, 0, 0)
     this.maxVel = o.maxVel
     this.targetXVel = o.targetXVel
     this.xSpringConstant = o.xSpringConstant

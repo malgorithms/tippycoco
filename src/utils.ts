@@ -30,12 +30,14 @@ const vec = {
     const y = p.x * matrix.b + p.y * matrix.d + matrix.f
     return {x, y}
   },
-  avg: (v1: Vector2, v2: Vector2): Vector2 => {
-    return {
-      x: (v1.x + v2.x) / 2,
-      y: (v1.y + v2.y) / 2,
-    }
-  },
+  avg: (v1: Vector2, v2: Vector2): Vector2 => ({
+    x: (v1.x + v2.x) / 2,
+    y: (v1.y + v2.y) / 2,
+  }),
+  rotated90Ccw: (v: Vector2): Vector2 => ({
+    x: -v.y,
+    y: v.x,
+  }),
 }
 function randomByteHexString(numBytes: number) {
   return Array.from(crypto.getRandomValues(new Uint8Array(numBytes)))

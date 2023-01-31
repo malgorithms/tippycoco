@@ -27,13 +27,19 @@ class SpriteBatch {
     const rotCenterY = h / 2
     this.ctx.translate(center.x, center.y)
     this.ctx.transform(1, 0, 0, -1, 0, 0) // flip y-axis
-    if (rot) this.ctx.rotate(rot)
+    if (rot) this.ctx.rotate(-rot)
     this.ctx.translate(-rotCenterX, -rotCenterY)
     this.ctx.globalAlpha = alpha
     this.ctx.drawImage(t.img, 0, 0, w, h)
     this.ctx.restore()
   }
   public drawStringCentered(s: string, font: FontDef, size: number, center: Vector2, color: Color, rot: number) {
+    // unfortunately the below single line should work but seems choppier. it would be nice, because
+    // the alternative, my calling `ctx.measureText()` is somewhat computational expensive
+
+    //this.drawStringUncentered(s, font, size, center, color, rot, {textAlign: 'center', textBaseline: 'middle'})
+
+    // so we do it manually
     if (color.a === 0) return
     this.ctx.save()
     const pxCenter = this.canvasManager.canvasToPixelPos(center)
@@ -64,7 +70,8 @@ class SpriteBatch {
     this.ctx.resetTransform()
     this.ctx.translate(pxPos.x, pxPos.y)
     this.ctx.rotate(rot ?? 0)
-    this.ctx.textAlign = opts.textAlign ?? 'left'
+    if (opts.textBaseline) this.ctx.textBaseline = opts.textBaseline
+    if (opts.textAlign) this.ctx.textAlign = opts.textAlign
     this.ctx.fillStyle = color.toHtmlRgb()
     this.ctx.fillText(s, 0, 0)
     this.ctx.restore()

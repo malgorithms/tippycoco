@@ -113,7 +113,7 @@ class PageUi {
       </p>
       <h4>Latest changes</h4>
       <p>
-      Unlockable enemies
+      Toying with friction and spin on the balls
       </p>
       <h4>Links</h4>
       <ul>
