@@ -17,6 +17,8 @@ Stuff
   - fps sucks
   - warning when controller connected, if bugs not fixable
 - performance:
+  - font drawing: draw fonts onto separate cached canvases and then project
+    - them onto the game canvas
   - consider no clouds on slow framerate
   - check if not drawing off-screen clouds affects things
   - test on old iMac
