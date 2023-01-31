@@ -12,7 +12,7 @@ import {Menu, MenuAction} from './menu'
 import {Player, PlayerSpecies} from './player'
 import {SoundManager} from './sound-manager'
 import tweakables from './tweakables'
-import {ContentLoadMonitor, FutureState, GameState, GameTime, NewPlayerArg, PlayerSide, Vector2} from './types'
+import {ContentLoadMonitor, FutureState, GameState, GameTime, PlayerSide, Vector2} from './types'
 import {timeout, vec} from './utils'
 import {persistence} from './persistence'
 import {aiToName} from './ai/ai'
@@ -330,9 +330,10 @@ class Game {
       this.setGameState(GameState.MainMenu)
     }
   }
-  private handlePostPointInputs(): void {
-    // no inputs needed for now; characters get launched back to their starting position.
-    // Consider possibility menu could still be launchable though.
+  private handlePostPointInputs(dt: number): void {
+    // we can let them move for a min
+    this.handleActionInputsForPlayer(dt, PlayerSide.Left)
+    this.handleActionInputsForPlayer(dt, PlayerSide.Right)
   }
   private handlePreActionInputs(): void {
     if (this.accumulatedStateSeconds > 1.0) {
@@ -544,6 +545,26 @@ class Game {
     }
   }
 
+  // keeps balls within the flowers; this is a simple/fast solution
+  // to the problem of a multi-object pileup that could otherwise push them through.
+  // Also, if we were to allow a y-velocity so high they could go over the flowers,
+  // this would keep them inside.
+  private constrainBalls(): void {
+    for (const b of this.balls) {
+      const {x, y} = b.physics.center
+      const r = b.physics.radius
+      if (x - r < this.leftWall.x2) {
+        b.physics.center.x = this.leftWall.x2 + r
+      }
+      if (x + r > this.rightWall.x1) {
+        b.physics.center.x = this.rightWall.x1 - r
+      }
+      if (y - r < this.invisibleFloor.y2) {
+        b.physics.center.y = this.invisibleFloor.y2 + r
+      }
+    }
+  }
+
   //
   // Keeps players constrained by floor and walls
   //
@@ -750,6 +771,7 @@ class Game {
     }
     this.manageCollisions(true)
     this.constrainPlayers()
+    this.constrainBalls()
   }
 
   private gameStep(dt: number): boolean {
@@ -768,12 +790,14 @@ class Game {
     }
     if (this.checkForAndScorePoint()) {
       this.constrainPlayers()
+      this.constrainBalls()
       return true
     } else {
       this.launchPlayersWithGoodTiming()
       this.manageCollisions(false)
       this.handleActionInputs(dt)
       this.constrainPlayers()
+      this.constrainBalls()
       return false
     }
   }
@@ -790,6 +814,7 @@ class Game {
 
     this.manageCollisions(true)
     this.constrainPlayers()
+    this.constrainBalls()
   }
 
   private updateFuturePrediction(): void {
@@ -897,8 +922,9 @@ class Game {
     this.handleAutoPausedInputs()
   }
   private runPostPointState() {
+    const dt = this.currentGameTime.elapsedGameTime.totalMilliseconds / 1000
     this.postPointStep()
-    this.handlePostPointInputs()
+    this.handlePostPointInputs(dt)
   }
   private runPreActionState() {
     this.handlePreActionInputs()

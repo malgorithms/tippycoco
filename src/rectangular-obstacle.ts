@@ -19,6 +19,19 @@ class RectangularObstacle {
     this.height = o.height
   }
 
+  public get x1() {
+    return this.center.x - this.width / 2
+  }
+  public get x2() {
+    return this.center.x + this.width / 2
+  }
+  public get y1() {
+    return this.center.y - this.height / 2
+  }
+  public get y2() {
+    return this.center.y + this.height / 2
+  }
+
   public handleBallCollision(ball: CircularObject, elasticity: number, isSimulation: boolean): boolean {
     let didCollide = false
     const ballRad: number = ball.diameter / 2
