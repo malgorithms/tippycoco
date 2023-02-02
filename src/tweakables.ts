@@ -1,5 +1,6 @@
 import {Color} from './color'
-import {Dims, KeyboardControlSet, NewPlayerArg, PlayerKeyboardSet, PlayerSpecies, Vector2} from './types'
+import {Dims, KeyboardControlSet, NewBallArg, NewPlayerArg, PlayerKeyboardSet, PlayerSpecies, Vector2} from './types'
+import {vec} from './utils'
 
 //
 // TODO: extract all the garbage I hard-coded in game.ts into here
@@ -58,10 +59,10 @@ export default {
     ballAngularFriction: 0.5,
     ballFloorElasticity: 0.5,
     maxAngVel: 100,
-    ballSpinElasticityOffFrictionPoints: 0.5,
-    ballSpinVelocityBumpOffFrictionPoints: 0.45,
-    ballOnBallFrictionSpin: 0.95, // higher values allow players to add more spin to balls
-    ballOnBallFrictionBump: 0.5, // higher values cause more redirection from spin hits
+    ballSpinElasticityOffFrictionPoints: 0.05,
+    ballBumpOffFrictionPoints: 0.25,
+    ballOnBallFrictionSpin: 0.25, // higher values allow players to add more spin to balls
+    ballOnBallFrictionBump: 0.4, // higher values cause more redirection from spin hits
     minRelSpeedToAllowBallSpins: 0.25,
   },
   input: {
@@ -126,11 +127,15 @@ export default {
     yMin: -0.07,
   },
   ball: {
-    defaultSettings: {
-      mass: 0.1,
+    defaultSettings: (): NewBallArg => ({
+      density: 20,
       diameter: 0.08,
       maxSpeed: 1.4,
-    },
+      orientation: 0,
+      center: vec.zero(),
+      vel: vec.zero(),
+      angularVel: 0,
+    }),
   },
   cloud: {
     num: 5,
@@ -152,6 +157,8 @@ export default {
     growSpeed: 0.1,
     minDiameter: 0.09,
     maxDiameter: 0.175,
+    maxVelAtSmallest: {x: 1.033, y: 1.37} as Vector2,
+    maxVelAtLargest: {x: 0.74, y: 1.15} as Vector2,
     jumpSpeedAfterPoint: 1.85,
     afterPointJumpDelay: 0.15,
     eyes: {
@@ -164,43 +171,45 @@ export default {
       blinkEveryMs: 5000,
       blinkDurationMs: 100,
     },
-    defaultSettings: () =>
-      ({
-        maxVel: {x: 0.8, y: 1.2},
-        diameter: 0.15,
-        mass: 3,
-        xSpringConstant: 30,
-        gravityMultiplier: 1.9, // relative to ball
-        targetXVel: 0,
-        species: PlayerSpecies.Human,
-        ai: null,
-      } as NewPlayerArg),
+    defaultSettings: (): NewPlayerArg => ({
+      maxVel: {x: 0.8, y: 1.2},
+      diameter: 0.15,
+      density: 170,
+      xSpringConstant: 30,
+      gravityMultiplier: 1.9, // relative to ball
+      targetXVel: 0,
+      species: PlayerSpecies.Human,
+      ai: null,
+    }),
   },
   menu: {
+    cols: 3, // this many cars per row
     bpm: 87, // beats per minute for menu, to match the music
-    cardWidth: 0.7, // game units
-    cardWidthSelected: 1.0, // selected card this much bigger
-    cardStackStart: {x: 0, y: 0.5},
-    cardStackSpacing: {x: 0.4, y: -0.1},
-    textOffsetFromCard: {x: 0, y: 0.4},
+    cardWidth: 0.5, // game units
+    cardWidthSelected: 0.6, // selected card this much bigger
+    cardGridMargin: 0.4, //
+    cardGridShift: {x: -0.3, y: 0.1},
+    textOffsetFromCard: {x: 0, y: 0.2},
     afterChosenOffset: {x: 0.1, y: -0.1},
     coverColor: new Color(0, 0, 0, 0.3), //  background over existing game
     deselectedCardColor: new Color(0, 0, 0, 0.2), //  background over existing game
-    cardBall1Pos: {x: 0.85, y: 0.73}, // fractional position on card's surface
-    cardBall2Pos: {x: 0.85, y: 0.58}, // fractional position on card's surface
-    lockReasonPos: {x: 0, y: -0.4}, // fraction position on card's surface
+    cardBall1Pos: {x: 0.75, y: 0.55}, // fractional position on card's surface
+    cardBall2Pos: {x: 0.75, y: 0.25}, // fractional position on card's surface
+    lockReasonPos: {x: 0, y: -0.5}, // fraction position on card's surface
     lockReasonColor: new Color(1, 1, 1, 0.8),
-    lockOverlayAlpha: 0.6,
-    cardBallSize: 0.08, // fractional to card's size
+    lockReasonSize: 0.08,
+    lockReasonSubsize: 0.06,
+    lockOverlayAlpha: 0.9,
+    cardBallSize: 0.16, // fractional to card's size
     cardSizeBounce: 0.05,
     cardRotationBounce: 0.03,
     subtextOffset: {x: 0, y: -0.2},
-    subtextRelSize: 0.4,
-    statsPosition: {x: 0.5, y: -0.1},
+    subtextRelSize: 0.42,
+    statsPosition: {x: 0.85, y: -0.1},
     statsColorLeft: new Color(0.5, 1, 0, 0.5),
     statsColorRight: new Color(0.5, 1, 0, 0.7),
     statsColorRightBad: new Color(1, 1, 0, 0.7),
-    statsFontSize: 0.035,
+    statsFontSize: 0.055,
     statsLineSpacing: 1.2,
     statsRightColAdj: {x: 0.02, y: -0.0025},
     statsRightColFontMult: 1.1,

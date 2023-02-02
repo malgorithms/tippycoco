@@ -60,6 +60,9 @@ class Display {
   public get canvasHeight(): number {
     return this.canvasManager.height
   }
+  public get viewableRegion() {
+    return this.canvasManager.viewableRegion
+  }
   public get ctx(): CanvasRenderingContext2D {
     return this.canvasManager.ctx
   }

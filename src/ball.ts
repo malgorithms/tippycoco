@@ -1,36 +1,36 @@
 import {CircularObject} from './circular-object'
 import tweakables from './tweakables'
-import {Vector2} from './types'
+import {NewBallArg, Vector2} from './types'
 import {vec} from './utils'
 
 class Ball {
   public physics: CircularObject
   public maxSpeed: number
-  constructor(center: Vector2, vel: Vector2, diameter: number, mass: number, maxSpeed: number, orientation: number, angularVel: number) {
-    this.physics = new CircularObject(
-      center,
-      vel,
-      diameter,
-      mass,
-      orientation,
-      angularVel,
-      1.0,
-      true,
-      tweakables.physics.ballSpinElasticityOffFrictionPoints,
-      tweakables.physics.ballSpinVelocityBumpOffFrictionPoints,
-    )
-    this.maxSpeed = maxSpeed
+  constructor(o: NewBallArg) {
+    this.physics = new CircularObject({
+      center: o.center,
+      vel: o.vel,
+      diameter: o.diameter,
+      density: o.density,
+      orientation: o.orientation,
+      angularVel: o.angularVel,
+      gravityMultiplier: 1,
+      canSpin: true,
+      bumpOffFrictionPoints: tweakables.physics.ballBumpOffFrictionPoints,
+      spinElasticityOffFrictionPoints: tweakables.physics.ballSpinElasticityOffFrictionPoints,
+    })
+    this.maxSpeed = o.maxSpeed
   }
   public deepCopy(): Ball {
-    return new Ball(
-      vec.copy(this.physics.center),
-      vec.copy(this.physics.vel),
-      this.physics.diameter,
-      this.physics.mass,
-      this.maxSpeed,
-      this.physics.orientation,
-      this.physics.angularVel,
-    )
+    return new Ball({
+      center: this.physics.center,
+      vel: this.physics.vel,
+      diameter: this.physics.diameter,
+      density: this.physics.density,
+      maxSpeed: this.maxSpeed,
+      orientation: this.physics.orientation,
+      angularVel: this.physics.angularVel,
+    })
   }
   public trimSpeedIfNecessary(): void {
     const v = this.physics.vel

@@ -2,8 +2,10 @@
 
 Stuff
 
+- consider horizontal dash move
 - more characters?
 - yellow player who likes to catch the ball
+- managed to force the ball throug the net once - add constraint
 - menu redesign:
   - hmm, maybe consider grid of them rather than stacking
   - bot template support

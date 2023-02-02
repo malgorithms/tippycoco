@@ -85,16 +85,8 @@ class Game {
   private generateBalls(numBalls: number) {
     this.balls = []
     for (let i = 0; i < numBalls; i++) {
-      const b = new Ball(
-        {x: 0, y: 0},
-        {x: 0, y: 0},
-        tweakables.ball.defaultSettings.diameter,
-        tweakables.ball.defaultSettings.mass,
-        tweakables.ball.defaultSettings.maxSpeed,
-        0, // Orientation
-        0, // Rotation Speed
-      )
-      this.balls.push(b)
+      const ballArg = tweakables.ball.defaultSettings()
+      this.balls.push(new Ball(ballArg))
     }
   }
 
@@ -274,7 +266,7 @@ class Game {
   private handleIntroInputs(): void {
     let stepForward = false
     for (let i = 1; i <= 4; i++) {
-      if (this.input.wasMenuSelectJustPushed(null).selected) {
+      if (this.input.wasMenuSelectJustPushed(null).selected || this.accumulatedStateSeconds > 3) {
         if (Date.now() - this.whenStartedDateTime > 250) {
           stepForward = true
         }
@@ -303,6 +295,8 @@ class Game {
     const menuSelectResult = this.input.wasMenuSelectJustPushed(owner)
     if (this.input.wasMenuRightJustPushed(owner)) this.menu.moveRight(owner)
     else if (this.input.wasMenuLeftJustPushed(owner)) this.menu.moveLeft(owner)
+    else if (this.input.wasMenuDownJustPushed(owner)) this.menu.moveDown(owner)
+    else if (this.input.wasMenuUpJustPushed(owner)) this.menu.moveUp(owner)
     if (menuSelectResult.selected && !this.menu.isOnLockedSelection()) {
       const gamepadSide = menuSelectResult.byPlayerSide
       const entry = this.menu.selectionEntry
@@ -644,6 +638,7 @@ class Game {
     const isLeft = playerSide === PlayerSide.Left
     if (!collision.didCollide || isSimulation) return
 
+    console.log(ball.physics.mass)
     const hardness = Math.min(1, vec.len(collision.c2MomentumDelta) / ball.physics.mass / 5.0)
     const pan = collision.pointOfContact.x
     const pitch =

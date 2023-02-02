@@ -67,15 +67,36 @@ interface CircleCircleCollision {
   c1EnergyDelta: number
   c2EnergyDelta: number
 }
-interface NewPlayerArg {
+type NewPlayerArg = {
   maxVel: Vector2
   diameter: number
-  mass: number
+  density: number
   xSpringConstant: number
   gravityMultiplier: number
   targetXVel: number
   species: PlayerSpecies
   ai: AiBase | null
+}
+type NewBallArg = {
+  center: Vector2
+  vel: Vector2
+  diameter: number
+  density: number
+  maxSpeed: number
+  orientation: number
+  angularVel: number
+}
+type NewCircularObjectArg = {
+  center: Vector2
+  vel: Vector2
+  diameter: number
+  density: number
+  orientation: number
+  angularVel: number
+  gravityMultiplier: number
+  canSpin: boolean
+  spinElasticityOffFrictionPoints: number
+  bumpOffFrictionPoints: number
 }
 
 interface MenuSelectResult {
@@ -129,6 +150,8 @@ export {
   FutureState,
   CircleCircleCollision,
   NewPlayerArg,
+  NewCircularObjectArg,
+  NewBallArg,
   Dims,
   FontDef,
   Texture2D,
