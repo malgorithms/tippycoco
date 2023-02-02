@@ -344,7 +344,7 @@ class Menu {
       this.drawCardStatLine(`fastest win:`, `${fastestWin.toFixed(3)} ${emoji}`, pos, fastestWin > 60)
     }
     pos.y -= lSpace
-    this.drawCardStatLine(`games played:`, `${record.wins + record.losses}`, pos, false)
+    this.drawCardStatLine(`plays:`, `${record.wins + record.losses}`, pos, false)
   }
 
   public enforceAllowReturn(allow: boolean) {
