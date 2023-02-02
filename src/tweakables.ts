@@ -205,7 +205,7 @@ export default {
     cardRotationBounce: 0.03,
     subtextOffset: {x: 0, y: -0.2},
     subtextRelSize: 0.42,
-    statsPosition: {x: 0.85, y: -0.1},
+    statsPosition: {x: 0.75, y: -0.1},
     statsColorLeft: new Color(0.5, 1, 0, 0.5),
     statsColorRight: new Color(0.5, 1, 0, 0.7),
     statsColorRightBad: new Color(1, 1, 0, 0.7),
