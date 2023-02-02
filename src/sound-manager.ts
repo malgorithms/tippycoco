@@ -61,20 +61,20 @@ class SoundManager {
     else if (vel < 0.0 && !isLeft) this.playIfNotPlaying('p2Shrinkage', 0.2, -vel, 0.0, true)
     else if (vel > 0.0 && !isLeft) this.playIfNotPlaying('p2Growth', 0.2, -vel, 0.0, true)
   }
-  public fadeOutSound(instance: SoundEffectInstance, dt: number, fadeOutSeconds: number): void {
+  public fadeOutSound(instance: SoundEffectInstance, fadeOutSeconds: number): void {
     instance.fadeOut(fadeOutSeconds)
   }
-  public fadeGrowthNoise(playerSide: PlayerSide, dt: number): void {
+  public fadeGrowthNoise(playerSide: PlayerSide): void {
     if (playerSide === PlayerSide.Left) {
       const sInstance = this.instances.get(this.getSound('p1Shrinkage'))
       const gInstance = this.instances.get(this.getSound('p1Growth'))
-      if (sInstance?.effect.isPlaying) this.fadeOutSound(sInstance, dt, 1.0)
-      if (gInstance?.effect.isPlaying) this.fadeOutSound(gInstance, dt, 1.0)
+      if (sInstance?.effect.isPlaying) this.fadeOutSound(sInstance, 1.0)
+      if (gInstance?.effect.isPlaying) this.fadeOutSound(gInstance, 1.0)
     } else {
       const sInstance = this.instances.get(this.getSound('p2Shrinkage'))
       const gInstance = this.instances.get(this.getSound('p2Growth'))
-      if (sInstance?.effect.isPlaying) this.fadeOutSound(sInstance, dt, 1.0)
-      if (gInstance?.effect.isPlaying) this.fadeOutSound(gInstance, dt, 1.0)
+      if (gInstance?.effect.isPlaying) this.fadeOutSound(gInstance, 1.0)
+      if (sInstance?.effect.isPlaying) this.fadeOutSound(sInstance, 1.0)
     }
   }
 }

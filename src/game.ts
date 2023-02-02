@@ -161,6 +161,8 @@ class Game {
   }
 
   private setGameState(gs: GameState) {
+    this.sound.fadeGrowthNoise(PlayerSide.Left)
+    this.sound.fadeGrowthNoise(PlayerSide.Right)
     if (gs !== this.gameState) this.accumulatedStateSeconds = 0.0
     this.gameState = gs
     if (gs === GameState.PreAction) this.setUpForServe()
@@ -326,8 +328,10 @@ class Game {
   }
   private handlePostPointInputs(dt: number): void {
     // we can let them move for a min
-    this.handleActionInputsForPlayer(dt, PlayerSide.Left)
-    this.handleActionInputsForPlayer(dt, PlayerSide.Right)
+    if (this.accumulatedStateSeconds < tweakables.afterPointKeepMovingSec) {
+      this.handleActionInputsForPlayer(dt, PlayerSide.Left)
+      this.handleActionInputsForPlayer(dt, PlayerSide.Right)
+    }
   }
   private handlePreActionInputs(): void {
     if (this.accumulatedStateSeconds > 1.0) {
@@ -404,7 +408,7 @@ class Game {
         player.grow(dt, tweakables.keyboardGrowthRate)
         this.sound.playGrowthNoise(playerSide, tweakables.keyboardGrowthRate)
       } else {
-        this.sound.fadeGrowthNoise(playerSide, dt)
+        this.sound.fadeGrowthNoise(playerSide)
       }
     }
   }
