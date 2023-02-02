@@ -4,7 +4,7 @@ import {KeyboardMonitor} from './keyboard-monitor'
 import {MenuOwnership} from './menu'
 import {PlayerSpecies} from './player'
 import tweakables from './tweakables'
-import {MenuSelectResult, PlayerSide} from './types'
+import {MenuSelectResult, PlayerSide, Vector2} from './types'
 
 class Input {
   private pads = new GamepadMonitor()
@@ -116,6 +116,11 @@ class Input {
       right: this.pads.getStateFromPlayer(PlayerSide.Right),
     }
   }
+  public wasDashJustPushed(pI: PlayerSide): boolean {
+    const set = this.getKeyboardSet(pI)
+    return this.keyboard.anyKeyDown(set.dash) || this.pads.anyButtonDown(pI, ['psSquare'])
+  }
+
   public isJumpPressed(pI: PlayerSide): boolean {
     const set = this.getKeyboardSet(pI)
     return this.keyboard.anyKeyDown(set.jump) || this.pads.anyButtonDown(pI, ['psX'])
@@ -140,6 +145,32 @@ class Input {
     if (Math.abs(x) < tweakables.thumbstickCenterTolerance) return 0
     else return x
   }
+  /**
+   * returns 0 if thumbstick near the middle, within tolerance
+   * defined in tweakables. otherwise returns value
+   * @param playerSide - playerSide
+   */
+  public getLeftThumbStickY(playerSide: PlayerSide): number {
+    const y = -this.pads.getThumbStick(playerSide, 'left').y
+    if (Math.abs(y) < tweakables.thumbstickCenterTolerance) return 0
+    else return y
+  }
+  public getXyDirectional(pS: PlayerSide): Vector2 {
+    const res: Vector2 = {
+      x: this.getLeftThumbStickX(pS),
+      y: this.getLeftThumbStickY(pS),
+    }
+    console.log(res)
+    if (!res.x && !res.y) {
+      if (this.isLeftPressed(pS) && !this.isRightPressed(pS)) res.x = -1
+      else if (this.isRightPressed(pS) && !this.isLeftPressed(pS)) res.x = 1
+      if (this.isJumpPressed(pS)) res.y = 1
+      // dive bomb if nothing pushed
+      if (!res.x && !res.y) res.y = -1
+    }
+    return res
+  }
+
   public isLeftPressed(pI: PlayerSide): boolean {
     const set = this.getKeyboardSet(pI)
     const keyboardLeft = this.keyboard.anyKeyDown(set.left) && !this.keyboard.anyKeyDown(set.right)

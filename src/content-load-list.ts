@@ -64,6 +64,8 @@ const soundSources = {
   themeSong: 'sounds/ThemeSong.mp3',
   flowerBounce: 'sounds/FlowerBounce.mp3',
   slam: 'sounds/Slam.mp3',
+  thud: 'sounds/Thud.mp3',
+  dash: 'sounds/Dash.mp3',
   rejected: 'sounds/Rejected.mp3',
   pointScored: 'sounds/PointScored.mp3',
   gamePlayMusic: 'sounds/GamePlay02.mp3',
@@ -71,7 +73,6 @@ const soundSources = {
   p2Growth: 'sounds/Inhale.mp3',
   p1Shrinkage: 'sounds/Exhale.mp3',
   p2Shrinkage: 'sounds/Exhale.mp3',
-  thud: 'sounds/Thud.mp3',
   ceramicBounce: 'sounds/CeramicBounce.mp3',
   gamePoint: 'sounds/GamePoint.mp3',
 } as const

@@ -381,19 +381,30 @@ class Game {
       }
     }
   }
+  private getDashDir(player: Player) {
+    const dSq = (b: Ball) => vec.distSq(b.physics.center, player.physics.center)
+    const ballsClosests: Ball[] = this.balls.concat([]).sort((b1, b2) => dSq(b1) - dSq(b2))
+    return vec.sub(ballsClosests[0].physics.center, player.physics.center)
+    //return this.input.getXyDirectional(playerSide)
+  }
   private handleActionInputsForPlayer(dt: number, playerSide: PlayerSide): void {
     const player = this.player(playerSide)
 
     if (player.species === PlayerSpecies.Human) {
-      player.targetXVel = 0
+      player.targetXVel = player.isDashing ? player.physics.vel.x : 0
       // the following is -1...1 and maps to 0 if near the center, as determined
       // in tweakables.thumbstickCenterTolerance
       const thumbstickPos = this.input.getLeftThumbStickX(playerSide)
-      if (this.input.isLeftPressed(playerSide)) player.moveLeft()
-      else if (this.input.isRightPressed(playerSide)) player.moveRight()
-      else if (thumbstickPos) player.moveRationally(thumbstickPos)
-      if (player.isInJumpPosition && this.input.isJumpPressed(playerSide)) player.jump()
-
+      if (!player.isDashing) {
+        if (this.input.isLeftPressed(playerSide)) player.moveLeft()
+        else if (this.input.isRightPressed(playerSide)) player.moveRight()
+        else if (thumbstickPos) player.moveRationally(thumbstickPos)
+        if (player.canDashNow && this.input.wasDashJustPushed(playerSide)) {
+          const dashDir = this.getDashDir(player)
+          player.dash(dashDir)
+          this.sound.play('dash', 1, 0, 0, false)
+        } else if (player.isInJumpPosition && this.input.isJumpPressed(playerSide)) player.jump()
+      }
       // triggers only register over some threshold as dtermined in tweakables.triggerTolerance
       const lTrigger = this.input.getTrigger(playerSide, 'left')
       const rTrigger = this.input.getTrigger(playerSide, 'right')
@@ -414,7 +425,6 @@ class Game {
       }
     }
   }
-
   private canPlayerJump(player: Player, opponent: Player): boolean {
     if (this.accumulatedStateSeconds < tweakables.ballPlayerLaunchTime) return false
     else if (player.physics.vel.y > player.maxVel.y / 2) return false
@@ -422,6 +432,16 @@ class Game {
     else if (player.isOnRectangle(this.net)) return true
     else if (player.isOnPlayer(opponent)) return true
     else return false
+  }
+  private isInDashPosition(player: Player, opponent: Player): boolean {
+    // for now dashing is off. It kind of stinks!
+    if (!tweakables.allowDashing) return false
+    if (player.isDashing) return false
+    if (this.accumulatedStateSeconds < tweakables.ballPlayerLaunchTime) return false
+    else if (player.isOnHeight(0.0)) return false
+    else if (player.isOnRectangle(this.net)) return true
+    else if (player.isOnPlayer(opponent)) return true
+    else return true
   }
 
   private aIStep(): void {
@@ -768,6 +788,7 @@ class Game {
       player.stepVelocity(dt, tweakables.gameGravity)
       player.stepPosition(dt)
       player.setIsInJumpPosition(this.canPlayerJump(player, opponent))
+      player.setIsInDashPosition(this.isInDashPosition(player, opponent))
     }
     for (const ball of this.balls) {
       ball.stepVelocity(dt, tweakables.gameGravity, true)
@@ -810,6 +831,8 @@ class Game {
     const p1Real = this.player(PlayerSide.Right)
     const p0Copy = p0Real.deepCopy()
     const p1Copy = p1Real.deepCopy()
+    this.players.set(PlayerSide.Left, p0Copy)
+    this.players.set(PlayerSide.Right, p1Copy)
 
     for (let i = 0; i < this.balls.length; i++) {
       sbTemp[i] = this.balls[i].deepCopy()
@@ -870,8 +893,8 @@ class Game {
     for (let i = 0; i < this.balls.length; i++) {
       this.balls[i] = sbTemp[i]
     }
-    this.players.set(PlayerSide.Left, p0Copy)
-    this.players.set(PlayerSide.Right, p1Copy)
+    this.players.set(PlayerSide.Left, p0Real)
+    this.players.set(PlayerSide.Right, p1Real)
   }
 
   private runActionState(): void {

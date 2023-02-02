@@ -13,6 +13,7 @@ const twoPlayerControls: KeyboardControlSet = {
     jump: ['KeyW'],
     shrink: ['KeyQ'],
     grow: ['KeyE'],
+    dash: ['KeyS'],
   },
   p1: {
     left: ['KeyJ', 'ArrowLeft'],
@@ -20,6 +21,7 @@ const twoPlayerControls: KeyboardControlSet = {
     jump: ['KeyI', 'ArrowUp'],
     shrink: ['KeyU', 'Period'],
     grow: ['KeyO', 'Slash'],
+    dash: ['KeyK', 'ArrowDown'],
   },
 }
 
@@ -30,6 +32,7 @@ const p0Set: PlayerKeyboardSet = {
   jump: twoPlayerControls.p0.jump.concat(twoPlayerControls.p1.jump),
   shrink: twoPlayerControls.p0.shrink.concat(twoPlayerControls.p1.shrink),
   grow: twoPlayerControls.p0.grow.concat(twoPlayerControls.p1.grow),
+  dash: twoPlayerControls.p0.dash.concat(twoPlayerControls.p1.dash),
 }
 const onePlayerControls: KeyboardControlSet = {
   p0: p0Set,
@@ -83,6 +86,7 @@ export default {
       textOffset: {x: 0, y: 0},
     },
   },
+  allowDashing: false,
   fpsSampleCount: 100, // loops
   ballPlayerLaunchTime: 1,
   winningScore: 5,
@@ -159,6 +163,7 @@ export default {
     maxDiameter: 0.175,
     maxVelAtSmallest: {x: 1.033, y: 1.37} as Vector2,
     maxVelAtLargest: {x: 0.74, y: 1.15} as Vector2,
+    dashMult: 1.5, // multiplied by max speed
     jumpSpeedAfterPoint: 1.85,
     afterPointJumpDelay: 0.15,
     eyes: {

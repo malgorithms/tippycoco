@@ -35,7 +35,6 @@ class SoundEffectInstance {
     this.pannerNode.connect(this.audioContext.destination)
   }
   public stop() {
-    console.log(`Stop called`)
     this.source.stop()
     this.effect._notifyOfInstanceDone(this)
   }

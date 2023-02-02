@@ -29,9 +29,7 @@ Stuff
   - ball hitting ground sound
   - if ball bounces in rapid succession (fast volley?) pitch increases
   - fix ding off flower...too bell-like, echoey.
-  - growth/shrink sounds:
-    - breathe in/out, with pitch by speed?
-    - fix bug where it persists on game pause or end
+  - better sound for growth/shrinking
 - exiting game shouldn't cause reload
 
 Before launching

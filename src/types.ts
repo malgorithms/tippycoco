@@ -19,6 +19,7 @@ interface PlayerKeyboardSet {
   right: KeyboardKeyCode[]
   grow: KeyboardKeyCode[]
   shrink: KeyboardKeyCode[]
+  dash: KeyboardKeyCode[]
 }
 interface KeyboardControlSet {
   p0: PlayerKeyboardSet

@@ -38,6 +38,7 @@ const vec = {
     x: -v.y,
     y: v.x,
   }),
+  distSq: (v1: Vector2, v2: Vector2) => vec.lenSq(vec.sub(v1, v2)),
 }
 function randomByteHexString(numBytes: number) {
   return Array.from(crypto.getRandomValues(new Uint8Array(numBytes)))

@@ -14,6 +14,8 @@ class Player {
   public targetXVel: number // desired speed, accelerates towards
   private _jumpCount = 0
   private _isInJumpPosition = false
+  private _isInDashPosition = false
+  private _isDashing = false
 
   constructor(o: NewPlayerArg) {
     this.physics = new CircularObject({
@@ -43,6 +45,15 @@ class Player {
   public setIsInJumpPosition(canJump: boolean) {
     this._isInJumpPosition = canJump
   }
+  public get canDashNow() {
+    return this._isInDashPosition && !this.isDashing
+  }
+  public get isDashing() {
+    return this._isDashing
+  }
+  public setIsInDashPosition(canDash: boolean) {
+    this._isInDashPosition = canDash
+  }
   public deepCopy(): Player {
     const sp = new Player({
       maxVel: vec.copy(this.maxVel),
@@ -65,6 +76,19 @@ class Player {
     if (this.isInJumpPosition) {
       this._jumpCount++
       this.physics.vel.y = this.maxVel.y
+    }
+  }
+  public dash(dir: Vector2) {
+    console.log('player::dash', this._isDashing)
+    if (this.canDashNow) {
+      this._isDashing = true
+      this.physics.density = 234
+      console.log('player::dash - YES')
+      this._jumpCount++
+      const dirNormalized = vec.normalized(dir)
+      const speed = tweakables.player.dashMult * Math.max(this.maxVel.x, this.maxVel.y)
+      this.physics.vel.x += dirNormalized.x * speed
+      this.physics.vel.y += dirNormalized.y * speed
     }
   }
   public grow(dt: number, vel: number) {
@@ -90,12 +114,15 @@ class Player {
     this.physics.center = vec.add(this.physics.center, vec.scale(this.physics.vel, dt))
   }
   public stepVelocity(dt: number, gravity: Vector2) {
-    const idealVx = this.targetXVel * this.maxVel.x
+    const idealVx = this.targetXVel
     const difference = idealVx - this.physics.vel.x
     this.physics.vel = vec.add(this.physics.vel, {x: difference * dt * this.xSpringConstant, y: 0})
 
     // gravity
     this.physics.vel = vec.add(this.physics.vel, vec.scale(gravity, dt * this.physics.gravityMultiplier))
+    if (vec.lenSq(this.physics.vel) < this.maxVel.x) {
+      this._isDashing = false
+    }
   }
   public isOnHeight(height: number): boolean {
     return this.physics.center.y <= height + tweakables.proximityTolerance

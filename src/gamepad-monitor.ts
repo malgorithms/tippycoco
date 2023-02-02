@@ -21,6 +21,7 @@ interface GamePadState {
     dPadRight: boolean
     psX: boolean // equivalent placement to X button on playstation, or the jump button in most games
     psO: boolean // equivalent placement to O button on playstation, or the "back" in most games
+    psSquare: boolean // square on playstation, X on xbox
     start: boolean
     leftStick: boolean
     rightStick: boolean
@@ -102,27 +103,28 @@ class GamepadMonitor {
   }
 
   private wasThumbstickPushedYBy(playerSide: PlayerSide, stickName: ThumbstickName, y: number): boolean {
+    const yFlip = -y
     const gamepad = this.currAssigned.get(playerSide)
     if (!gamepad) return false
     const currState = this.currState.get(gamepad.id)
     const prevState = this.prevState.get(gamepad.id)
     let currPushed: boolean
     let prevPushed: boolean
-    if (y < 0) {
-      currPushed = currState ? currState.thumbSticks[stickName].y < y : false
-      prevPushed = prevState ? prevState.thumbSticks[stickName].y < y : false
+    if (yFlip < 0) {
+      currPushed = currState ? currState.thumbSticks[stickName].y < yFlip : false
+      prevPushed = prevState ? prevState.thumbSticks[stickName].y < yFlip : false
     } else {
-      currPushed = currState ? currState.thumbSticks[stickName].y > y : false
-      prevPushed = prevState ? prevState.thumbSticks[stickName].y > y : false
+      currPushed = currState ? currState.thumbSticks[stickName].y > yFlip : false
+      prevPushed = prevState ? prevState.thumbSticks[stickName].y > yFlip : false
     }
     if (currPushed && !prevPushed) return true
     return false
   }
   public wasThumbstickPushedDownBy(playerSide: PlayerSide, thumbstickName: ThumbstickName): boolean {
-    return this.wasThumbstickPushedYBy(playerSide, thumbstickName, tweakables.input.thumbstickPush)
+    return this.wasThumbstickPushedYBy(playerSide, thumbstickName, -tweakables.input.thumbstickPush)
   }
   public wasThumbstickPushedUpBy(playerSide: PlayerSide, thumbstickName: ThumbstickName): boolean {
-    return this.wasThumbstickPushedYBy(playerSide, thumbstickName, -tweakables.input.thumbstickPush)
+    return this.wasThumbstickPushedYBy(playerSide, thumbstickName, tweakables.input.thumbstickPush)
   }
   public wasThumbstickPushedLeftBy(playerSide: PlayerSide, thumbstickName: ThumbstickName): boolean {
     return this.wasThumbstickPushedXBy(playerSide, thumbstickName, -tweakables.input.thumbstickPush)
@@ -240,6 +242,7 @@ class GamepadMonitor {
         dPadRight: buttons[15]?.pressed ?? false,
         psX: gamepad.buttons[0]?.pressed ?? false,
         psO: gamepad.buttons[1]?.pressed ?? false,
+        psSquare: gamepad.buttons[2]?.pressed ?? false,
         start: gamepad.buttons[9]?.pressed ?? false,
         leftStick: gamepad.buttons[10]?.pressed ?? false,
         rightStick: gamepad.buttons[11]?.pressed ?? false,
