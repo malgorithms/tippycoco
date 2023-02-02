@@ -160,6 +160,9 @@ class Game {
     }
   }
 
+  public getGameState() {
+    return this.gameState
+  }
   private setGameState(gs: GameState) {
     this.sound.fadeGrowthNoise(PlayerSide.Left)
     this.sound.fadeGrowthNoise(PlayerSide.Right)
@@ -334,7 +337,7 @@ class Game {
     }
   }
   private handlePreActionInputs(): void {
-    if (this.accumulatedStateSeconds > 1.0) {
+    if (this.accumulatedStateSeconds > tweakables.preServeDelaySec) {
       this.setGameState(GameState.Action)
     }
   }
@@ -359,8 +362,14 @@ class Game {
       this.playerRight.physics.vel.y = tweakables.player.jumpSpeedAfterPoint
     }
   }
+  private arePlayersHighEnoughToMove() {
+    return (
+      this.playerLeft.physics.center.y >= -this.playerLeft.physics.radius &&
+      this.playerRight.physics.center.y >= -this.playerRight.physics.radius
+    )
+  }
   private handleActionInputs(dt: number): void {
-    if (this.accumulatedStateSeconds > tweakables.player.afterPointJumpDelay) {
+    if (this.arePlayersHighEnoughToMove()) {
       this.handleActionInputsForPlayer(dt, PlayerSide.Left)
       this.handleActionInputsForPlayer(dt, PlayerSide.Right)
     }
@@ -935,6 +944,7 @@ class Game {
     this.handlePostPointInputs(dt)
   }
   private runPreActionState() {
+    this.setUpForServe()
     this.handlePreActionInputs()
   }
   private runVictoryState() {

@@ -474,9 +474,16 @@ class Display {
         0,
       )
     }
-    currentFps
 
     if (this.inDebugView) {
+      this.spriteBatch.drawStringUncentered(
+        this.game.getGameState(),
+        font,
+        height * 0.75,
+        {x: xPos, y: yPos - height * 1.1},
+        new Color(0, 0, 0, 0.75),
+        0,
+      )
       const alpha = (s: FutureState) => 1 - s.time / tweakables.predictionLookaheadSec
       for (let i = 0; i < this.game.balls.length; i++) {
         const ball = this.game.balls[i]

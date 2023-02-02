@@ -62,9 +62,9 @@ export default {
     ballAngularFriction: 0.5,
     ballFloorElasticity: 0.5,
     maxAngVel: 100,
-    ballSpinElasticityOffFrictionPoints: 0.05,
+    ballSpinElasticityOffFrictionPoints: 0.65,
     ballBumpOffFrictionPoints: 0.25,
-    ballOnBallFrictionSpin: 0.25, // higher values allow players to add more spin to balls
+    ballOnBallFrictionSpin: 1.25, // higher values allow players to add more spin to balls
     ballOnBallFrictionBump: 0.4, // higher values cause more redirection from spin hits
     minRelSpeedToAllowBallSpins: 0.25,
   },
@@ -94,6 +94,8 @@ export default {
   timeOnServeFloorDisappears: 0.15,
   afterPointKeepMovingSec: 1,
   afterPointFreezeSec: 0.01,
+  afterServeInputDelay: 0.75, // after
+  preServeDelaySec: 0.8, // sec to switch from pre-action to action
   predictFutureEveryMs: 10, // update every this often ms
   physicsDtSec: 0.002, // seconds,
   redrawTargetMs: 4, // every game loop, if this much time has gone by, we redraw
