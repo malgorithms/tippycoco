@@ -62,6 +62,22 @@ class Input {
     return res
   }
 
+  public wasMenuDownJustPushed(owner: MenuOwnership): boolean {
+    if (this.keyboard.anyKeysJustPushed(['KeyS', 'KeyK', 'ArrowDown'])) return true
+    if (owner) {
+      return this.pads.anyButtonsPushedBy(owner, ['dPadDown']) || this.pads.wasThumbstickPushedDownBy(owner, 'left')
+    } else {
+      return this.pads.anyButtonsPushedByAnyone(['dPadDown']) || this.pads.wasThumbstickPushedDown('left')
+    }
+  }
+  public wasMenuUpJustPushed(owner: MenuOwnership): boolean {
+    if (this.keyboard.anyKeysJustPushed(['KeyW', 'KeyI', 'ArrowUp'])) return true
+    if (owner) {
+      return this.pads.anyButtonsPushedBy(owner, ['dPadUp']) || this.pads.wasThumbstickPushedUpBy(owner, 'left')
+    } else {
+      return this.pads.anyButtonsPushedByAnyone(['dPadUp']) || this.pads.wasThumbstickPushedUp('left')
+    }
+  }
   public wasMenuLeftJustPushed(owner: MenuOwnership): boolean {
     if (this.keyboard.anyKeysJustPushed(['KeyA', 'KeyJ', 'ArrowLeft'])) return true
     if (owner) {

@@ -1,5 +1,5 @@
 import tweakables from './tweakables'
-import {CircleCircleCollision, Vector2} from './types'
+import {CircleCircleCollision, NewCircularObjectArg, Vector2} from './types'
 import {vec} from './utils'
 
 class CircularObject {
@@ -8,34 +8,29 @@ class CircularObject {
   public diameter: number
   private _angularVel: number
   public orientation: number
-  public mass: number
+  public density: number
   public gravityMultiplier: number
   public canSpin: boolean
   private spinElasticityOffFrictionPoints
-  private spinBumpOffFrictionPoints
+  private bumpOffFrictionPoints
 
-  public constructor(
-    center: Vector2,
-    vel: Vector2,
-    diameter: number,
-    mass: number,
-    orientation: number,
-    angularVel: number,
-    gravityMultiplier: number,
-    canSpin: boolean,
-    spinElasticityOffFrictionPoints: number,
-    spinBumpOffFrictionPoints: number,
-  ) {
-    this.center = center
-    this._angularVel = angularVel
-    this.vel = vel
-    this.diameter = diameter
-    this.orientation = orientation
-    this.mass = mass
-    this.gravityMultiplier = gravityMultiplier
-    this.canSpin = canSpin
-    this.spinBumpOffFrictionPoints = spinBumpOffFrictionPoints
-    this.spinElasticityOffFrictionPoints = spinElasticityOffFrictionPoints
+  public constructor(o: NewCircularObjectArg) {
+    this.center = o.center
+    this._angularVel = o.angularVel
+    this.vel = o.vel
+    this.diameter = o.diameter
+    this.orientation = o.orientation
+    this.density = o.density
+    this.gravityMultiplier = o.gravityMultiplier
+    this.canSpin = o.canSpin
+    this.bumpOffFrictionPoints = o.bumpOffFrictionPoints
+    this.spinElasticityOffFrictionPoints = o.spinElasticityOffFrictionPoints
+  }
+  public get mass() {
+    return this.area * this.density
+  }
+  public get area() {
+    return Math.PI * this.radius * this.radius
   }
   public get radius() {
     return this.diameter / 2
@@ -157,13 +152,13 @@ class CircularObject {
         if (this.canSpin) {
           const thisAngularVelDelta = tweakables.physics.ballOnBallFrictionSpin * thisSpinInfo.totalAngularVel
           this.angularVel -= thisAngularVelDelta
-          const bounceScale = thisSpinInfo.totalSpeedInSpinDir * this.spinBumpOffFrictionPoints
+          const bounceScale = thisSpinInfo.totalSpeedInSpinDir * this.bumpOffFrictionPoints
           thisSpinBounceLoss = vec.scale(thisSpinInfo.dirDueToSpin, bounceScale)
         }
         if (other.canSpin) {
           const otherAngularVelDelta = tweakables.physics.ballOnBallFrictionSpin * otherSpinInfo.totalAngularVel
           other.angularVel -= otherAngularVelDelta
-          const bounceScale = otherSpinInfo.totalSpeedInSpinDir * other.spinBumpOffFrictionPoints
+          const bounceScale = otherSpinInfo.totalSpeedInSpinDir * other.bumpOffFrictionPoints
           //if (!isSimulation) console.log('yo', otherSpinInfo.totalSpeedInSpinDir, other.spinBumpOffFrictionPoints, bounceScale)
           otherSpinBounceLoss = vec.scale(otherSpinInfo.dirDueToSpin, bounceScale)
         }
@@ -284,7 +279,7 @@ class CircularObject {
   private adjSpinOffFrictionPoint(worldPoint: Vector2, isSimulation: boolean) {
     const spinInfo = this.getAtomVelocityAtWorldPoint(worldPoint, isSimulation)
     const spinLoss = spinInfo.totalAngularVel * this.spinElasticityOffFrictionPoints
-    const bounceScale = spinInfo.totalSpeedInSpinDir * this.spinBumpOffFrictionPoints
+    const bounceScale = spinInfo.totalSpeedInSpinDir * this.bumpOffFrictionPoints
     this.vel = vec.sub(this.vel, vec.scale(spinInfo.dirDueToSpin, bounceScale))
     this.angularVel -= spinLoss
     //if (!isSimulation) {

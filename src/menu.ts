@@ -17,6 +17,10 @@ type UnlockRequirement = {
   defeat: AiName
   defeatType: 'win' | 'shutout' | 'no-jumping'
 }
+type CardPosition = {
+  row: number
+  col: number
+}
 interface MenuEntry {
   text: string
   subtext?: string
@@ -152,7 +156,7 @@ class Menu {
       else return `defeat ${aiToNickname(ur.defeat)}`
     } else if (ur.defeatType === 'no-jumping') {
       if (d.noJumpWins > 0) return false
-      else return `beat ${aiToNickname(ur.defeat)} without jumping`
+      else return `beat ${aiToNickname(ur.defeat)} w/o jumping`
     } else if (ur.defeatType === 'shutout') {
       if (d.shutoutWins > 0) return false
       else return `shut out ${aiToNickname(ur.defeat)}`
@@ -194,15 +198,32 @@ class Menu {
   private cardOffset(i: number): number {
     return i - this.selectedMenuIndex
   }
-  private cardCenter(i: number): Vector2 {
-    const tMenu = tweakables.menu
-    const offset = this.cardOffset(i)
-    const offsetDir = offset ? sign(offset) : 0
-    const offsetCurve = offset ? sign(offset) * Math.sqrt(Math.abs(offset)) : 0
+  private cardNumToPosition(i: number): CardPosition {
     return {
-      x: tMenu.cardStackStart.x + tMenu.cardStackSpacing.x * offsetCurve + offsetDir * tMenu.afterChosenOffset.x,
-      y: tMenu.cardStackStart.y + Math.abs(tMenu.cardStackSpacing.y * offsetCurve) + tMenu.afterChosenOffset.y,
+      col: i % tweakables.menu.cols,
+      row: Math.floor(i / tweakables.menu.cols),
     }
+  }
+  private cardPositionToNumber(cp: CardPosition): number {
+    return cp.row * tweakables.menu.cols + cp.col
+  }
+  /**
+   * lays out the card into a grid
+   * @param i the ith item in the list of menu cards
+   * @returns
+   */
+  private cardCenter(i: number): Vector2 {
+    const tM = tweakables.menu
+    const marg = tM.cardGridMargin
+    const vRect = this.display.viewableRegion
+    const numRows = Math.ceil(this.menuItems.length / tM.cols)
+    const col = i % tM.cols
+    const row = Math.floor(i / tM.cols)
+    const xFrac = (1 + col * 2) / (tM.cols * 2)
+    const yFrac = (1 + row * 2) / (numRows * 2)
+    const x = vRect.x1 + marg + (vRect.x2 - vRect.x1) * (1 - marg) * xFrac + tM.cardGridShift.x
+    const y = vRect.y2 - marg - (vRect.y2 - vRect.y1) * (1 - marg) * yFrac + tM.cardGridShift.y
+    return {x, y}
   }
   private cardWidth(gameTime: GameTime, i: number): number {
     const beat = this.beat(gameTime.totalGameTime.totalSeconds)
@@ -265,8 +286,8 @@ class Menu {
         const txtCenter = relPos(tMenu.lockReasonPos)
         const txtCenter2 = relPos({x: 0, y: -0})
         const font = this.display.font('extraBold')
-        this.spriteBatch.drawStringCentered(lockReason, font, 0.08, txtCenter, tMenu.lockReasonColor, -2 * rotation)
-        this.spriteBatch.drawStringCentered('* LOCKED *', font, 0.12, txtCenter2, tMenu.lockReasonColor, -2 * rotation)
+        this.spriteBatch.drawStringCentered(lockReason, font, tMenu.lockReasonSubsize, txtCenter, tMenu.lockReasonColor, -2 * rotation)
+        this.spriteBatch.drawStringCentered('LOCKED', font, tMenu.lockReasonSize, txtCenter2, tMenu.lockReasonColor, -2 * rotation)
       }
     }
 
@@ -364,18 +385,34 @@ class Menu {
     return this.display.getTexture(this.menuItems[menuItem].card)
   }
 
-  public moveRight(owner: MenuOwnership): void {
-    if (this.playerOwnsMenu === null || this.playerOwnsMenu === owner) {
-      this.selectedMenuIndex = (this.selectedMenuIndex + 1) % this.menuItems.length
+  private advance(x: number, y: number) {
+    const isOver = (cp: CardPosition) => this.cardPositionToNumber(cp) >= this.menuItems.length
+    const cp = this.cardNumToPosition(this.selectedMenuIndex)
+    cp.col += x
+    if (cp.col >= tweakables.menu.cols || isOver(cp)) cp.col = 0
+    if (cp.col < 0) {
+      cp.col = tweakables.menu.cols - 1
+      if (isOver(cp)) cp.col--
     }
+    cp.row += y
+    if (isOver(cp)) cp.row = 0
+    if (cp.row < 0) {
+      cp.row = Math.floor(this.menuItems.length / tweakables.menu.cols)
+      if (isOver(cp)) cp.row--
+    }
+    this.selectedMenuIndex = this.cardPositionToNumber(cp)
+  }
+  public moveRight(owner: MenuOwnership): void {
+    if (this.playerOwnsMenu === null || this.playerOwnsMenu === owner) this.advance(1, 0)
   }
   public moveLeft(owner: MenuOwnership): void {
-    if (this.playerOwnsMenu === null || this.playerOwnsMenu === owner) {
-      this.selectedMenuIndex--
-      if (this.selectedMenuIndex < 0) {
-        this.selectedMenuIndex = this.menuItems.length - 1
-      }
-    }
+    if (this.playerOwnsMenu === null || this.playerOwnsMenu === owner) this.advance(-1, 0)
+  }
+  public moveDown(owner: MenuOwnership): void {
+    if (this.playerOwnsMenu === null || this.playerOwnsMenu === owner) this.advance(0, 1)
+  }
+  public moveUp(owner: MenuOwnership): void {
+    if (this.playerOwnsMenu === null || this.playerOwnsMenu === owner) this.advance(0, -1)
   }
   public getWhoOwnsMenu(): MenuOwnership {
     return this.playerOwnsMenu

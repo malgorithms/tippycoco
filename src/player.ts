@@ -16,7 +16,18 @@ class Player {
   private _isInJumpPosition = false
 
   constructor(o: NewPlayerArg) {
-    this.physics = new CircularObject(vec.zero(), vec.zero(), o.diameter, o.mass, 0, 0, o.gravityMultiplier, false, 0, 0)
+    this.physics = new CircularObject({
+      center: vec.zero(),
+      vel: vec.zero(),
+      diameter: o.diameter,
+      density: o.density,
+      orientation: 0,
+      angularVel: 0,
+      gravityMultiplier: o.gravityMultiplier,
+      canSpin: false,
+      spinElasticityOffFrictionPoints: 0,
+      bumpOffFrictionPoints: 0,
+    })
     this.maxVel = o.maxVel
     this.targetXVel = o.targetXVel
     this.xSpringConstant = o.xSpringConstant
@@ -36,7 +47,7 @@ class Player {
     const sp = new Player({
       maxVel: vec.copy(this.maxVel),
       diameter: this.physics.diameter,
-      mass: this.physics.mass,
+      density: this.physics.density,
       xSpringConstant: this.xSpringConstant,
       gravityMultiplier: this.physics.gravityMultiplier,
       targetXVel: this.targetXVel,
@@ -57,14 +68,14 @@ class Player {
     }
   }
   public grow(dt: number, vel: number) {
-    const oldDiameter = this.physics.diameter
-    this.physics.diameter += vel * dt
-    if (this.physics.diameter < tweakables.player.minDiameter) this.physics.diameter = tweakables.player.minDiameter
-    if (this.physics.diameter > tweakables.player.maxDiameter) this.physics.diameter = tweakables.player.maxDiameter
-    const ratio = oldDiameter / this.physics.diameter
-    this.maxVel.x *= Math.sqrt(ratio)
-    this.maxVel.y *= Math.sqrt(Math.sqrt(ratio))
-    this.physics.mass *= (1 / ratio) * (1 / ratio)
+    const tP = tweakables.player
+    const phys = this.physics
+    phys.diameter += vel * dt
+    if (phys.diameter < tP.minDiameter) phys.diameter = tP.minDiameter
+    if (phys.diameter > tP.maxDiameter) phys.diameter = tP.maxDiameter
+    const sizeFrac = (phys.diameter - tP.minDiameter) / (tP.maxDiameter - tP.minDiameter)
+    this.maxVel.x = tP.maxVelAtLargest.x + (tP.maxVelAtSmallest.x - tP.maxVelAtLargest.x) * (1 - sizeFrac)
+    this.maxVel.y = tP.maxVelAtLargest.y + (tP.maxVelAtSmallest.y - tP.maxVelAtLargest.y) * (1 - sizeFrac)
   }
   public moveRight() {
     this.targetXVel = this.maxVel.x

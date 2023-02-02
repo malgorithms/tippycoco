@@ -100,11 +100,49 @@ class GamepadMonitor {
     if (currPushed && !prevPushed) return true
     return false
   }
+
+  private wasThumbstickPushedYBy(playerSide: PlayerSide, stickName: ThumbstickName, y: number): boolean {
+    const gamepad = this.currAssigned.get(playerSide)
+    if (!gamepad) return false
+    const currState = this.currState.get(gamepad.id)
+    const prevState = this.prevState.get(gamepad.id)
+    let currPushed: boolean
+    let prevPushed: boolean
+    if (y < 0) {
+      currPushed = currState ? currState.thumbSticks[stickName].y < y : false
+      prevPushed = prevState ? prevState.thumbSticks[stickName].y < y : false
+    } else {
+      currPushed = currState ? currState.thumbSticks[stickName].y > y : false
+      prevPushed = prevState ? prevState.thumbSticks[stickName].y > y : false
+    }
+    if (currPushed && !prevPushed) return true
+    return false
+  }
+  public wasThumbstickPushedDownBy(playerSide: PlayerSide, thumbstickName: ThumbstickName): boolean {
+    return this.wasThumbstickPushedYBy(playerSide, thumbstickName, -tweakables.input.thumbstickPush)
+  }
+  public wasThumbstickPushedUpBy(playerSide: PlayerSide, thumbstickName: ThumbstickName): boolean {
+    return this.wasThumbstickPushedYBy(playerSide, thumbstickName, tweakables.input.thumbstickPush)
+  }
   public wasThumbstickPushedLeftBy(playerSide: PlayerSide, thumbstickName: ThumbstickName): boolean {
     return this.wasThumbstickPushedXBy(playerSide, thumbstickName, -tweakables.input.thumbstickPush)
   }
   public wasThumbstickPushedRightBy(playerSide: PlayerSide, thumbstickName: ThumbstickName): boolean {
     return this.wasThumbstickPushedXBy(playerSide, thumbstickName, tweakables.input.thumbstickPush)
+  }
+  public wasThumbstickPushedDown(thumbstickName: ThumbstickName) {
+    for (const playerSide of this.currAssigned.keys()) {
+      const found = this.wasThumbstickPushedDownBy(playerSide, thumbstickName)
+      if (found) return true
+    }
+    return false
+  }
+  public wasThumbstickPushedUp(thumbstickName: ThumbstickName) {
+    for (const playerSide of this.currAssigned.keys()) {
+      const found = this.wasThumbstickPushedUpBy(playerSide, thumbstickName)
+      if (found) return true
+    }
+    return false
   }
   public wasThumbstickPushedLeft(thumbstickName: ThumbstickName) {
     for (const playerSide of this.currAssigned.keys()) {
