@@ -385,6 +385,13 @@ class Menu {
     return this.display.getTexture(this.menuItems[menuItem].card)
   }
 
+  /**
+   * moves to the next card, including wrapping around. The logic here
+   * includes the fact that the menu might not be a perfect grid, so
+   * for example, going up from the top row might not lead you to the bottom
+   * row, if there isn't a card in that spot, and instead lead you to the next
+   * to last row. Same with columns.
+   */
   private advance(x: number, y: number) {
     const isOver = (cp: CardPosition) => this.cardPositionToNumber(cp) >= this.menuItems.length
     const cp = this.cardNumToPosition(this.selectedMenuIndex)
