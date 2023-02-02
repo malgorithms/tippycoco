@@ -1,11 +1,10 @@
 import {SoundName, soundSources} from './content-load-list'
 import {ContentLoader} from './content-loader'
-import {SoundEffect, SoundEffectInstance} from './sound-effect'
+import {SoundEffect} from './sound-effect'
 import {PlayerSide} from './types'
 
 class SoundManager {
   private content: ContentLoader
-  public instances = new Map<SoundEffect, SoundEffectInstance>()
   private sounds = new Map<SoundName, SoundEffect>()
 
   public constructor(content: ContentLoader) {
@@ -25,56 +24,36 @@ class SoundManager {
     if (!effect) throw new Error(`no sound was loaded with name ${name}`)
     return effect
   }
-  public play(name: SoundName, volume: number, pitch: number, pan: number, loop?: boolean) {
-    const soundEffect = this.getSound(name)
-    loop ??= false
-    const inst = soundEffect.play(volume, pitch, pan, loop)
-    this.instances.set(soundEffect, inst)
+  public play(name: SoundName, volume: number, pitch: number, pan: number, loop: boolean) {
+    this.getSound(name).play(volume, pitch, pan, loop)
   }
   public playIfNotPlaying(name: SoundName, volume: number, pitch: number, pan: number, loop: boolean) {
-    const soundEffect = this.getSound(name)
-    loop ??= false
-    if (soundEffect.isPlaying) {
-      // Nope
+    const instance = this.getSound(name).getInstanceIfPlaying()
+    if (instance) {
+      instance.volume = volume
+      instance.pan = pan
+      instance.pitch = pitch
     } else {
       this.play(name, volume, pitch, pan, loop)
     }
   }
   public stopIfPlaying(name: SoundName) {
-    const soundEffect = this.getSound(name)
-    soundEffect.stopIfPlaying()
-    if (this.instances.has(soundEffect)) this.instances.delete(soundEffect)
+    this.getSound(name).stopIfPlaying()
   }
-
-  public stopThemeMusic(): void {
-    this.stopIfPlaying('themeSong')
-  }
-
-  public stopPlayMusic(): void {
-    this.stopIfPlaying('gamePlayMusic')
-  }
-
   public playGrowthNoise(playerSide: PlayerSide, vel: number): void {
     const isLeft = playerSide === PlayerSide.Left
-    if (vel < 0.0 && isLeft) this.playIfNotPlaying('p1Shrinkage', 0.2, -vel, 0.0, true)
-    else if (vel > 0.0 && isLeft) this.playIfNotPlaying('p1Growth', 0.2, -vel, 0.0, true)
-    else if (vel < 0.0 && !isLeft) this.playIfNotPlaying('p2Shrinkage', 0.2, -vel, 0.0, true)
-    else if (vel > 0.0 && !isLeft) this.playIfNotPlaying('p2Growth', 0.2, -vel, 0.0, true)
-  }
-  public fadeOutSound(instance: SoundEffectInstance, fadeOutSeconds: number): void {
-    instance.fadeOut(fadeOutSeconds)
+    if (vel < 0.0 && isLeft) this.playIfNotPlaying('p1Shrinkage', 0.5, -vel, 0.0, false)
+    else if (vel > 0.0 && isLeft) this.playIfNotPlaying('p1Growth', 0.5, vel, 0.0, false)
+    else if (vel < 0.0 && !isLeft) this.playIfNotPlaying('p2Shrinkage', 0.5, -vel, 0.0, false)
+    else if (vel > 0.0 && !isLeft) this.playIfNotPlaying('p2Growth', 0.5, vel, 0.0, false)
   }
   public fadeGrowthNoise(playerSide: PlayerSide): void {
     if (playerSide === PlayerSide.Left) {
-      const sInstance = this.instances.get(this.getSound('p1Shrinkage'))
-      const gInstance = this.instances.get(this.getSound('p1Growth'))
-      if (sInstance?.effect.isPlaying) this.fadeOutSound(sInstance, 1.0)
-      if (gInstance?.effect.isPlaying) this.fadeOutSound(gInstance, 1.0)
+      this.getSound('p1Shrinkage').fadeOutIfPlaying(0.25)
+      this.getSound('p1Growth').fadeOutIfPlaying(0.25)
     } else {
-      const sInstance = this.instances.get(this.getSound('p2Shrinkage'))
-      const gInstance = this.instances.get(this.getSound('p2Growth'))
-      if (gInstance?.effect.isPlaying) this.fadeOutSound(gInstance, 1.0)
-      if (sInstance?.effect.isPlaying) this.fadeOutSound(sInstance, 1.0)
+      this.getSound('p2Shrinkage').fadeOutIfPlaying(0.25)
+      this.getSound('p2Growth').fadeOutIfPlaying(0.25)
     }
   }
 }

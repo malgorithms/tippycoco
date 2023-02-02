@@ -178,12 +178,12 @@ class Game {
     ) {
       this.sound.playIfNotPlaying('themeSong', 1.0, 0.0, 0.0, true)
     } else if (gs !== GameState.PreStart) {
-      this.sound.stopThemeMusic()
+      this.sound.stopIfPlaying('themeSong')
     }
     if (gs === GameState.Action && !this.isGamePoint) {
       this.sound.playIfNotPlaying('gamePlayMusic', 0.5, 0.0, 0.0, true)
     } else if (gs === GameState.Paused || gs === GameState.AutoPaused) {
-      this.sound.stopPlayMusic()
+      this.sound.stopIfPlaying('gamePlayMusic')
     }
   }
   private async loadContent() {
@@ -398,13 +398,15 @@ class Game {
       const lTrigger = this.input.getTrigger(playerSide, 'left')
       const rTrigger = this.input.getTrigger(playerSide, 'right')
       const triggerDiff = rTrigger - lTrigger
+      const amSmall = player.physics.diameter === tweakables.player.minDiameter
+      const amBig = player.physics.diameter === tweakables.player.maxDiameter
       if (triggerDiff) {
         player.grow(dt, triggerDiff * tweakables.input.triggerGrowthMult)
-        this.sound.playGrowthNoise(playerSide, triggerDiff)
-      } else if (this.input.isShrinkPressed(playerSide)) {
+        if (!amSmall && !amBig) this.sound.playGrowthNoise(playerSide, triggerDiff)
+      } else if (!amSmall && this.input.isShrinkPressed(playerSide)) {
         player.grow(dt, -tweakables.keyboardGrowthRate)
         this.sound.playGrowthNoise(playerSide, -tweakables.keyboardGrowthRate)
-      } else if (this.input.isGrowPressed(playerSide)) {
+      } else if (!amBig && this.input.isGrowPressed(playerSide)) {
         player.grow(dt, tweakables.keyboardGrowthRate)
         this.sound.playGrowthNoise(playerSide, tweakables.keyboardGrowthRate)
       } else {
@@ -492,7 +494,7 @@ class Game {
       if (didHit) {
         pointForPlayer = b.physics.center.x > this.net.center.x ? PlayerSide.Left : PlayerSide.Right
         this.kapow.addAKapow(KapowType.Score, b.physics.center, Math.random() / 10, 0.4, 0.5)
-        this.sound.play('pointScored', 0.8, 0.0, b.physics.center.x)
+        this.sound.play('pointScored', 0.8, 0.0, b.physics.center.x, false)
       }
     }
     if (pointForPlayer) this.handlePointScored(pointForPlayer)
@@ -501,7 +503,7 @@ class Game {
       this.scoreLeftPlayer !== this.scoreRightPlayer &&
       (this.scoreLeftPlayer >= tweakables.winningScore - 1 || this.scoreRightPlayer >= tweakables.winningScore - 1)
     ) {
-      this.sound.stopPlayMusic()
+      this.sound.stopIfPlaying('gamePlayMusic')
       this.isGamePoint = true
       this.sound.playIfNotPlaying('gamePoint', 0.6, 0.0, 0.0, false)
       this.display.atmosphere.changeSkyForOpponent(this.playerRight, 0)
@@ -641,8 +643,6 @@ class Game {
     const collision = player.physics.handleHittingOtherCircle(ball.physics, tweakables.physics.ballPlayerElasticity, isSimulation)
     const isLeft = playerSide === PlayerSide.Left
     if (!collision.didCollide || isSimulation) return
-
-    console.log(ball.physics.mass)
     const hardness = Math.min(1, vec.len(collision.c2MomentumDelta) / ball.physics.mass / 5.0)
     const pan = collision.pointOfContact.x
     const pitch =
@@ -668,7 +668,7 @@ class Game {
       amIHighEnough &&
       !this.history.hasHappenedRecently(`Kapow-Slam-Player-${isLeft ? 0 : 1}`, this.currentGameTime, 0.75)
     ) {
-      this.sound.play('slam', 0.3, 0.0, pan)
+      this.sound.play('slam', 0.3, 0.0, pan, false)
       const dest: Vector2 = vec.add(collision.pointOfContact, {x: 0, y: 2 * ball.physics.diameter})
       this.kapow.addAKapow(KapowType.Slam, dest, 0.0, 0.3, 1.5)
       this.history.recordEvent(`Kapow-Slam-Player-${isLeft ? 0 : 1}`, this.currentGameTime)

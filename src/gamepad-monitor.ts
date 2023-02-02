@@ -119,10 +119,10 @@ class GamepadMonitor {
     return false
   }
   public wasThumbstickPushedDownBy(playerSide: PlayerSide, thumbstickName: ThumbstickName): boolean {
-    return this.wasThumbstickPushedYBy(playerSide, thumbstickName, -tweakables.input.thumbstickPush)
+    return this.wasThumbstickPushedYBy(playerSide, thumbstickName, tweakables.input.thumbstickPush)
   }
   public wasThumbstickPushedUpBy(playerSide: PlayerSide, thumbstickName: ThumbstickName): boolean {
-    return this.wasThumbstickPushedYBy(playerSide, thumbstickName, tweakables.input.thumbstickPush)
+    return this.wasThumbstickPushedYBy(playerSide, thumbstickName, -tweakables.input.thumbstickPush)
   }
   public wasThumbstickPushedLeftBy(playerSide: PlayerSide, thumbstickName: ThumbstickName): boolean {
     return this.wasThumbstickPushedXBy(playerSide, thumbstickName, -tweakables.input.thumbstickPush)
