@@ -56,8 +56,8 @@ class SoundEffectInstance {
     this.gainNode.gain.linearRampToValueAtTime(volume, this.currTime)
   }
   public set pitch(pitch: number) {
-    if (pitch < -1 || pitch > 1) throw new Error(`bad pitch ${pitch}`)
-    const rate = this.defaultPlaybackRate * (1 + pitch / 2)
+    pitch = Math.max(-0.99, pitch)
+    const rate = this.defaultPlaybackRate * (1 + pitch)
     this.source.playbackRate.setValueAtTime(rate, this.currTime)
   }
   public async fadeOut(seconds: number) {

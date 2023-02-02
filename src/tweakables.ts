@@ -73,6 +73,10 @@ export default {
     triggerGrowthMult: 0.4, // how fast the trigger scales/shrinks character
     thumbstickPush: 0.6, // how far stick has to go to be considered pushed like a dpad
   },
+  sound: {
+    autoPitchSecStorage: 0.5, // sec
+    autoPitchInc: 0.25,
+  },
   display: {
     zoomCenter: {x: 0, y: 0.3} as Vector2,
     zoomScale: {

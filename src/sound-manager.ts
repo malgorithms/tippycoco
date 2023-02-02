@@ -1,12 +1,20 @@
 import {SoundName, soundSources} from './content-load-list'
 import {ContentLoader} from './content-loader'
 import {SoundEffect} from './sound-effect'
+import tweakables from './tweakables'
 import {PlayerSide} from './types'
+
+type HistoricPlay = {
+  soundName: SoundName
+  dateNow: number
+}
 
 class SoundManager {
   private content: ContentLoader
   private sounds = new Map<SoundName, SoundEffect>()
-
+  // these sounds, if played in rapid succession, keep getting a higher pitch
+  private autoPitchIncrementers = new Set<SoundName>(['flowerBounce', 'thud', 'ceramicBounce', 'rejected', 'slam'])
+  private autoPitchPlays = new Array<HistoricPlay>()
   public constructor(content: ContentLoader) {
     this.content = content
   }
@@ -24,7 +32,19 @@ class SoundManager {
     if (!effect) throw new Error(`no sound was loaded with name ${name}`)
     return effect
   }
+  private countRecentAutoPitchPlays() {
+    while (this.autoPitchPlays.length && this.autoPitchPlays[0].dateNow < Date.now() - 1000 * tweakables.sound.autoPitchSecStorage) {
+      this.autoPitchPlays.splice(0, 1)
+    }
+    return this.autoPitchPlays.length
+  }
   public play(name: SoundName, volume: number, pitch: number, pan: number, loop: boolean) {
+    if (this.autoPitchIncrementers.has(name)) {
+      console.log(`pitch ${pitch}.`)
+      pitch += tweakables.sound.autoPitchInc * this.countRecentAutoPitchPlays()
+      console.log(`changed pitch to ${pitch} due to ${this.countRecentAutoPitchPlays()} recent plays`)
+      this.autoPitchPlays.push({soundName: name, dateNow: Date.now()})
+    }
     this.getSound(name).play(volume, pitch, pan, loop)
   }
   public playIfNotPlaying(name: SoundName, volume: number, pitch: number, pan: number, loop: boolean) {
