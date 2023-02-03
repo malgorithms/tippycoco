@@ -74,10 +74,10 @@ const allMenuItems: MenuEntry[] = [
     card: 'menuCardPlayYellow',
     opponentType: PlayerSpecies.Ai,
     numBalls: 1,
-    //unlockRequirement: {
-    //  defeat: 'Orange',
-    //  defeatType: 'shutout',
-    //},
+    unlockRequirement: {
+      defeat: 'Purple',
+      defeatType: 'no-jumping',
+    },
   },
   {
     text: aiToNickname(ais.Black),
@@ -88,7 +88,7 @@ const allMenuItems: MenuEntry[] = [
     numBalls: 1,
     unlockRequirement: {
       defeat: 'Yellow',
-      defeatType: 'no-jumping',
+      defeatType: 'shutout',
     },
   },
   {

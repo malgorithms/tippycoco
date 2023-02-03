@@ -1,6 +1,6 @@
 import {CircularObject} from './circular-object'
 import tweakables from './tweakables'
-import {NewBallArg, Vector2} from './types'
+import {NewBallArg} from './types'
 import {vec} from './utils'
 
 class Ball {

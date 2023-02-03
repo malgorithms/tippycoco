@@ -40,6 +40,24 @@ class YellowAi extends AiBase {
     return Math.abs(landing.pos.x - o.me.physics.center.x) / o.me.maxVel.x
   }
 
+  private wouldILandAroundTheSameTimeAsTheBall(o: AiThinkArg) {
+    const timeTillBallLands = o.balls[0].physics.calcTimeTillLanding()
+    const timeTillILand = o.me.getMyJumpTime()
+    const ballBeatsMeBy = timeTillILand - timeTillBallLands
+    console.log({timeTillBallLands, timeTillILand})
+    if (ballBeatsMeBy > 0 && ballBeatsMeBy < 0.2) return true
+    return false
+  }
+  private isThereABallRightAboveMe(o: AiThinkArg) {
+    // jump if it's right above me
+    for (const b of o.balls) {
+      const deltaX = b.physics.center.x - o.me.physics.center.x
+      const deltaY = b.physics.center.y - o.me.physics.center.y
+      if (deltaX > -0.05 && deltaX < 0 && deltaY < o.me.physics.diameter * 2) return true
+    }
+    return false
+  }
+
   public think(o: AiThinkArg): void {
     const me = o.me
 
@@ -51,17 +69,17 @@ class YellowAi extends AiBase {
     let stateToWatch: FutureBall | null = null
     if (landingOnMySide && (!enteringMyRange || landingOnMySide.time < timeToGetThere + 0.1)) {
       stateToWatch = landingOnMySide
-      stateToWatch.pos.x -= 0.16 * me.physics.diameter
+      stateToWatch.pos.x += 0.16 * me.physics.radius
     } else if (enteringMyRange) {
       stateToWatch = enteringMyRange
-      stateToWatch.pos.x -= 0.16 * me.physics.diameter
+      stateToWatch.pos.x += 0.16 * me.physics.radius
     }
 
-    for (const b of o.balls) {
-      const deltaX = b.physics.center.x - o.me.physics.center.x
-      const deltaY = b.physics.center.y - o.me.physics.center.y
-      //if (deltaX > -0.05 && deltaX < 0 && deltaY < o.me.physics.diameter * 2) this.jumpIfPossible(o)
+    if (o.balls[0].physics.center.x > 0) {
+      if (this.wouldILandAroundTheSameTimeAsTheBall(o)) this.jumpIfPossible(o)
     }
+
+    //if (this.isThereABallRightAboveMe(o)) this.jumpIfPossible(o)
 
     // What to do if we have no idea
     if (!stateToWatch) {
