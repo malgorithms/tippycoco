@@ -4,7 +4,7 @@ const c = {
   assetUrl: `http://localhost:3377/public/`,
   dpr: window.devicePixelRatio ?? 1,
   link: 'https://chriscoyne.com',
-  version: '0.2.0',
-  versionDateStr: '27-Jan-2023',
+  version: '0.2.1',
+  versionDateStr: '03-Feb-2023',
 }
 export default c
