@@ -169,7 +169,7 @@ export default {
     }),
   },
   cloud: {
-    num: 15,
+    num: 5,
     minVel: {x: 0.01, y: -0.01},
     maxVel: {x: 0.07, y: 0.01},
   },
