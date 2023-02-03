@@ -1,5 +1,5 @@
 import {Color} from './color'
-import {Dims, KeyboardControlSet, NewBallArg, NewPlayerArg, PlayerKeyboardSet, PlayerSpecies, Vector2} from './types'
+import {Dims, EyeConfig, KeyboardControlSet, NewBallArg, NewPlayerArg, PlayerKeyboardSet, PlayerSpecies, Vector2} from './types'
 import {vec} from './utils'
 
 //
@@ -52,6 +52,26 @@ const onePlayerControls: KeyboardControlSet = {
 // the width of the playable area.
 const courtWidth = 1.1
 const flowerDims: Dims = {w: 0.258, h: 1.0}
+const defaultEyes: EyeConfig[] = [
+  {
+    offset: {x: -0.113, y: 0.14},
+    size: 0.24 * 0.67,
+    movementRadius: 0.05,
+    blinkScale: 0.1,
+    blinkEveryMs: 5000,
+    blinkDurationMs: 100,
+    pupilTexture: 'pupil',
+  },
+  {
+    offset: {x: 0.1195, y: 0.144},
+    size: 0.28 * 0.67,
+    movementRadius: 0.05,
+    blinkScale: 0.1,
+    blinkEveryMs: 5000,
+    blinkDurationMs: 100,
+    pupilTexture: 'pupil',
+  },
+]
 
 export default {
   courtWidth,
@@ -76,6 +96,7 @@ export default {
   sound: {
     autoPitchSecStorage: 0.5, // sec
     autoPitchInc: 0.25,
+    normalBumpPitchRange: 0.75, // -this...this depending on player size
   },
   display: {
     zoomCenter: {x: 0, y: 0.3} as Vector2,
@@ -148,7 +169,7 @@ export default {
     }),
   },
   cloud: {
-    num: 5,
+    num: 15,
     minVel: {x: 0.01, y: -0.01},
     maxVel: {x: 0.07, y: 0.01},
   },
@@ -172,16 +193,7 @@ export default {
     dashMult: 1.5, // multiplied by max speed
     jumpSpeedAfterPoint: 1.85,
     afterPointJumpDelay: 0.15,
-    eyes: {
-      // for drawing
-      leftOffset: {x: -0.113, y: 0.14},
-      rightOffset: {x: 0.1195, y: 0.144},
-      leftScale: 0.24 * 0.67,
-      rightScale: 0.28 * 0.67,
-      blinkScale: 0.1,
-      blinkEveryMs: 5000,
-      blinkDurationMs: 100,
-    },
+    defaultEyes: defaultEyes,
     defaultSettings: (): NewPlayerArg => ({
       maxVel: {x: 0.8, y: 1.2},
       diameter: 0.15,
@@ -196,8 +208,8 @@ export default {
   menu: {
     cols: 3, // this many cars per row
     bpm: 87, // beats per minute for menu, to match the music
-    cardWidth: 0.5, // game units
-    cardWidthSelected: 0.6, // selected card this much bigger
+    cardWidth: 0.3, // game units
+    cardWidthSelected: 0.5, // selected card this much bigger
     cardGridMargin: 0.4, //
     cardGridShift: {x: -0.3, y: 0.1},
     textOffsetFromCard: {x: 0, y: 0.2},

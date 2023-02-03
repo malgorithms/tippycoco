@@ -9,7 +9,7 @@ class CircularObject {
   private _angularVel: number
   public orientation: number
   public density: number
-  public gravityMultiplier: number
+  private _gravityMultiplier: number
   public canSpin: boolean
   private spinElasticityOffFrictionPoints
   private bumpOffFrictionPoints
@@ -21,10 +21,16 @@ class CircularObject {
     this.diameter = o.diameter
     this.orientation = o.orientation
     this.density = o.density
-    this.gravityMultiplier = o.gravityMultiplier
+    this._gravityMultiplier = o.gravityMultiplier
     this.canSpin = o.canSpin
     this.bumpOffFrictionPoints = o.bumpOffFrictionPoints
     this.spinElasticityOffFrictionPoints = o.spinElasticityOffFrictionPoints
+  }
+  public get gravityMultiplier() {
+    return this._gravityMultiplier
+  }
+  public get gravityY() {
+    return tweakables.gameGravity.y * this._gravityMultiplier
   }
   public get mass() {
     return this.area * this.density

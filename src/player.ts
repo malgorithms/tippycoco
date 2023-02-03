@@ -72,12 +72,16 @@ class Player {
     sp._jumpCount = this._jumpCount
     return sp
   }
+  public get jumpSpeed(): number {
+    return this.maxVel.y
+  }
   public jump(): void {
     if (this.isInJumpPosition) {
       this._jumpCount++
-      this.physics.vel.y = this.maxVel.y
+      this.physics.vel.y = this.jumpSpeed
     }
   }
+
   public dash(dir: Vector2) {
     console.log('player::dash', this._isDashing)
     if (this.canDashNow) {
@@ -113,13 +117,13 @@ class Player {
   public stepPosition(dt: number) {
     this.physics.center = vec.add(this.physics.center, vec.scale(this.physics.vel, dt))
   }
-  public stepVelocity(dt: number, gravity: Vector2) {
+  public stepVelocity(dt: number) {
     const idealVx = this.targetXVel
     const difference = idealVx - this.physics.vel.x
     this.physics.vel = vec.add(this.physics.vel, {x: difference * dt * this.xSpringConstant, y: 0})
 
     // gravity
-    this.physics.vel = vec.add(this.physics.vel, vec.scale(gravity, dt * this.physics.gravityMultiplier))
+    this.physics.vel.y += dt * this.physics.gravityY
     if (vec.lenSq(this.physics.vel) < this.maxVel.x) {
       this._isDashing = false
     }
@@ -164,15 +168,15 @@ class Player {
     }
     return false
   }
-  public getMaxJumpHeight(gameGravityY: number): number {
-    return (this.maxVel.y * this.maxVel.y) / (2 * Math.abs(gameGravityY * this.physics.gravityMultiplier))
+  public getMaxJumpHeight(): number {
+    return (this.maxVel.y * this.maxVel.y) / (2 * Math.abs(this.physics.gravityY))
   }
-  public getTimeToJumpToHeight(gameGravityY: number, height: number): number {
+  public getTimeToJumpToHeight(height: number): number {
     // y = y0 + v0t + 0.5at^2
     // y = 0 + vt + 0.5gt^2
     // 0.5gt^2 + vt - y = 0
     // (-v +- sqrt(v*v+2yg) ) / (g)
-    const g = gameGravityY * this.physics.gravityMultiplier
+    const g = this.physics.gravityY
     const v = this.maxVel.y
     if (v * v + 2 * height * g < 0) return Infinity
     else {
@@ -184,6 +188,19 @@ class Player {
       else if (answer1 > 0) return answer1
       else return Infinity
     }
+  }
+
+  /**
+   *
+   * @returns how long the player will stay in the air on a normal jump
+   */
+  public getMyJumpTime = () => {
+    // x = x0 + v0*t + 0.5at^2
+    // 0 = 0 + v0t + 0.5at^2
+    // 0 = v0 + 0.5at
+    // -v0 = 0.5at
+    // -2 * v0 / a = t
+    return (-2 * this.jumpSpeed) / this.physics.gravityY
   }
 }
 

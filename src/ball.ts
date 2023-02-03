@@ -38,9 +38,8 @@ class Ball {
       this.physics.vel = vec.scale(vec.normalized(v), this.maxSpeed)
     }
   }
-  public stepVelocity(dt: number, gravity: Vector2, trimSpeedIfNecessary: boolean) {
-    const shift = vec.scale(gravity, dt * this.physics.gravityMultiplier)
-    this.physics.vel = vec.add(this.physics.vel, shift)
+  public stepVelocity(dt: number, extraMult: number, trimSpeedIfNecessary: boolean) {
+    this.physics.vel.y += dt * this.physics.gravityY * extraMult
     if (trimSpeedIfNecessary) this.trimSpeedIfNecessary()
     this.physics.angularVel -= this.physics.angularVel * dt * tweakables.physics.ballAngularFriction
   }

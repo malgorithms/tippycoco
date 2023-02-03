@@ -54,7 +54,7 @@ class BlackAi extends AiBase {
     } else {
       this.tryToGetToX(o, stateToWatch.pos.x, stateToWatch.time, REACTION_TIME_MS)
     }
-    const timeTillJump = me.getTimeToJumpToHeight(o.gameGravity.y, stateToWatch.pos.y)
+    const timeTillJump = me.getTimeToJumpToHeight(stateToWatch.pos.y)
 
     // Only jump sometimes
     if (stateToWatch.time < timeTillJump && o.gameTime.totalGameTime.totalSeconds % 50 != 0) {

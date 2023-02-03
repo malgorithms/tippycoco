@@ -76,7 +76,8 @@ class Atmosphere {
       Black: 'sunnyBackgroundBlack',
       White: 'sunnyBackgroundFire',
       Purple: 'sunnyBackgroundPurplish',
-      Orange: 'sunnyBackgroundBlue',
+      Orange: 'sunnyBackgroundGreen',
+      Yellow: 'sunnyBackgroundBlue',
     } as const
     const darkAiTextures = {
       Green: 'darkBackground',
@@ -84,6 +85,7 @@ class Atmosphere {
       White: 'darkBackground',
       Purple: 'darkBackground',
       Orange: 'darkBackground',
+      Yellow: 'darkBackground',
     } as const
 
     const aiName = aiToName(ai)
