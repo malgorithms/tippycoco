@@ -1,15 +1,20 @@
+import {TextureName} from '../content-load-list'
+import {Game} from '../game'
 import {AiBase, AiThinkArg, FutureBall} from './base'
 
 const REACTION_TIME_MS = 25 // seconds
 
 class PurpleAi extends AiBase {
-  constructor() {
-    super()
+  constructor(game: Game) {
+    super(game)
   }
   private timeTillICanReachLanding(o: AiThinkArg) {
     const landing = this.getNextBallHittingOnMySide(o)
     if (!landing) return Infinity
     return Math.abs(landing.pos.x - o.me.physics.center.x) / o.me.maxVel.x
+  }
+  public get textureName(): TextureName {
+    return 'purplePlayer'
   }
 
   public think(o: AiThinkArg): void {

@@ -1,10 +1,12 @@
+import {TextureName} from '../content-load-list'
+import {Game} from '../game'
 import {AiBase, AiThinkArg, FutureBall} from './base'
 
 const REACTION_TIME_MS = 100
 
 class OrangeAi extends AiBase {
-  constructor() {
-    super()
+  constructor(game: Game) {
+    super(game)
   }
 
   private timeTillICanReachLanding(o: AiThinkArg) {
@@ -13,6 +15,9 @@ class OrangeAi extends AiBase {
     return Math.abs(landing.pos.x - o.me.physics.center.x) / o.me.maxVel.x
   }
 
+  public get textureName(): TextureName {
+    return 'orangePlayer'
+  }
   public think(o: AiThinkArg): void {
     const me = o.me
     // I just jump sometimes

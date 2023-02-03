@@ -1,3 +1,5 @@
+import {TextureName} from '../content-load-list'
+import {Game} from '../game'
 import {EyeConfig, PlayerSide} from '../types'
 import {AiBase, AiThinkArg, FutureBall} from './base'
 
@@ -7,10 +9,13 @@ const NO_JUMP_BEFORE = 1.5
 const REACTION_TIME_MS = 25
 
 class WhiteAi extends AiBase {
-  constructor() {
-    super()
+  constructor(game: Game) {
+    super(game)
   }
 
+  public get textureName(): TextureName {
+    return 'whitePlayer'
+  }
   public get eyes() {
     const eyes: EyeConfig[] = [
       {
@@ -51,7 +56,7 @@ class WhiteAi extends AiBase {
     this.goToSize(o, 0.7)
 
     let stateToWatch: FutureBall | null = null
-    const amLeft = o.myPlayerSide === PlayerSide.Left
+    const amLeft = o.me.playerSide === PlayerSide.Left
     const enteringMyRange = this.getNextBallEnteringMyJumpRange(o)
     const landingOnMySide = this.getNextBallHittingOnMySide(o)
     const timeToReach = this.timeTillICanReachLanding(o)

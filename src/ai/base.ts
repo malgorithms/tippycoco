@@ -1,5 +1,7 @@
 import {Ball} from '../ball'
+import {SoundName, TextureName} from '../content-load-list'
 import {FuturePrediction, unknownState} from '../future-prediction'
+import {Game} from '../game'
 import {Player} from '../player'
 import {RectangularObstacle} from '../rectangular-obstacle'
 import tweakables from '../tweakables'
@@ -13,7 +15,6 @@ interface FutureBall {
 interface AiThinkArg {
   gameTime: GameTime
   accumulatedPointSeconds: number
-  myPlayerSide: PlayerSide
   balls: Ball[]
   ballPredictions: FuturePrediction[]
   gameGravity: Vector2
@@ -28,10 +29,12 @@ abstract class AiBase {
   private _lastMoveLeft: number
   private _lastMoveRight: number
   private _lastJump: number
-  constructor() {
+  private readonly _game: Game
+  constructor(game: Game) {
     this._lastMoveLeft = 0
     this._lastMoveRight = 0
     this._lastJump = 0
+    this._game = game
   }
   /**
    * if you want weird eyes, like a different number of them,
@@ -41,6 +44,7 @@ abstract class AiBase {
   public get eyes(): EyeConfig[] {
     return tweakables.player.defaultEyes
   }
+  public abstract get textureName(): TextureName
   /**
    * @returns milliseconds since I've last jumped, or Infinity if never
    */
@@ -63,7 +67,7 @@ abstract class AiBase {
   public abstract think(o: AiThinkArg): void
 
   protected getNextBallEnteringMyJumpRange(o: AiThinkArg): FutureBall | null {
-    const myPlayerSide = o.myPlayerSide
+    const myPlayerSide = o.me.playerSide
     let result: FutureState = unknownState()
     for (const pred of o.ballPredictions) {
       const lookup = pred.ballEnteringJumpRange(myPlayerSide)
@@ -76,10 +80,12 @@ abstract class AiBase {
   }
 
   protected getNextBallHittingOnMySide(o: AiThinkArg): FutureBall | null {
-    const myPlayerSide = o.myPlayerSide
+    return this.getNextBallHittingOnSide(o, o.me.playerSide)
+  }
+  protected getNextBallHittingOnSide(o: AiThinkArg, playerSide: PlayerSide): FutureBall | null {
     const net = o.net
     const result: FutureState = unknownState()
-    const amLeft = myPlayerSide === PlayerSide.Left
+    const amLeft = playerSide === PlayerSide.Left
     for (const p of o.ballPredictions) {
       const hittingGround = p.ballHittingGround
       if ((amLeft && hittingGround.pos.x > net.center.x) || (!amLeft && hittingGround.pos.x < net.center.x)) {
@@ -111,6 +117,12 @@ abstract class AiBase {
     if (me.physics.diameter < targetSize) me.grow(dt, tweakables.player.growSpeed)
     else if (me.physics.diameter > targetSize) me.grow(dt, -tweakables.player.growSpeed)
   }
+  protected playSound(soundName: SoundName, volume: number, pitch: number, pan: number) {
+    this._game.sound.play(soundName, volume, pitch, pan, false)
+  }
+  protected get kapow() {
+    return this._game.kapow
+  }
   protected moveLeft(o: AiThinkArg) {
     this._lastMoveLeft = o.gameTime.totalGameTime.totalMilliseconds
     o.me.moveLeft()
@@ -127,7 +139,7 @@ abstract class AiBase {
   protected amIOnTheWrongSide(o: AiThinkArg) {
     const net = o.net
     const px = o.me.physics.center.x
-    if (o.myPlayerSide === PlayerSide.Left) return px > net.center.x + net.width / 2
+    if (o.me.playerSide === PlayerSide.Left) return px > net.center.x + net.width / 2
     else return px < net.center.x - net.width / 2
   }
 

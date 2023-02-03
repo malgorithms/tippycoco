@@ -78,6 +78,7 @@ type NewPlayerArg = {
   targetXVel: number
   species: PlayerSpecies
   ai: AiBase | null
+  playerSide: PlayerSide
 }
 type NewBallArg = {
   center: Vector2

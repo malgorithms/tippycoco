@@ -1,3 +1,5 @@
+import {TextureName} from '../content-load-list'
+import {Game} from '../game'
 import {AiBase, AiThinkArg} from './base'
 
 const PREDICT_SEC = 0.6 // seconds in the future green will see
@@ -9,10 +11,20 @@ const REACTION_TIME_MS = 300 // I can't change wiggle direction faster than this
  */
 
 class GreenAi extends AiBase {
-  constructor() {
-    super()
+  constructor(game: Game) {
+    super(game)
   }
 
+  /**
+   * typically our players don't change their textures throughout a game,
+   * but this is called on every draw to get the name of the texture to use,
+   * in case you animate your texture.
+   *
+   * (see content-load-list.ts for all textures)
+   */
+  public get textureName(): TextureName {
+    return 'greenPlayer'
+  }
   /**
    * `think` is the function you must implement in your AI. it takes a general
    * object `o` that has a bunch of game state. Your think function is called many

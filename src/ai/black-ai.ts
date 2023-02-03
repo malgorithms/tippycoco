@@ -1,3 +1,5 @@
+import {TextureName} from '../content-load-list'
+import {Game} from '../game'
 import {PlayerSide} from '../types'
 import {AiBase, AiThinkArg} from './base'
 import {_WhiteAi} from './white-ai'
@@ -10,9 +12,12 @@ const REACTION_TIME_MS = 20
 
 class BlackAi extends AiBase {
   private hiddenWhiteBrain: _WhiteAi
-  constructor() {
-    super()
-    this.hiddenWhiteBrain = new _WhiteAi()
+  constructor(game: Game) {
+    super(game)
+    this.hiddenWhiteBrain = new _WhiteAi(game)
+  }
+  public get textureName(): TextureName {
+    return 'blackPlayer'
   }
   public think(o: AiThinkArg): void {
     if ((o.p0Score + o.p1Score) % 3 == 0 && Math.sin(o.accumulatedPointSeconds / 3) < 0) {
@@ -29,8 +34,8 @@ class BlackAi extends AiBase {
 
     if (o.accumulatedPointSeconds < 1.0) return
 
-    let stateToWatch = o.ballPredictions[0].ballEnteringJumpRange(o.myPlayerSide)
-    const amLeft = o.myPlayerSide === PlayerSide.Left
+    let stateToWatch = o.ballPredictions[0].ballEnteringJumpRange(o.me.playerSide)
+    const amLeft = o.me.playerSide === PlayerSide.Left
     if (!stateToWatch.isKnown) stateToWatch = o.ballPredictions[0].ballHittingGround
     if (stateToWatch.isKnown) stateToWatch.pos.x += ((amLeft ? -1.0 : 1.0) * me.physics.diameter) / 6.0
 

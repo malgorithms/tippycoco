@@ -1,12 +1,13 @@
 import {AiName, ais, aiToName, aiToNickname, KnownAi} from './ai/ai'
 import {Color, Colors} from './color'
-import {Display, TextureName} from './display'
+import {Display} from './display'
+import {TextureName} from './content-load-list'
 import {persistence} from './persistence'
 import {PlayerSpecies} from './player'
 import {SpriteBatch} from './sprite-batch'
 import tweakables from './tweakables'
 import {GameTime, PlayerSide, TextDrawOptions, Texture2D, Vector2} from './types'
-import {vec, sign} from './utils'
+import {vec} from './utils'
 
 enum MenuAction {
   ReturnToGame = 'return-to-game',

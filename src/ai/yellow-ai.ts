@@ -1,14 +1,39 @@
+import {TextureName} from '../content-load-list'
+import {Game} from '../game'
 import {EyeConfig} from '../types'
+import {vec} from '../utils'
 import {AiBase, AiThinkArg, FutureBall} from './base'
 
 const REACTION_TIME_MS = 100
+const KISS_DURATION_MS = 830
+const KAPOW_DURATION_SEC = 5
+const MIN_MS_BETWEEN_KISSES = 1000
 
 class YellowAi extends AiBase {
-  constructor() {
-    super()
+  private lastKissyFace: number
+  constructor(game: Game) {
+    super(game)
+    this.lastKissyFace = Date.now()
   }
 
+  public couldIKissNow() {
+    return Date.now() - this.lastKissyFace > MIN_MS_BETWEEN_KISSES
+  }
+  public get amKissing() {
+    return this.lastKissyFace > Date.now() - KISS_DURATION_MS
+  }
+  public get textureName(): TextureName {
+    return this.amKissing ? 'yellowPlayerKissing1' : 'yellowPlayer'
+  }
+  public kiss(o: AiThinkArg) {
+    this.lastKissyFace = Date.now()
+    this.playSound('kiss', 1, 3, 0)
+    const kapowLocation = vec.add(o.me.physics.center, {x: 0, y: o.me.physics.radius})
+    const rot = 0 - Math.random() * 0.5
+    this.kapow.addAKapow('kapowKiss', kapowLocation, rot, 0.2, KAPOW_DURATION_SEC)
+  }
   public get eyes() {
+    if (this.amKissing) return [] // eyes closed ;-)
     const eyes: EyeConfig[] = [
       {
         // left
@@ -59,7 +84,6 @@ class YellowAi extends AiBase {
 
   public think(o: AiThinkArg): void {
     const me = o.me
-
     // I am a full-size beast.
     this.goToSize(o, 1)
     const enteringMyRange = this.getNextBallEnteringMyJumpRange(o)
@@ -78,7 +102,17 @@ class YellowAi extends AiBase {
       if (this.wouldILandAroundTheSameTimeAsTheBall(o)) this.jumpIfPossible(o)
     }
 
-    if (this.isThereABallRightAboveMe(o)) this.jumpIfPossible(o)
+    if (this.isThereABallRightAboveMe(o) && o.me.isInJumpPosition) {
+      this.jumpIfPossible(o)
+    }
+    const amAirborn = o.me.physics.center.y > o.me.physics.radius * 1.5
+    if (amAirborn && this.couldIKissNow()) {
+      const distSq = vec.distSq(me.physics.center, o.opponent.physics.center)
+      const touchDist = me.physics.radius + o.opponent.physics.radius
+      if (distSq < 1.05 * (touchDist * touchDist)) {
+        this.kiss(o)
+      }
+    }
 
     // What to do if we have no idea
     if (!stateToWatch) {

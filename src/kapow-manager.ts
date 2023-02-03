@@ -1,39 +1,34 @@
+import {TextureName} from './content-load-list'
 import {Vector2} from './types'
-
-enum KapowType {
-  Slam = 'slam',
-  Rejected = 'rejected',
-  Score = 'score',
-}
 
 class Kapow {
   public age = 0
-  public maxAge: number
-  public kapowType: KapowType
+  public maxAgeSec: number
+  public kapowName: TextureName
   public pos: Vector2
   public orientation: number
   public size: number
 
-  public constructor(kapowType: KapowType, pos: Vector2, orientation: number, size: number, maxAge: number) {
-    this.kapowType = kapowType
+  public constructor(kapowName: TextureName, pos: Vector2, orientation: number, size: number, maxAgeSec: number) {
+    this.kapowName = kapowName
     this.pos = pos
     this.orientation = orientation
-    this.maxAge = maxAge
+    this.maxAgeSec = maxAgeSec
     this.size = size
   }
   public stepAndTestForDeath(dt: number): boolean {
     this.age += dt
     this.size += dt / 40
-    return this.age >= this.maxAge
+    return this.age >= this.maxAgeSec
   }
   public fractionOfWayToDeath(): number {
-    return this.age / this.maxAge
+    return this.age / this.maxAgeSec
   }
 }
 class KapowManager {
   public kapows = new Array<Kapow>()
-  public addAKapow(kapowType: KapowType, pos: Vector2, orientation: number, size: number, maxAge: number): void {
-    this.kapows.push(new Kapow(kapowType, pos, orientation, size, maxAge))
+  public addAKapow(kapowName: TextureName, pos: Vector2, orientation: number, size: number, maxAgeSec: number): void {
+    this.kapows.push(new Kapow(kapowName, pos, orientation, size, maxAgeSec))
   }
   public step(dt: number): void {
     for (let i = this.kapows.length - 1; i >= 0; i--) {
@@ -42,4 +37,4 @@ class KapowManager {
   }
 }
 
-export {Kapow, KapowManager, KapowType}
+export {Kapow, KapowManager}

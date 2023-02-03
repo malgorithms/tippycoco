@@ -7,7 +7,7 @@ import {Display} from './display'
 import {FuturePrediction, unknownState} from './future-prediction'
 import {HistoryManager} from './history-manager'
 import {Input} from './input'
-import {KapowManager, KapowType} from './kapow-manager'
+import {KapowManager} from './kapow-manager'
 import {Menu, MenuAction} from './menu'
 import {Player, PlayerSpecies} from './player'
 import {SoundManager} from './sound-manager'
@@ -22,9 +22,7 @@ class Game {
   private content: ContentLoader
   private display!: Display
   private input!: Input
-  private sound!: SoundManager
   private menu!: Menu
-  private kapow = new KapowManager()
   private history = new HistoryManager()
   private isGamePoint = false
   private scoreLeftPlayer = 0
@@ -41,6 +39,8 @@ class Game {
   public leftWall = new RectangularObstacle(tweakables.leftWall)
   public rightWall = new RectangularObstacle(tweakables.rightWall)
   public invisibleFloor = new RectangularObstacle(tweakables.invisibleFloor)
+  public sound!: SoundManager
+  public kapow = new KapowManager()
 
   private accumulatedGamePlayTime = 0 // How much the clock has run this game, in seconds, excluding pauses and between points
   private accumulatedStateSeconds = 0 // Time accumulated since last gamestate change
@@ -104,8 +104,8 @@ class Game {
   }
 
   private generatePlayers(rightPlayerAi: AiBase | null) {
-    const pLeftConfig = tweakables.player.defaultSettings()
-    const pRightConfig = tweakables.player.defaultSettings()
+    const pLeftConfig = tweakables.player.defaultSettings(PlayerSide.Left)
+    const pRightConfig = tweakables.player.defaultSettings(PlayerSide.Right)
     if (rightPlayerAi) {
       pRightConfig.species = PlayerSpecies.Ai
       pRightConfig.ai = rightPlayerAi
@@ -314,7 +314,7 @@ class Game {
           if (gamepadSide === PlayerSide.Right) {
             this.input.swapGamepadSides()
           }
-          this.startNewGame(numBalls, new entry.ai())
+          this.startNewGame(numBalls, new entry.ai(this))
         }
       } else if (action === MenuAction.Exit) this.setGameState(GameState.PreExitMessage)
       else if (action === MenuAction.ReturnToGame) this.setGameState(GameState.Action)
@@ -454,20 +454,18 @@ class Game {
   }
 
   private aIStep(): void {
-    for (const playerSide of [PlayerSide.Left, PlayerSide.Right]) {
-      const p = this.player(playerSide)
+    for (const p of [this.playerLeft, this.playerRight]) {
       if (p.species === PlayerSpecies.Ai) {
         const aiThinkArg: AiThinkArg = {
           gameTime: this.currentGameTime,
           accumulatedPointSeconds: this.accumulatedPointSeconds,
-          myPlayerSide: playerSide,
           balls: this.balls,
           ballPredictions: this.futurePredictionList,
           gameGravity: tweakables.gameGravity,
           p0Score: this.scoreLeftPlayer,
           p1Score: this.scoreRightPlayer,
-          me: playerSide === PlayerSide.Left ? this.playerLeft : this.playerRight,
-          opponent: playerSide === PlayerSide.Left ? this.playerRight : this.playerLeft,
+          me: p,
+          opponent: p.playerSide === PlayerSide.Left ? this.playerRight : this.playerLeft,
           net: this.net,
         }
         p.ai?.think(aiThinkArg)
@@ -522,7 +520,7 @@ class Game {
       const didHit = this.invisibleFloor.handleBallCollision(b.physics, tweakables.physics.ballFloorElasticity, false)
       if (didHit) {
         pointForPlayer = b.physics.center.x > this.net.center.x ? PlayerSide.Left : PlayerSide.Right
-        this.kapow.addAKapow(KapowType.Score, b.physics.center, Math.random() / 10, 0.4, 0.5)
+        this.kapow.addAKapow('kapowScore', b.physics.center, Math.random() / 10, 0.4, 0.5)
         this.sound.play('pointScored', 0.8, 0.0, b.physics.center.x, false)
       }
     }
@@ -701,7 +699,7 @@ class Game {
     ) {
       this.sound.play('slam', 0.3, 0.0, pan, false)
       const dest: Vector2 = vec.add(collision.pointOfContact, {x: 0, y: 2 * ball.physics.diameter})
-      this.kapow.addAKapow(KapowType.Slam, dest, 0.0, 0.3, 1.5)
+      this.kapow.addAKapow('kapowSlam', dest, 0.0, 0.3, 1.5)
       this.history.recordEvent(`Kapow-Slam-Player-${isLeft ? 0 : 1}`, this.currentGameTime)
     }
 
@@ -713,7 +711,7 @@ class Game {
       !this.history.hasHappenedRecently(`Kapow-Rejected-Player-${isLeft ? 0 : 1}`, this.currentGameTime, 0.25)
     ) {
       this.sound.playIfNotPlaying('rejected', 0.4, 0.1, 0.0, false)
-      this.kapow.addAKapow(KapowType.Rejected, collision.pointOfContact, 0.0, 0.3, 1.5)
+      this.kapow.addAKapow('kapowRejected', collision.pointOfContact, 0.0, 0.3, 1.5)
       this.history.recordEvent(`Kapow-Rejected-Player-${isLeft ? 0 : 1}`, this.currentGameTime)
     }
   }
@@ -775,9 +773,8 @@ class Game {
           ball.stepPositionAndOrientation(dt)
         }
       }
-      for (const playerSide of [PlayerSide.Left, PlayerSide.Right]) {
-        const player = this.player(playerSide)
-        const xDestination = playerSide === PlayerSide.Left ? -this.serveFrom : this.serveFrom
+      for (const player of this.players.values()) {
+        const xDestination = player.playerSide === PlayerSide.Left ? -this.serveFrom : this.serveFrom
         const xDistance = xDestination - player.physics.center.x
         player.stepVelocity(dt)
         if (player.physics.center.y < -player.physics.radius) {
@@ -793,8 +790,7 @@ class Game {
   private gameStep(dt: number): boolean {
     this.accumulatedGamePlayTime += dt
 
-    for (const playerSide of [PlayerSide.Left, PlayerSide.Right]) {
-      const player = this.player(playerSide)
+    for (const player of this.players.values()) {
       const opponent = player === this.playerLeft ? this.playerRight : this.playerLeft
       player.stepVelocity(dt)
       player.stepPosition(dt)

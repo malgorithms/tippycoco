@@ -1,13 +1,15 @@
 import {AiBase} from './ai/base'
 import {CircularObject} from './circular-object'
+import {TextureName} from './content-load-list'
 import {RectangularObstacle} from './rectangular-obstacle'
 import tweakables from './tweakables'
-import {NewPlayerArg, PlayerSpecies, Vector2} from './types'
+import {NewPlayerArg, PlayerSide, PlayerSpecies, Vector2} from './types'
 import {vec} from './utils'
 
 class Player {
   public readonly xSpringConstant: number
   public readonly species: PlayerSpecies
+  public readonly playerSide: PlayerSide
   public readonly ai: AiBase | null
   public physics: CircularObject
   public maxVel: Vector2
@@ -30,11 +32,16 @@ class Player {
       spinElasticityOffFrictionPoints: 0,
       bumpOffFrictionPoints: 0,
     })
+    this.playerSide = o.playerSide
     this.maxVel = o.maxVel
     this.targetXVel = o.targetXVel
     this.xSpringConstant = o.xSpringConstant
     this.species = o.species
     this.ai = o.ai
+  }
+  public get textureName(): TextureName {
+    if (this.ai) return this.ai.textureName
+    else return this.playerSide === PlayerSide.Left ? 'redPlayer' : 'bluePlayer'
   }
   public get jumpCount() {
     return this._jumpCount
@@ -64,6 +71,7 @@ class Player {
       targetXVel: this.targetXVel,
       species: this.species,
       ai: this.ai,
+      playerSide: this.playerSide,
     })
     sp.physics.center = vec.copy(this.physics.center)
     sp.physics.vel = vec.copy(this.physics.vel)

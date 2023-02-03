@@ -1,5 +1,5 @@
 import {Color} from './color'
-import {Dims, EyeConfig, KeyboardControlSet, NewBallArg, NewPlayerArg, PlayerKeyboardSet, PlayerSpecies, Vector2} from './types'
+import {Dims, EyeConfig, KeyboardControlSet, NewBallArg, NewPlayerArg, PlayerKeyboardSet, PlayerSide, PlayerSpecies, Vector2} from './types'
 import {vec} from './utils'
 
 //
@@ -194,7 +194,7 @@ export default {
     jumpSpeedAfterPoint: 1.85,
     afterPointJumpDelay: 0.15,
     defaultEyes: defaultEyes,
-    defaultSettings: (): NewPlayerArg => ({
+    defaultSettings: (playerSide: PlayerSide): NewPlayerArg => ({
       maxVel: {x: 0.8, y: 1.2},
       diameter: 0.15,
       density: 170,
@@ -203,6 +203,7 @@ export default {
       targetXVel: 0,
       species: PlayerSpecies.Human,
       ai: null,
+      playerSide: playerSide,
     }),
   },
   menu: {

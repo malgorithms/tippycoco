@@ -1,4 +1,3 @@
-import {aiToName} from './ai/ai'
 import {Atmosphere} from './atmosphere'
 import {Ball} from './ball'
 import {CanvasManager} from './canvas-manager'
@@ -9,8 +8,8 @@ import {FontManager, FontName} from './font-manager'
 import {FuturePrediction} from './future-prediction'
 import {Game, GameState} from './game'
 import {GamepadConnectSummary} from './gamepad-monitor'
-import {KapowManager, KapowType} from './kapow-manager'
-import {Player, PlayerSpecies} from './player'
+import {KapowManager} from './kapow-manager'
+import {Player} from './player'
 import {ScoreCard} from './score-card'
 import {SpriteBatch} from './sprite-batch'
 import tweakables from './tweakables'
@@ -98,17 +97,13 @@ class Display {
     if (playerSide == PlayerSide.Left) this.p0ScoreCard.bounce()
     else this.p1ScoreCard.bounce()
   }
-  private isSkarball(p: Player): boolean {
-    if (p.species === PlayerSpecies.Ai && p.ai && aiToName(p.ai) === 'White') return true
-    return false
-  }
-  private drawPupils(gameTime: GameTime, playerSide: PlayerSide, player: Player, lookingAt: Vector2) {
-    const eyes = player.ai?.eyes ?? tweakables.player.defaultEyes
-    const pDiam = player.physics.diameter
+  private drawPupils(gameTime: GameTime, p: Player, lookingAt: Vector2) {
+    const eyes = p.ai?.eyes ?? tweakables.player.defaultEyes
+    const pDiam = p.physics.diameter
     for (const eye of eyes) {
       const offset = vec.scale(eye.offset, pDiam)
-      const pos = vec.add(player.physics.center, offset)
-      const blinkFactor = playerSide === PlayerSide.Left ? 0 : 1
+      const pos = vec.add(p.physics.center, offset)
+      const blinkFactor = p.playerSide === PlayerSide.Left ? 0 : 1
       const isBlinking = gameTime.totalGameTime.totalMilliseconds % (eye.blinkEveryMs + blinkFactor * 1000) < eye.blinkDurationMs
       const w = eye.size * pDiam
       const h = isBlinking ? w * eye.blinkScale : w
@@ -118,7 +113,8 @@ class Display {
       this.spriteBatch.drawTextureCentered(this.getTexture(eye.pupilTexture), pos, {w, h}, 0, 1)
     }
   }
-  private drawPlayer(gameTime: GameTime, playerSide: PlayerSide, player: Player, playerTexture: Texture2D, ball: Ball): void {
+  private drawPlayer(gameTime: GameTime, player: Player, ball: Ball): void {
+    const playerTexture = this.getTexture(player.textureName)
     this.spriteBatch.drawTextureCentered(
       playerTexture,
       player.physics.center,
@@ -126,7 +122,7 @@ class Display {
       player.physics.orientation,
       1,
     )
-    this.drawPupils(gameTime, playerSide, player, ball.physics.center)
+    this.drawPupils(gameTime, player, ball.physics.center)
   }
 
   private drawPlayerShadowBehind(player: Player) {
@@ -179,20 +175,6 @@ class Display {
     this.spriteBatch.drawStringCentered(text, font, height, destination, color, rot)
   }
 
-  private getPlayerTexture(playerSide: PlayerSide): Texture2D {
-    const player = this.game.player(playerSide)
-    if (player.ai) {
-      const aiName = aiToName(player.ai)
-      if (aiName === 'Black') return this.getTexture('blackPlayer')
-      else if (aiName === 'Green') return this.getTexture('greenPlayer')
-      else if (aiName === 'Orange') return this.getTexture('orangePlayer')
-      else if (aiName === 'Purple') return this.getTexture('purplePlayer')
-      else if (aiName === 'Yellow') return this.getTexture('yellowPlayer')
-      else return this.getTexture('whitePlayer')
-    } else if (playerSide == PlayerSide.Left) return this.getTexture('redPlayer')
-    else return this.getTexture('bluePlayer')
-  }
-
   public drawControllerInstructions() {
     // TODO
     const c = new Color(1, 1, 1, 1)
@@ -205,21 +187,7 @@ class Display {
 
   public drawKapows(k: KapowManager) {
     for (const kapow of k.kapows) {
-      let texture: Texture2D
-      switch (kapow.kapowType) {
-        case KapowType.Slam:
-          texture = this.getTexture('kapowSlam')
-          break
-        case KapowType.Rejected:
-          texture = this.getTexture('kapowRejected')
-          break
-        case KapowType.Score:
-          texture = this.getTexture('kapowScore')
-          break
-        default:
-          texture = this.getTexture('kapowSlam')
-          break
-      }
+      const texture = this.getTexture(kapow.kapowName)
       const alpha = 1 - kapow.fractionOfWayToDeath()
       this.spriteBatch.drawTextureCentered(texture, kapow.pos, {w: kapow.size, h: kapow.size}, kapow.orientation, alpha)
     }
@@ -238,9 +206,6 @@ class Display {
     this.canvasManager.clearCanvas()
     const playerLeft = this.game.playerLeft
     const playerRight = this.game.playerRight
-    const playerTextures: Map<PlayerSide, Texture2D> = new Map()
-    playerTextures.set(PlayerSide.Left, this.getPlayerTexture(PlayerSide.Left))
-    playerTextures.set(PlayerSide.Right, this.getPlayerTexture(PlayerSide.Right))
 
     const dt = (gameTime.totalGameTime.totalMilliseconds - this.lastCloudDraw) / 1000.0
     this.p0ScoreCard.update(dt)
@@ -275,8 +240,7 @@ class Display {
 
       this.drawKapows(kapowManager)
 
-      for (const playerSide of [PlayerSide.Left, PlayerSide.Right]) {
-        const player = this.game.player(playerSide)
+      for (const player of [this.game.playerLeft, this.game.playerRight]) {
         let closestBall = this.game.balls[0]
         let closestDistance = Infinity
         for (const ball of this.game.balls) {
@@ -286,8 +250,7 @@ class Display {
             closestBall = ball
           }
         }
-        const texture = playerTextures.get(playerSide) ?? this.getTexture('redPlayer')
-        this.drawPlayer(gameTime, playerSide, player, texture, closestBall)
+        this.drawPlayer(gameTime, player, closestBall)
       }
       for (let i = 0; i < this.game.balls.length; i++) {
         this.drawBall(this.game.balls[i], i)
@@ -563,4 +526,4 @@ class Display {
   }
 }
 
-export {Display, TextureName}
+export {Display}

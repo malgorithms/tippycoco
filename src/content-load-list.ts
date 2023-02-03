@@ -10,6 +10,7 @@ const textureSources = {
   whitePlayer: 'images/Players/WhitePlayer.png',
   blackPlayer: 'images/Players/BlackPlayer.png',
   yellowPlayer: 'images/Players/YellowPlayer.png',
+  yellowPlayerKissing1: 'images/Players/YellowPlayerKissing1.png',
   bluePlayer: 'images/Players/BluePlayer.png',
   pupil: 'images/Players/Pupil.png',
   pupilAngry1: 'images/Players/PupilAngry1.png',
@@ -31,6 +32,7 @@ const textureSources = {
   kapowSlam: 'images/Kapows/KapowSlam.png',
   kapowRejected: 'images/Kapows/KapowRejected.png',
   kapowScore: 'images/Kapows/KapowScore.png',
+  kapowKiss: 'images/Kapows/KapowKiss.png',
   sunnyCloud1: 'images/Atmosphere/SunnyCloud1.png',
   darkCloud1: 'images/Atmosphere/DarkCloud1.png',
   sunnyCloud2: 'images/Atmosphere/SunnyCloud2.png',
@@ -79,6 +81,7 @@ const soundSources = {
   p2Shrinkage: 'sounds/Exhale.mp3',
   ceramicBounce: 'sounds/CeramicBounce.mp3',
   gamePoint: 'sounds/GamePoint.mp3',
+  kiss: 'sounds/Kiss.mp3',
 } as const
 
 type TextureName = keyof typeof textureSources
