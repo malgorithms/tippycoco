@@ -9,22 +9,28 @@ class CircularObject {
   private _angularVel: number
   public orientation: number
   public density: number
-  public gravityMultiplier: number
+  private _gravityMultiplier: number
   public canSpin: boolean
   private spinElasticityOffFrictionPoints
   private bumpOffFrictionPoints
 
   public constructor(o: NewCircularObjectArg) {
-    this.center = o.center
+    this.center = vec.copy(o.center)
     this._angularVel = o.angularVel
-    this.vel = o.vel
+    this.vel = vec.copy(o.vel)
     this.diameter = o.diameter
     this.orientation = o.orientation
     this.density = o.density
-    this.gravityMultiplier = o.gravityMultiplier
+    this._gravityMultiplier = o.gravityMultiplier
     this.canSpin = o.canSpin
     this.bumpOffFrictionPoints = o.bumpOffFrictionPoints
     this.spinElasticityOffFrictionPoints = o.spinElasticityOffFrictionPoints
+  }
+  public get gravityMultiplier() {
+    return this._gravityMultiplier
+  }
+  public get gravityY() {
+    return tweakables.gameGravity.y * this._gravityMultiplier
   }
   public get mass() {
     return this.area * this.density
@@ -285,6 +291,21 @@ class CircularObject {
     //if (!isSimulation) {
     //  console.log(`Off point, adj=${spinInfo.totalSpeedInSpinDir}. angularVel=${this.angularVel}`)
     //}
+  }
+
+  /**
+   * this assumes it doesn't bounce off anything or have any friction; just
+   * gravity
+   */
+  public calcTimeTillLanding() {
+    // x = x0 + v0t + 0.5at^2
+    // 0 = x0 + v0t + 0.5at^2
+    // t = -v0 - sqrt(v0*v0 - 2 * g * x0) / g
+    const a = this.gravityY
+    const v0 = this.vel.y
+    const x0 = this.center.y - this.radius
+    if (x0 <= 0) return 0
+    return (-v0 - Math.sqrt(v0 * v0 - 2 * x0 * a)) / a
   }
 }
 

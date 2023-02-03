@@ -3,7 +3,7 @@ import {FuturePrediction, unknownState} from '../future-prediction'
 import {Player} from '../player'
 import {RectangularObstacle} from '../rectangular-obstacle'
 import tweakables from '../tweakables'
-import {FutureState, GameTime, PlayerSide, Vector2} from '../types'
+import {EyeConfig, FutureState, GameTime, PlayerSide, Vector2} from '../types'
 
 interface FutureBall {
   pos: Vector2
@@ -32,6 +32,14 @@ abstract class AiBase {
     this._lastMoveLeft = 0
     this._lastMoveRight = 0
     this._lastJump = 0
+  }
+  /**
+   * if you want weird eyes, like a different number of them,
+   * or have them different size pupils or something, override this in your
+   * inherited class
+   */
+  public get eyes(): EyeConfig[] {
+    return tweakables.player.defaultEyes
   }
   /**
    * @returns milliseconds since I've last jumped, or Infinity if never

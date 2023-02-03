@@ -1,4 +1,5 @@
 import {AiBase} from './ai/base'
+import {TextureName} from './content-load-list'
 
 enum PlayerSide {
   Left = 'left',
@@ -123,6 +124,15 @@ interface TextDrawOptions {
   textBaseline?: CanvasTextBaseline
 }
 
+type EyeConfig = {
+  offset: Vector2
+  size: number
+  movementRadius: number
+  blinkScale: number
+  blinkEveryMs: number
+  blinkDurationMs: number
+  pupilTexture: TextureName
+}
 enum GameState {
   PreStart = 'pre-start',
   Intro1 = 'intro1',
@@ -162,4 +172,5 @@ export {
   MenuSelectResult,
   TextDrawOptions,
   PlayerSpecies,
+  EyeConfig,
 }

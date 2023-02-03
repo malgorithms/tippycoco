@@ -1,4 +1,4 @@
-import {PlayerSide} from '../types'
+import {EyeConfig, PlayerSide} from '../types'
 import {AiBase, AiThinkArg, FutureBall} from './base'
 
 // not jumping right at the start of a point prevents WhiteAi from
@@ -10,6 +10,31 @@ class WhiteAi extends AiBase {
   constructor() {
     super()
   }
+
+  public get eyes() {
+    const eyes: EyeConfig[] = [
+      {
+        offset: {x: -0.113, y: 0.14},
+        size: 0.24 * 0.67,
+        movementRadius: 0.05,
+        blinkScale: 0.1,
+        blinkEveryMs: 5000,
+        blinkDurationMs: 100,
+        pupilTexture: 'pupil',
+      },
+      {
+        offset: {x: 0.1195, y: 0.144},
+        size: 0.2,
+        movementRadius: 0.03,
+        blinkScale: 0.1,
+        blinkEveryMs: 50000,
+        blinkDurationMs: 100,
+        pupilTexture: 'pupilGray',
+      },
+    ]
+    return eyes
+  }
+
   private j(o: AiThinkArg) {
     if (o.accumulatedPointSeconds > NO_JUMP_BEFORE) this.jumpIfPossible(o)
   }
@@ -92,7 +117,7 @@ class WhiteAi extends AiBase {
       this.tryToGetToX(o, stateToWatch.pos.x, stateToWatch.time, REACTION_TIME_MS)
     }
 
-    const timeTillJump = me.getTimeToJumpToHeight(o.gameGravity.y, stateToWatch.pos.y)
+    const timeTillJump = me.getTimeToJumpToHeight(stateToWatch.pos.y)
 
     // When is it safe to jump?
     //1. when there's no known landing

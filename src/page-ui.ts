@@ -113,7 +113,7 @@ class PageUi {
       </p>
       <h4>Latest changes</h4>
       <p>
-      Toying with friction and spin on the balls
+      Yellow player, Lemonae. And orange player, The Juice.
       </p>
       <h4>Links</h4>
       <ul>

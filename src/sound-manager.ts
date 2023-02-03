@@ -39,6 +39,7 @@ class SoundManager {
     return this.autoPitchPlays.length
   }
   public play(name: SoundName, volume: number, pitch: number, pan: number, loop: boolean) {
+    console.log(`playing ${name} at pitch ${pitch}`)
     if (this.autoPitchIncrementers.has(name)) {
       console.log(`pitch ${pitch}.`)
       pitch += tweakables.sound.autoPitchInc * this.countRecentAutoPitchPlays()
@@ -61,6 +62,7 @@ class SoundManager {
     this.getSound(name).stopIfPlaying()
   }
   public playGrowthNoise(playerSide: PlayerSide, vel: number): void {
+    console.log(`playing growth noise`, playerSide, vel)
     const isLeft = playerSide === PlayerSide.Left
     if (vel < 0.0 && isLeft) this.playIfNotPlaying('p1Shrinkage', 0.5, -vel, 0.0, false)
     else if (vel > 0.0 && isLeft) this.playIfNotPlaying('p1Growth', 0.5, vel, 0.0, false)

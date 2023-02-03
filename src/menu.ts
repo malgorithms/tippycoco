@@ -68,6 +68,18 @@ const allMenuItems: MenuEntry[] = [
     },
   },
   {
+    text: aiToNickname(ais.Yellow),
+    ai: ais.Yellow,
+    action: MenuAction.Play,
+    card: 'menuCardPlayYellow',
+    opponentType: PlayerSpecies.Ai,
+    numBalls: 1,
+    unlockRequirement: {
+      defeat: 'Purple',
+      defeatType: 'no-jumping',
+    },
+  },
+  {
     text: aiToNickname(ais.Black),
     ai: ais.Black,
     action: MenuAction.Play,
@@ -75,8 +87,8 @@ const allMenuItems: MenuEntry[] = [
     opponentType: PlayerSpecies.Ai,
     numBalls: 1,
     unlockRequirement: {
-      defeat: 'Purple',
-      defeatType: 'no-jumping',
+      defeat: 'Yellow',
+      defeatType: 'shutout',
     },
   },
   {

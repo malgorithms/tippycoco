@@ -102,31 +102,23 @@ class Display {
     if (p.species === PlayerSpecies.Ai && p.ai && aiToName(p.ai) === 'White') return true
     return false
   }
-  private drawPlayer(gameTime: GameTime, playerSide: PlayerSide, player: Player, playerTexture: Texture2D, ball: Ball): void {
-    const cfg = tweakables.player
-    const isSkarball = this.isSkarball(player)
-    const leftEyeOffset = vec.scale(cfg.eyes.leftOffset, player.physics.diameter)
-    const rightEyeOffset = vec.scale(cfg.eyes.rightOffset, player.physics.diameter)
-    let leftEyePosition = vec.add(player.physics.center, leftEyeOffset)
-    let rightEyePosition = vec.add(player.physics.center, rightEyeOffset)
-    const leftEyeWidth = cfg.eyes.leftScale * player.physics.diameter
-    const rightEyeWidth = cfg.eyes.rightScale * player.physics.diameter
-    let leftEyeHeight = leftEyeWidth
-    let rightEyeHeight = rightEyeWidth
-    const blinkFactor = playerSide === PlayerSide.Left ? 0 : 1
-    if (gameTime.totalGameTime.totalMilliseconds % (cfg.eyes.blinkEveryMs + blinkFactor * 1000) < cfg.eyes.blinkDurationMs) {
-      leftEyeHeight *= cfg.eyes.blinkScale
-      rightEyeHeight *= isSkarball ? 1 : cfg.eyes.blinkScale
+  private drawPupils(gameTime: GameTime, playerSide: PlayerSide, player: Player, lookingAt: Vector2) {
+    const eyes = player.ai?.eyes ?? tweakables.player.defaultEyes
+    const pDiam = player.physics.diameter
+    for (const eye of eyes) {
+      const offset = vec.scale(eye.offset, pDiam)
+      const pos = vec.add(player.physics.center, offset)
+      const blinkFactor = playerSide === PlayerSide.Left ? 0 : 1
+      const isBlinking = gameTime.totalGameTime.totalMilliseconds % (eye.blinkEveryMs + blinkFactor * 1000) < eye.blinkDurationMs
+      const w = eye.size * pDiam
+      const h = isBlinking ? w * eye.blinkScale : w
+      const lookDir = vec.normalized(vec.sub(lookingAt, pos))
+      pos.x += lookDir.x * eye.movementRadius * pDiam
+      pos.y += lookDir.y * eye.movementRadius * pDiam
+      this.spriteBatch.drawTextureCentered(this.getTexture(eye.pupilTexture), pos, {w, h}, 0, 1)
     }
-    let leftEyeBallDirection = vec.sub(ball.physics.center, leftEyePosition)
-    let rightEyeBallDirection = vec.sub(ball.physics.center, rightEyePosition)
-    const leftEyeRange = 0.05
-    const rightEyeRange = isSkarball ? leftEyeRange / 2 : leftEyeRange
-    leftEyeBallDirection = vec.normalized(leftEyeBallDirection)
-    rightEyeBallDirection = vec.normalized(rightEyeBallDirection)
-    leftEyePosition = vec.add(leftEyePosition, vec.scale(leftEyeBallDirection, player.physics.diameter * leftEyeRange))
-    rightEyePosition = vec.add(rightEyePosition, vec.scale(rightEyeBallDirection, player.physics.diameter * rightEyeRange))
-
+  }
+  private drawPlayer(gameTime: GameTime, playerSide: PlayerSide, player: Player, playerTexture: Texture2D, ball: Ball): void {
     this.spriteBatch.drawTextureCentered(
       playerTexture,
       player.physics.center,
@@ -134,11 +126,7 @@ class Display {
       player.physics.orientation,
       1,
     )
-    const pupil = this.getTexture('pupil')
-    const pupilGray = this.getTexture('pupilGray')
-    this.spriteBatch.drawTextureCentered(pupil, leftEyePosition, {w: leftEyeWidth, h: leftEyeHeight}, 0, 1)
-    const rightPupil = isSkarball ? pupilGray : pupil
-    this.spriteBatch.drawTextureCentered(rightPupil, rightEyePosition, {w: rightEyeWidth, h: rightEyeHeight}, 0, 1)
+    this.drawPupils(gameTime, playerSide, player, ball.physics.center)
   }
 
   private drawPlayerShadowBehind(player: Player) {
@@ -199,6 +187,7 @@ class Display {
       else if (aiName === 'Green') return this.getTexture('greenPlayer')
       else if (aiName === 'Orange') return this.getTexture('orangePlayer')
       else if (aiName === 'Purple') return this.getTexture('purplePlayer')
+      else if (aiName === 'Yellow') return this.getTexture('yellowPlayer')
       else return this.getTexture('whitePlayer')
     } else if (playerSide == PlayerSide.Left) return this.getTexture('redPlayer')
     else return this.getTexture('bluePlayer')

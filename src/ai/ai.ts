@@ -5,6 +5,7 @@ import {_OrangeAi} from './orange-ai'
 import {_GreenAi} from './green-ai'
 import {_PurpleAi} from './purple-ai'
 import {_WhiteAi} from './white-ai'
+import {_YellowAi} from './yellow-ai'
 
 const ais = {
   Green: _GreenAi,
@@ -12,6 +13,7 @@ const ais = {
   White: _WhiteAi,
   Purple: _PurpleAi,
   Orange: _OrangeAi,
+  Yellow: _YellowAi,
 } as const
 
 type AiName = keyof typeof ais
@@ -22,6 +24,7 @@ const aiNicknames = {
   White: 'Skarball',
   Purple: 'Pinky',
   Orange: 'The Juice',
+  Yellow: 'Lemonae',
 }
 
 const aiNames = Object.keys(ais) as AiName[]

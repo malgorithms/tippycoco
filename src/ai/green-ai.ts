@@ -65,7 +65,7 @@ class GreenAi extends AiBase {
         const seconds = Math.floor(o.gameTime.totalGameTime.totalSeconds)
         const isOddSecond = seconds % 2
         const timeErr = 0.1 * Math.sin(o.accumulatedPointSeconds)
-        const timeTillJump = o.me.getTimeToJumpToHeight(o.gameGravity.y, target.pos.y) + timeErr
+        const timeTillJump = o.me.getTimeToJumpToHeight(target.pos.y) + timeErr
         if (target.time < timeTillJump && isOddSecond) this.jumpIfPossible(o)
       }
     }

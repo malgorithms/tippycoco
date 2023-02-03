@@ -648,7 +648,7 @@ class Game {
       if (collision.didCollide && !isSimulation) {
         const hardness = Math.min(1, vec.len(collision.c2MomentumDelta) / ball0.physics.mass / 5.0)
         const pan = collision.pointOfContact.x
-        const pitch = 1.0
+        const pitch = 0.5
         this.sound.playIfNotPlaying('thud', hardness, pitch, pan, false)
       }
     }
@@ -674,9 +674,11 @@ class Game {
     if (!collision.didCollide || isSimulation) return
     const hardness = Math.min(1, vec.len(collision.c2MomentumDelta) / ball.physics.mass / 5.0)
     const pan = collision.pointOfContact.x
+    const range = tweakables.sound.normalBumpPitchRange
     const pitch =
-      1.0 -
-      (2.0 * (player.physics.diameter - tweakables.player.minDiameter)) / (tweakables.player.maxDiameter - tweakables.player.minDiameter)
+      range -
+      (2 * range * (player.physics.diameter - tweakables.player.minDiameter)) /
+        (tweakables.player.maxDiameter - tweakables.player.minDiameter)
     this.sound.playIfNotPlaying('thud', hardness, pitch, pan, false)
     // Slam
     let amINearnet = false
@@ -689,7 +691,7 @@ class Game {
     if ((isLeft && ball.physics.vel.x > 0 && ball.physics.vel.y < 0) || (!isLeft && ball.physics.vel.x < 0 && ball.physics.vel.y < 0))
       amIHittingItDown = true
     let amIHighEnough = false
-    if (player.physics.center.y > player.getMaxJumpHeight(tweakables.gameGravity.y) / 2) amIHighEnough = true
+    if (player.physics.center.y > player.getMaxJumpHeight() / 2) amIHighEnough = true
 
     if (
       amINearnet &&
@@ -765,7 +767,7 @@ class Game {
       for (let i = 0; i < 2; i++) {
         const ball = this.balls[i]
         if (ball) {
-          ball.stepVelocity(dt, vec.scale(tweakables.gameGravity, 1.5), false)
+          ball.stepVelocity(dt, 1.5, false)
           let xDestination = this.whoseServe === PlayerSide.Left ? -this.serveFrom : this.serveFrom
           if (isTwoBallGame) xDestination = this.serveFrom - 2 * this.serveFrom * i
           const xDistance = xDestination - ball.physics.center.x
@@ -777,7 +779,7 @@ class Game {
         const player = this.player(playerSide)
         const xDestination = playerSide === PlayerSide.Left ? -this.serveFrom : this.serveFrom
         const xDistance = xDestination - player.physics.center.x
-        player.stepVelocity(dt, tweakables.gameGravity)
+        player.stepVelocity(dt)
         if (player.physics.center.y < -player.physics.radius) {
           player.physics.center.y = -player.physics.diameter - this.balls[0].physics.radius
         } else {
@@ -794,13 +796,13 @@ class Game {
     for (const playerSide of [PlayerSide.Left, PlayerSide.Right]) {
       const player = this.player(playerSide)
       const opponent = player === this.playerLeft ? this.playerRight : this.playerLeft
-      player.stepVelocity(dt, tweakables.gameGravity)
+      player.stepVelocity(dt)
       player.stepPosition(dt)
       player.setIsInJumpPosition(this.canPlayerJump(player, opponent))
       player.setIsInDashPosition(this.isInDashPosition(player, opponent))
     }
     for (const ball of this.balls) {
-      ball.stepVelocity(dt, tweakables.gameGravity, true)
+      ball.stepVelocity(dt, 1, true)
       ball.stepPositionAndOrientation(dt)
     }
     if (this.checkForAndScorePoint()) {
@@ -819,11 +821,11 @@ class Game {
 
   private simulateStep(dt: number): void {
     for (const p of this.players.values()) {
-      p.stepVelocity(dt, tweakables.gameGravity)
+      p.stepVelocity(dt)
       p.stepPosition(dt)
     }
     for (const ball of this.balls) {
-      ball.stepVelocity(dt, tweakables.gameGravity, true)
+      ball.stepVelocity(dt, 1, true)
       ball.stepPositionAndOrientation(dt)
     }
 
@@ -856,8 +858,8 @@ class Game {
 
     let time = 0
     const timeElapsed = this.currentGameTime.totalGameTime.totalSeconds
-    const p0JumpHeight = p0Copy.getMaxJumpHeight(tweakables.gameGravity.y)
-    const p1JumpHeight = p1Copy.getMaxJumpHeight(tweakables.gameGravity.y)
+    const p0JumpHeight = p0Copy.getMaxJumpHeight()
+    const p1JumpHeight = p1Copy.getMaxJumpHeight()
 
     while (time < tweakables.predictionLookaheadSec) {
       this.simulateStep(tweakables.predictionPhysicsDtSec)
