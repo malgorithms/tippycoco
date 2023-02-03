@@ -44,7 +44,6 @@ class YellowAi extends AiBase {
     const timeTillBallLands = o.balls[0].physics.calcTimeTillLanding()
     const timeTillILand = o.me.getMyJumpTime()
     const ballBeatsMeBy = timeTillILand - timeTillBallLands
-    console.log({timeTillBallLands, timeTillILand})
     if (ballBeatsMeBy > 0 && ballBeatsMeBy < 0.2) return true
     return false
   }
@@ -79,7 +78,7 @@ class YellowAi extends AiBase {
       if (this.wouldILandAroundTheSameTimeAsTheBall(o)) this.jumpIfPossible(o)
     }
 
-    //if (this.isThereABallRightAboveMe(o)) this.jumpIfPossible(o)
+    if (this.isThereABallRightAboveMe(o)) this.jumpIfPossible(o)
 
     // What to do if we have no idea
     if (!stateToWatch) {
