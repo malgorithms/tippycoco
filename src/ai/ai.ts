@@ -19,7 +19,7 @@ const ais = {
 type AiName = keyof typeof ais
 
 const aiNicknames = {
-  Green: 'Greenster',
+  Green: 'Green Guy',
   Black: 'Black Tie',
   White: 'Skarball',
   Purple: 'Pinky',
