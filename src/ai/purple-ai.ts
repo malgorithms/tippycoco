@@ -1,28 +1,67 @@
 import {TextureName} from '../content-load-list'
 import {Game} from '../game'
+import {EyeConfig} from '../types'
 import {AiBase, AiThinkArg, FutureBall} from './base'
 
 const REACTION_TIME_MS = 25 // seconds
 
+const friendlyEyeConfig: EyeConfig[] = [
+  {
+    // left
+    offset: {x: -0.22, y: 0.05},
+    size: 0.2,
+    movementRadius: 0.05,
+    blinkScale: 0.1,
+    blinkEveryMs: 5000,
+    blinkDurationMs: 100,
+    pupilTexture: 'pupil',
+  },
+  {
+    // right
+    offset: {x: 0.145, y: 0.141},
+    size: 0.2,
+    movementRadius: 0.05,
+    blinkScale: 0.1,
+    blinkEveryMs: 5000,
+    blinkDurationMs: 100,
+    pupilTexture: 'pupil',
+  },
+]
+
+const angryEyeConfig: EyeConfig[] = friendlyEyeConfig
+
 class PurpleAi extends AiBase {
+  private amAngry: boolean
   constructor(game: Game) {
     super(game)
+    this.amAngry = false
   }
+  public get eyes() {
+    return this.amAngry ? angryEyeConfig : friendlyEyeConfig
+  }
+
   private timeTillICanReachLanding(o: AiThinkArg) {
     const landing = this.getNextBallHittingOnMySide(o)
     if (!landing) return Infinity
     return Math.abs(landing.pos.x - o.me.physics.center.x) / o.me.maxVel.x
   }
   public get textureName(): TextureName {
-    return 'purplePlayer'
+    return this.amAngry ? 'purplePlayerAngry' : 'purplePlayer'
   }
 
+  private areAllBallsOnMySide(o: AiThinkArg): boolean {
+    for (const b of o.balls) {
+      if (b.physics.center.x < 0) return false
+    }
+    return true
+  }
   public think(o: AiThinkArg): void {
     const me = o.me
+    this.amAngry = this.areAllBallsOnMySide(o)
 
     if (o.accumulatedPointSeconds < 1.0) return
-    // Gonna shrink as small as possible
-    this.goToSize(o, 0.25)
+    // Gonna shrink small
+    this.goToSize(o, 0.35)
 
     if (o.balls[0].physics.vel.x == 0 && o.balls[0].physics.center.x == 0.25) {
       // could have it do some kind of taunting here

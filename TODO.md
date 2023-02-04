@@ -7,10 +7,7 @@ Stuff
 - yellow player who likes to catch the ball
 - managed to force the ball throug the net once - add constraint
 - menu redesign:
-  - hmm, maybe consider grid of them rather than stacking
-  - bot template support
-    - disabled but visible with explanation you can write your own
-    - activated as soon as you edit something like myBot.ts
+  - still need to separate 1-v-1 into own section
 - sharing idea: stats page with info in URL!
 - firefox on mac:
   - controller lag

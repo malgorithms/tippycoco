@@ -7,6 +7,7 @@ const textureSources = {
   greenPlayer: 'images/Players/GreenPlayer.png',
   orangePlayer: 'images/Players/OrangePlayer.png',
   purplePlayer: 'images/Players/PurplePlayer.png',
+  purplePlayerAngry: 'images/Players/PurplePlayerAngry.png',
   whitePlayer: 'images/Players/WhitePlayer.png',
   blackPlayer: 'images/Players/BlackPlayer.png',
   yellowPlayer: 'images/Players/YellowPlayer.png',
