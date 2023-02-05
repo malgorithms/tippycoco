@@ -2,12 +2,13 @@
 
 Stuff
 
-- consider horizontal dash move
 - more characters?
-- yellow player who likes to catch the ball
-- managed to force the ball throug the net once - add constraint
+- managed to force the ball through the net once - add constraint
 - menu redesign:
-  - still need to separate 1-v-1 into own section
+  - it's all too mingled. Need to separate:
+    - exit / return to game
+    - play 1 player
+    - play 2 player
 - sharing idea: stats page with info in URL!
 - firefox on mac:
   - controller lag
@@ -15,19 +16,16 @@ Stuff
   - fps sucks
   - warning when controller connected, if bugs not fixable
 - performance:
-  - font drawing: draw fonts onto separate cached canvases and then project
-    - them onto the game canvas
-  - consider no clouds on slow framerate
-  - check if not drawing off-screen clouds affects things
-  - test on old iMac
   - explore higher physicsDt / predictionDt
-- better intro with them emerging from the ground, possibly launching debris
+  - consider no clouds on slow framerate
+  - test on old iMac
+- better intro ideas
+  - all of them emerging from the ground and looking at character next to them
+  - ball follows them out and they watch that
+  - they jump back into the ground?
 - sound improvements:
-  - ball hitting ground sound
-  - if ball bounces in rapid succession (fast volley?) pitch increases
-  - fix ding off flower...too bell-like, echoey.
-  - better sound for growth/shrinking
 - exiting game shouldn't cause reload
+- iOS - can I make it work?!
 
 Before launching
 
