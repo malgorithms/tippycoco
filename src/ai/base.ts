@@ -5,7 +5,7 @@ import {Game} from '../game'
 import {Player} from '../player'
 import {RectangularObstacle} from '../rectangular-obstacle'
 import tweakables from '../tweakables'
-import {EyeConfig, FutureState, GameTime, PlayerSide, Vector2} from '../types'
+import {EyeConfig, FutureState, GameTime, PlayerSide, SkyAssignmentNames, Vector2} from '../types'
 
 interface FutureBall {
   pos: Vector2
@@ -23,6 +23,13 @@ interface AiThinkArg {
   me: Player
   opponent: Player
   net: RectangularObstacle
+}
+/**
+ * optional stuff
+ */
+interface AiBase {
+  drawExtrasInFrontOfCharacter?(ctx: CanvasRenderingContext2D): void
+  ballTexture?(ballNumber: number): TextureName
 }
 
 abstract class AiBase {
@@ -45,6 +52,8 @@ abstract class AiBase {
     return tweakables.player.defaultEyes
   }
   public abstract get textureName(): TextureName
+  public abstract get skyTextureNames(): SkyAssignmentNames
+
   /**
    * @returns milliseconds since I've last jumped, or Infinity if never
    */
@@ -164,9 +173,9 @@ abstract class AiBase {
    * @param gameTime for storing when you last jumped
    * @param me myself
    */
-  protected jumpIfPossible(o: AiThinkArg) {
+  protected jumpIfPossible(o: AiThinkArg): boolean {
     this._lastJump = o.gameTime.totalGameTime.totalMilliseconds
-    o.me.jump()
+    return o.me.jump()
   }
   protected isInJumpingPosition(player: Player) {
     return player.isInJumpPosition

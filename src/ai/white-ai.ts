@@ -1,6 +1,6 @@
 import {TextureName} from '../content-load-list'
 import {Game} from '../game'
-import {EyeConfig, PlayerSide} from '../types'
+import {EyeConfig, PlayerSide, SkyAssignmentNames} from '../types'
 import {AiBase, AiThinkArg, FutureBall} from './base'
 
 // not jumping right at the start of a point prevents WhiteAi from
@@ -15,6 +15,12 @@ class WhiteAi extends AiBase {
 
   public get textureName(): TextureName {
     return 'whitePlayer'
+  }
+  public get skyTextureNames(): SkyAssignmentNames {
+    return {
+      sunny: 'sunnyBackgroundFire',
+      dark: 'darkBackground',
+    }
   }
   public get eyes() {
     const eyes: EyeConfig[] = [

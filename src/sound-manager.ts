@@ -39,11 +39,8 @@ class SoundManager {
     return this.autoPitchPlays.length
   }
   public play(name: SoundName, volume: number, pitch: number, pan: number, loop: boolean) {
-    console.log(`playing ${name} at pitch ${pitch}`)
     if (this.autoPitchIncrementers.has(name)) {
-      console.log(`pitch ${pitch}.`)
       pitch += tweakables.sound.autoPitchInc * this.countRecentAutoPitchPlays()
-      console.log(`changed pitch to ${pitch} due to ${this.countRecentAutoPitchPlays()} recent plays`)
       this.autoPitchPlays.push({soundName: name, dateNow: Date.now()})
     }
     this.getSound(name).play(volume, pitch, pan, loop)

@@ -1,5 +1,6 @@
 import {TextureName} from '../content-load-list'
 import {Game} from '../game'
+import {SkyAssignmentNames} from '../types'
 import {AiBase, AiThinkArg} from './base'
 
 const PREDICT_SEC = 0.6 // seconds in the future green will see
@@ -24,6 +25,17 @@ class GreenAi extends AiBase {
    */
   public get textureName(): TextureName {
     return 'greenPlayer'
+  }
+
+  /**
+   * here we customize what background we want for sunny (not game point)
+   * or dark (game point). Again, see content-load-list.ts for explanation
+   */
+  public get skyTextureNames(): SkyAssignmentNames {
+    return {
+      sunny: 'sunnyBackgroundGreen',
+      dark: 'darkBackground',
+    }
   }
   /**
    * `think` is the function you must implement in your AI. it takes a general

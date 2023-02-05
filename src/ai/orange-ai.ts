@@ -1,5 +1,6 @@
 import {TextureName} from '../content-load-list'
 import {Game} from '../game'
+import {SkyAssignmentNames} from '../types'
 import {AiBase, AiThinkArg, FutureBall} from './base'
 
 const REACTION_TIME_MS = 100
@@ -14,7 +15,12 @@ class OrangeAi extends AiBase {
     if (!landing) return Infinity
     return Math.abs(landing.pos.x - o.me.physics.center.x) / o.me.maxVel.x
   }
-
+  public get skyTextureNames(): SkyAssignmentNames {
+    return {
+      sunny: 'sunnyBackgroundGreen',
+      dark: 'darkBackground',
+    }
+  }
   public get textureName(): TextureName {
     return 'orangePlayer'
   }
