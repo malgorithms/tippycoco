@@ -96,7 +96,7 @@ export default {
   sound: {
     autoPitchSecStorage: 0.5, // sec
     autoPitchInc: 0.25,
-    normalBumpPitchRange: 0.5, // -this...this depending on player size
+    normalBumpPitchRange: 0.75, // -this...this depending on player size
   },
   display: {
     zoomCenter: {x: 0, y: 0.3} as Vector2,
