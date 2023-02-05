@@ -30,4 +30,4 @@ See [TODO.md](TODO.md)
 
 ### Credits
 
-Game by Chris Coyne. Music by Christian Rudder. "Rejected" sound by Jennie Coyne. "Slam" sound by Cameron Coyne.
+Game by Chris Coyne. Music by Christian Rudder. "Rejected" sound by Jennie Coyne. "Slam" sound by Cameron Coyne. "Kiss" by Abbott Coyne.
