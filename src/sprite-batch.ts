@@ -11,24 +11,27 @@ class SpriteBatch {
   private get ctx() {
     return this.canvasManager.ctx
   }
+  public transformCtxForCenteredObject(center: Vector2, dims: Dims, rot: number, scale: number, flipY: boolean) {
+    const w = dims.w
+    const h = dims.h
+    const rotCenterX = w / 2
+    const rotCenterY = h / 2
+    this.ctx.translate(center.x, center.y)
+    if (flipY) this.ctx.transform(1, 0, 0, -1, 0, 0) // flip y-axis
+    this.ctx.scale(scale, scale)
+    if (rot) this.ctx.rotate(-rot)
+    this.ctx.translate(-rotCenterX, -rotCenterY)
+  }
   /**
    * draws a texture on the canvasManager, scaled appropriately. So none of the params
    * here are dealing with pixels, but actual game units
    */
-  public drawTextureCentered(t: Texture2D, center: Vector2, dim: Dims, rot: number, alpha: number) {
+  public drawTextureCentered(t: Texture2D, center: Vector2, dims: Dims, rot: number, alpha: number) {
     if (alpha <= 0) return
     this.ctx.save()
-    // we need to rotate about center, so let's translate to center, rotate, translate back
-    const w = dim.w
-    const h = dim.h
-    const rotCenterX = w / 2
-    const rotCenterY = h / 2
-    this.ctx.translate(center.x, center.y)
-    this.ctx.transform(1, 0, 0, -1, 0, 0) // flip y-axis
-    if (rot) this.ctx.rotate(-rot)
-    this.ctx.translate(-rotCenterX, -rotCenterY)
+    this.transformCtxForCenteredObject(center, dims, rot, 1, true)
     this.ctx.globalAlpha = alpha
-    this.ctx.drawImage(t.img, 0, 0, w, h)
+    this.ctx.drawImage(t.img, 0, 0, dims.w, dims.h)
     this.ctx.restore()
   }
   private drawStringCenteredExactly(s: string, font: FontDef, size: number, center: Vector2, color: Color, rot: number) {

@@ -151,6 +151,15 @@ enum GameState {
   Exit = 'exit',
 }
 
+type SkyAssignment = {
+  dark: Texture2D
+  sunny: Texture2D
+}
+type SkyAssignmentNames = {
+  dark: TextureName
+  sunny: TextureName
+}
+
 export {
   ValueOf,
   GameState,
@@ -174,4 +183,6 @@ export {
   TextDrawOptions,
   PlayerSpecies,
   EyeConfig,
+  SkyAssignment,
+  SkyAssignmentNames,
 }

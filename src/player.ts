@@ -83,11 +83,13 @@ class Player {
   public get jumpSpeed(): number {
     return this.maxVel.y
   }
-  public jump(): void {
+  public jump(): boolean {
     if (this.isInJumpPosition) {
       this._jumpCount++
       this.physics.vel.y = this.jumpSpeed
+      return true
     }
+    return false
   }
 
   public dash(dir: Vector2) {

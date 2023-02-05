@@ -1,6 +1,6 @@
 import {TextureName} from '../content-load-list'
 import {Game} from '../game'
-import {PlayerSide} from '../types'
+import {PlayerSide, SkyAssignmentNames} from '../types'
 import {AiBase, AiThinkArg} from './base'
 import {_WhiteAi} from './white-ai'
 
@@ -16,9 +16,16 @@ class BlackAi extends AiBase {
     super(game)
     this.hiddenWhiteBrain = new _WhiteAi(game)
   }
+  public get skyTextureNames(): SkyAssignmentNames {
+    return {
+      sunny: 'sunnyBackgroundBlack',
+      dark: 'darkBackground',
+    }
+  }
   public get textureName(): TextureName {
     return 'blackPlayer'
   }
+
   public think(o: AiThinkArg): void {
     if ((o.p0Score + o.p1Score) % 3 == 0 && Math.sin(o.accumulatedPointSeconds / 3) < 0) {
       this.hiddenWhiteBrain.think(o)

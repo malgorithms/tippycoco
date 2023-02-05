@@ -1,11 +1,10 @@
-import {aiToName} from './ai/ai'
 import {CanvasManager} from './canvas-manager'
 import {Cloud} from './cloud'
 import {Display} from './display'
-import {Player, PlayerSpecies} from './player'
+import {Player} from './player'
 import {SpriteBatch} from './sprite-batch'
 import tweakables from './tweakables'
-import {Texture2D} from './types'
+import {SkyAssignment, Texture2D} from './types'
 import {vec} from './utils'
 
 // the way we handle sky transitions is to have a collection of
@@ -17,10 +16,6 @@ interface ActiveSky {
   texture: Texture2D
   whenSpawned: number
   sunniness: 0 | 1
-}
-interface SkyAssignment {
-  dark: Texture2D
-  sunny: Texture2D
 }
 
 class Atmosphere {
@@ -64,34 +59,13 @@ class Atmosphere {
 
   private skyForOpponent(opp: Player): SkyAssignment {
     const ai = opp.ai
-    if (opp.species === PlayerSpecies.Human || !ai) {
-      return {
-        sunny: this.display.getTexture('sunnyBackgroundBlue'),
-        dark: this.display.getTexture('darkBackground'),
-      }
+    const tNames = ai?.skyTextureNames ?? {
+      sunny: 'sunnyBackgroundBlue',
+      dark: 'darkBackground',
     }
-
-    const sunnyAiTextures = {
-      Green: 'sunnyBackgroundGreen',
-      Black: 'sunnyBackgroundBlack',
-      White: 'sunnyBackgroundFire',
-      Purple: 'sunnyBackgroundPurplish',
-      Orange: 'sunnyBackgroundGreen',
-      Yellow: 'sunnyBackgroundBlue',
-    } as const
-    const darkAiTextures = {
-      Green: 'darkBackground',
-      Black: 'darkBackground',
-      White: 'darkBackground',
-      Purple: 'darkBackground',
-      Orange: 'darkBackground',
-      Yellow: 'darkBackground',
-    } as const
-
-    const aiName = aiToName(ai)
     return {
-      sunny: this.display.getTexture(sunnyAiTextures[aiName]),
-      dark: this.display.getTexture(darkAiTextures[aiName]),
+      sunny: this.display.getTexture(tNames.sunny),
+      dark: this.display.getTexture(tNames.dark),
     }
   }
 

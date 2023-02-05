@@ -919,7 +919,7 @@ class Game {
       pointScored = this.gameStep(delta)
       physicsDtCountdown -= delta
     }
-    this.aIStep()
+    if (this.accumulatedPointSeconds > 1) this.aIStep()
   }
   private runMainMenuState() {
     this.handleMenuInputs()

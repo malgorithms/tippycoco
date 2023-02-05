@@ -123,6 +123,18 @@ class Display {
       1,
     )
     this.drawPupils(gameTime, player, ball.physics.center)
+    if (player.ai?.drawExtrasInFrontOfCharacter) {
+      this.ctx.save()
+      this.spriteBatch.transformCtxForCenteredObject(
+        player.physics.center,
+        {w: player.physics.diameter, h: player.physics.diameter},
+        player.physics.orientation,
+        player.physics.radius,
+        false,
+      )
+      player.ai.drawExtrasInFrontOfCharacter(this.ctx)
+      this.ctx.restore()
+    }
   }
 
   private drawPlayerShadowBehind(player: Player) {
@@ -253,7 +265,7 @@ class Display {
         this.drawPlayer(gameTime, player, closestBall)
       }
       for (let i = 0; i < this.game.balls.length; i++) {
-        this.drawBall(this.game.balls[i], i)
+        this.drawBall(this.game.balls[i], i, this.game.playerRight)
       }
     }
     this.spriteBatch.drawTextureInRect(
@@ -345,11 +357,11 @@ class Display {
     )
   }
 
-  private drawBall(ball: Ball, i: number) {
+  private drawBall(ball: Ball, i: number, rightPlayer: Player) {
     const bp = ball.physics
-    if (i % 2 == 0)
-      this.spriteBatch.drawTextureCentered(this.getTexture('ball1'), bp.center, {w: bp.diameter, h: bp.diameter}, bp.orientation, 1)
-    else this.spriteBatch.drawTextureCentered(this.getTexture('ball2'), bp.center, {w: bp.diameter, h: bp.diameter}, bp.orientation, 1)
+    let ballName: TextureName = i % 2 ? 'ball2' : 'ball1'
+    if (rightPlayer.ai?.ballTexture) ballName = rightPlayer.ai.ballTexture(i)
+    this.spriteBatch.drawTextureCentered(this.getTexture(ballName), bp.center, {w: bp.diameter, h: bp.diameter}, bp.orientation, 1)
     this.spriteBatch.drawTextureCentered(this.getTexture('ballShadow'), bp.center, {w: bp.diameter, h: bp.diameter}, 0, 1)
   }
 

@@ -1,6 +1,6 @@
 import {TextureName} from '../content-load-list'
 import {Game} from '../game'
-import {EyeConfig} from '../types'
+import {EyeConfig, SkyAssignmentNames} from '../types'
 import {vec} from '../utils'
 import {AiBase, AiThinkArg, FutureBall} from './base'
 
@@ -21,6 +21,12 @@ class YellowAi extends AiBase {
   }
   public get amKissing() {
     return this.lastKissyFace > Date.now() - KISS_DURATION_MS
+  }
+  public get skyTextureNames(): SkyAssignmentNames {
+    return {
+      sunny: 'sunnyBackgroundBlue',
+      dark: 'darkBackground',
+    }
   }
   public get textureName(): TextureName {
     return this.amKissing ? 'yellowPlayerKissing1' : 'yellowPlayer'
