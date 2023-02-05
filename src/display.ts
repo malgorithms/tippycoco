@@ -150,7 +150,7 @@ class Display {
     const height = avgHeight + heightDev * (Math.sin(beat / 2) / 2 + Math.sin(beat / 8) / 2)
     const rot = -0.1 + Math.sin(beat) / 50.0
 
-    const destination: Vector2 = {x: 0, y: 0.4}
+    const dest: Vector2 = {x: 0, y: 0.4}
     const shift = this.canvasManager.pixelWidth(2)
     const subFont = this.font('regular')
     const font = this.font('extraBold')
@@ -158,27 +158,27 @@ class Display {
     // we draw subtitle first so title is on top when they overlap
     if (subtitle) {
       const subtitleRelativeSize = 0.8 // 80% as big as title
-      const subtitleSize = (minHeight + (maxHeight - height)) * subtitleRelativeSize
-      destination.y -= subtitleSize * 2
-      this.spriteBatch.drawStringCentered(subtitle, subFont, subtitleSize, vec.add(destination, {x: shift, y: shift}), Colors.black, rot)
-      this.spriteBatch.drawStringCentered(subtitle, subFont, subtitleSize, vec.add(destination, {x: shift, y: -shift}), Colors.black, rot)
-      this.spriteBatch.drawStringCentered(subtitle, subFont, subtitleSize, vec.add(destination, {x: -shift, y: shift}), Colors.black, rot)
-      this.spriteBatch.drawStringCentered(subtitle, subFont, subtitleSize, vec.add(destination, {x: -shift, y: -shift}), Colors.black, rot)
-      this.spriteBatch.drawStringCentered(subtitle, subFont, subtitleSize, destination, color, rot)
-      destination.y += subtitleSize
+      const subSize = (minHeight + (maxHeight - height)) * subtitleRelativeSize
+      dest.y -= subSize * 2
+      this.spriteBatch.drawStringCentered(subtitle, subFont, subSize, vec.add(dest, {x: shift, y: shift}), Colors.black, rot, false)
+      this.spriteBatch.drawStringCentered(subtitle, subFont, subSize, vec.add(dest, {x: shift, y: -shift}), Colors.black, rot, false)
+      this.spriteBatch.drawStringCentered(subtitle, subFont, subSize, vec.add(dest, {x: -shift, y: shift}), Colors.black, rot, false)
+      this.spriteBatch.drawStringCentered(subtitle, subFont, subSize, vec.add(dest, {x: -shift, y: -shift}), Colors.black, rot, false)
+      this.spriteBatch.drawStringCentered(subtitle, subFont, subSize, dest, color, rot, false)
+      dest.y += subSize
     }
 
-    this.spriteBatch.drawStringCentered(text, font, height, vec.add(destination, {x: shift, y: shift}), Colors.black, rot)
-    this.spriteBatch.drawStringCentered(text, font, height, vec.add(destination, {x: shift, y: -shift}), Colors.black, rot)
-    this.spriteBatch.drawStringCentered(text, font, height, vec.add(destination, {x: -shift, y: shift}), Colors.black, rot)
-    this.spriteBatch.drawStringCentered(text, font, height, vec.add(destination, {x: -shift, y: -shift}), Colors.black, rot)
-    this.spriteBatch.drawStringCentered(text, font, height, destination, color, rot)
+    this.spriteBatch.drawStringCentered(text, font, height, vec.add(dest, {x: shift, y: shift}), Colors.black, rot, false)
+    this.spriteBatch.drawStringCentered(text, font, height, vec.add(dest, {x: shift, y: -shift}), Colors.black, rot, false)
+    this.spriteBatch.drawStringCentered(text, font, height, vec.add(dest, {x: -shift, y: shift}), Colors.black, rot, false)
+    this.spriteBatch.drawStringCentered(text, font, height, vec.add(dest, {x: -shift, y: -shift}), Colors.black, rot, false)
+    this.spriteBatch.drawStringCentered(text, font, height, dest, color, rot, false)
   }
 
   public drawControllerInstructions() {
     // TODO
     const c = new Color(1, 1, 1, 1)
-    this.spriteBatch.drawStringCentered('Instructions soon', this.font('regular'), 0.1, {x: 0, y: 0.1}, c, 0)
+    this.spriteBatch.drawStringCentered('Instructions soon', this.font('regular'), 0.1, {x: 0, y: 0.1}, c, 0, false)
   }
 
   public drawCredits(gameTime: GameTime) {
@@ -413,11 +413,11 @@ class Display {
     const yPos = view.y1 + height * 2
     const color = new Color(0, 0, 0, 0.25)
     const font = this.font('regular')
-    this.spriteBatch.drawStringUncentered(`${~~currentFps} fps`, font, height, {x: xPos, y: yPos}, color, 0)
+    this.spriteBatch.drawString(`${~~currentFps} fps`, font, height, {x: xPos, y: yPos}, color, 0)
     const suggAt = 90
     if (currentFps && currentFps < suggAt) {
       const opacity = 0.5 * (1 - currentFps / suggAt)
-      this.spriteBatch.drawStringUncentered(
+      this.spriteBatch.drawString(
         `lmk if a smaller window improves smoothness/fps`,
         font,
         height * 0.75,
@@ -428,7 +428,7 @@ class Display {
     }
 
     if (this.inDebugView) {
-      this.spriteBatch.drawStringUncentered(
+      this.spriteBatch.drawString(
         this.game.getGameState(),
         font,
         height * 0.75,
@@ -510,7 +510,7 @@ class Display {
     const font = this.font('extraBold')
     const t0Center = vec.add(box1Center, tweakables.display.scorecard.textOffset)
     const t0Size = 0.9 * p0h * this.p1ScoreCard.sizeMultiplier
-    this.spriteBatch.drawStringCentered(text1, font, t0Size, t0Center, Colors.black, -rotation)
+    this.spriteBatch.drawStringCentered(text1, font, t0Size, t0Center, Colors.black, -rotation, true)
 
     const text2 = `${p1Score}`
 
@@ -518,7 +518,7 @@ class Display {
     this.spriteBatch.drawTextureCentered(this.getTexture('scoreCard'), box2Center, {w: p1h, h: p1h}, rotation, 1)
     const t1Center = vec.add(box2Center, tweakables.display.scorecard.textOffset)
     const t1Size = 0.9 * p1h * this.p1ScoreCard.sizeMultiplier
-    this.spriteBatch.drawStringCentered(text2, font, t1Size, t1Center, Colors.black, -rotation)
+    this.spriteBatch.drawStringCentered(text2, font, t1Size, t1Center, Colors.black, -rotation, true)
   }
 
   public adjustZoomLevel(maxBallHeight: number, dt: number) {

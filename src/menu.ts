@@ -177,9 +177,6 @@ class Menu {
       throw new Error(`unknown unlock requirement ${ur.defeatType}`)
     }
   }
-  private action(num: number) {
-    return this.menuItems[num].action
-  }
   public isOnLockedSelection(): boolean {
     const sel = this.menuItems[this.selectedMenuIndex]
     return this.isLockedReason(sel) ? true : false
@@ -200,9 +197,9 @@ class Menu {
     const p1 = vec.add(destination, {x: 0.01, y: 0.02})
     const p2 = destination
     const font = this.display.font('extraBold')
-    this.spriteBatch.drawStringCentered(s, font, size, p0, backgroundColor2, rotation)
-    this.spriteBatch.drawStringCentered(s, font, size, p1, backgroundColor, rotation)
-    this.spriteBatch.drawStringCentered(s, font, size, p2, foregroundColor, rotation)
+    this.spriteBatch.drawStringCentered(s, font, size, p0, backgroundColor2, rotation, false)
+    this.spriteBatch.drawStringCentered(s, font, size, p1, backgroundColor, rotation, false)
+    this.spriteBatch.drawStringCentered(s, font, size, p2, foregroundColor, rotation, false)
   }
 
   /**
@@ -299,8 +296,16 @@ class Menu {
         const txtCenter = relPos(tMenu.lockReasonPos)
         const txtCenter2 = relPos({x: 0, y: -0})
         const font = this.display.font('extraBold')
-        this.spriteBatch.drawStringCentered(lockReason, font, tMenu.lockReasonSubsize, txtCenter, tMenu.lockReasonColor, -2 * rotation)
-        this.spriteBatch.drawStringCentered('LOCKED', font, tMenu.lockReasonSize, txtCenter2, tMenu.lockReasonColor, -2 * rotation)
+        this.spriteBatch.drawStringCentered(
+          lockReason,
+          font,
+          tMenu.lockReasonSubsize,
+          txtCenter,
+          tMenu.lockReasonColor,
+          -2 * rotation,
+          false,
+        )
+        this.spriteBatch.drawStringCentered('LOCKED', font, tMenu.lockReasonSize, txtCenter2, tMenu.lockReasonColor, -2 * rotation, false)
       }
     }
 
@@ -332,8 +337,8 @@ class Menu {
     const drawOptsL: TextDrawOptions = {textAlign: 'right'}
     const drawOptsR: TextDrawOptions = {textAlign: 'left'}
     const posR = vec.add(pos, tMenu.statsRightColAdj)
-    this.spriteBatch.drawStringUncentered(sL, fontL, sizeL, pos, colL, 0, drawOptsL)
-    this.spriteBatch.drawStringUncentered(sR, fontR, sizeR, posR, colR, 0, drawOptsR)
+    this.spriteBatch.drawString(sL, fontL, sizeL, pos, colL, 0, drawOptsL)
+    this.spriteBatch.drawString(sR, fontR, sizeR, posR, colR, 0, drawOptsR)
   }
 
   private drawCardStats(item: MenuEntry, ai: KnownAi) {

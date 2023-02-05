@@ -31,10 +31,33 @@ class SpriteBatch {
     this.ctx.drawImage(t.img, 0, 0, w, h)
     this.ctx.restore()
   }
-  public drawStringCentered(s: string, font: FontDef, size: number, center: Vector2, color: Color, rot: number) {
-    this.drawStringUncentered(s, font, size, center, color, rot, {textAlign: 'center', textBaseline: 'middle'})
+  private drawStringCenteredExactly(s: string, font: FontDef, size: number, center: Vector2, color: Color, rot: number) {
+    if (color.a === 0) return
+    this.ctx.save()
+    const pxCenter = this.canvasManager.canvasToPixelPos(center)
+    this.ctx.font = this.fontDescriptor(font, size)
+    const boxTm = this.ctx.measureText(s)
+    const boxWidth = boxTm.width
+    const boxHeight = boxTm.actualBoundingBoxAscent + boxTm.actualBoundingBoxDescent
+    this.ctx.resetTransform()
+    const rotCenterX2 = boxWidth / 2
+    const rotCenterY2 = -boxHeight / 2
+    this.ctx.translate(pxCenter.x, pxCenter.y)
+    this.ctx.rotate(rot ?? 0)
+    this.ctx.translate(-rotCenterX2, -rotCenterY2)
+    this.ctx.fillStyle = color.toHtmlRgb()
+    this.ctx.fillText(s, 0, 0)
+    this.ctx.restore()
   }
-  public drawStringUncentered(s: string, font: FontDef, size: number, pos: Vector2, color: Color, rot: number, opts?: TextDrawOptions) {
+
+  public drawStringCentered(s: string, font: FontDef, size: number, center: Vector2, color: Color, rot: number, exactMiddleVert: boolean) {
+    if (exactMiddleVert) {
+      this.drawStringCenteredExactly(s, font, size, center, color, rot)
+    } else {
+      this.drawString(s, font, size, center, color, rot, {textAlign: 'center', textBaseline: 'middle'})
+    }
+  }
+  public drawString(s: string, font: FontDef, size: number, pos: Vector2, color: Color, rot: number, opts?: TextDrawOptions) {
     opts ??= {}
     if (color.a === 0) return
     this.ctx.save()
@@ -42,7 +65,7 @@ class SpriteBatch {
     this.ctx.font = this.fontDescriptor(font, size)
     this.ctx.resetTransform()
     this.ctx.translate(pxPos.x, pxPos.y)
-    this.ctx.rotate(rot ?? 0)
+    if (rot) this.ctx.rotate(rot)
     if (opts.textBaseline) this.ctx.textBaseline = opts.textBaseline
     if (opts.textAlign) this.ctx.textAlign = opts.textAlign
     this.ctx.fillStyle = color.toHtmlRgb()
