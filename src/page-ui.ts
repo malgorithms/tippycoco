@@ -103,14 +103,17 @@ class PageUi {
       </div>
       <h4 style="margin-top:50px;">Controls & notes</h4>
       <p>
-      🎮: T.C.F.T.G. works with 1 or 2 gamepads. (PS5, XBox, etc. controllers work when plugged into your computer.)
-      <br><br>
       If you're using a keyboard:
       <br><br>
         Player 1 ⌨️: <b>a w d</b> to move
       <br>
         Player 2 ⌨️: <b>i j l</b> or <b>arrow keys</b>
+      <br><br>
+      🎮: T.C.F.T.G. also works with 1 or 2 gamepads. (Hint: PS5 and XBox controllers can pair with Windows/MacOS.)
+      <br><br>
       </p>
+
+
       <h4>Latest changes</h4>
       <p>
       Yellow player, Lemonae. And orange player, The Juice.
@@ -125,7 +128,7 @@ class PageUi {
       <h4>About</h4>
       <p>
         This game is a free, open-source hobby project by <b>Chris Coyne</b> (<a href="https://chriscoyne.com">chriscoyne.com</a>) with help from friends. The GitHub readme shows how to run your own
-        copy of the game. It's a joy to change the game physics and rules. The original inspiration for this game was Slime Volleyball, by Quin Pendragon. Music in T.C.F.T.G. by my friend
+        copy of the game. You can chnage the game physics and rules. The original inspiration for this game was Slime Volleyball, by Daniel Wedge &amp; Quin Pendragon. Music in T.C.F.T.G. by my friend
         Christian Rudder, of the band <a href="https://en.wikipedia.org/wiki/Bishop_Allen">Bishop Allen</a>. "Rejected!" and "Slam!" and "Kiss" voiced by Jennie, Cameron, and Abbott Coyne.
       </p>
       </div>
