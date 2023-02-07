@@ -133,17 +133,25 @@ class Game {
   }
   private async runLoop() {
     const startTime = Date.now()
+    let overshotAdj = 0
     let lastDraw = Date.now()
     let lastTime = Date.now()
     while (this.gameState !== GameState.Exit) {
       this.input.updateInputStates()
       await timeout(constants.gameLoopDelayMs)
       const currTime = Date.now()
-      const dt = currTime - lastTime
+      let dt = currTime - lastTime
+      if (dt > tweakables.maxDtMs && Date.now() - startTime > 1000) {
+        const extra = dt - tweakables.maxDtMs
+        console.log(`gameTime adj by -${dt}ms due to browser JS pause`)
+        dt = tweakables.maxDtMs
+        overshotAdj += extra
+      }
+      const totalMs = currTime - startTime - overshotAdj
       this.currentGameTime = {
         totalGameTime: {
-          totalMilliseconds: currTime - startTime,
-          totalSeconds: (currTime - startTime) / 1000,
+          totalMilliseconds: totalMs,
+          totalSeconds: totalMs / 1000,
         },
         elapsedGameTime: {
           totalMilliseconds: dt,

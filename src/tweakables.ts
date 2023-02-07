@@ -118,6 +118,7 @@ export default {
   afterServeInputDelay: 0.75, // after
   preServeDelaySec: 0.8, // sec to switch from pre-action to action
   predictFutureEveryMs: 10, // update every this often ms
+  maxDtMs: 100, // if the game tries to advance more than this, clip the timing
   physicsDtSec: 0.002, // seconds,
   redrawTargetMs: 4, // every game loop, if this much time has gone by, we redraw
   predictionLookaheadSec: 1.75,
