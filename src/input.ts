@@ -33,7 +33,7 @@ class Input {
     this.pads.swapSides()
   }
   public wasKeyboardPauseHit(): boolean {
-    return this.keyboard.anyKeysJustPushed(['Enter', 'Space'])
+    return this.keyboard.anyKeysJustPushed(['Enter', 'Escape'])
   }
   public checkGamepadPauseHit(): null | PlayerSide {
     for (const pI of [PlayerSide.Left, PlayerSide.Right]) {
@@ -95,6 +95,7 @@ class Input {
     }
   }
   public wasMenuExitJustPushed(owner: MenuOwnership): boolean {
+    if (this.keyboard.anyKeysJustPushed(['Escape'])) return true
     if (owner) return this.pads.anyButtonsPushedBy(owner, ['psO', 'start'])
     else return this.pads.anyButtonsPushedByAnyone(['psO', 'start'])
   }

@@ -6,7 +6,7 @@ const twoPlayerControls: KeyboardControlSet = {
   p0: {
     left: ['KeyA'],
     right: ['KeyD'],
-    jump: ['KeyW'],
+    jump: ['KeyW', 'Space'],
     shrink: ['KeyQ'],
     grow: ['KeyE'],
     dash: ['KeyS'],
