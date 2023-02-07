@@ -2,10 +2,6 @@ import {Color} from './color'
 import {Dims, EyeConfig, KeyboardControlSet, NewBallArg, NewPlayerArg, PlayerKeyboardSet, PlayerSide, PlayerSpecies, Vector2} from './types'
 import {vec} from './utils'
 
-//
-// TODO: extract all the garbage I hard-coded in game.ts into here
-//
-
 const twoPlayerControls: KeyboardControlSet = {
   p0: {
     left: ['KeyA'],
@@ -207,28 +203,34 @@ export default {
     }),
   },
   menu: {
-    cols: 3, // this many cars per row
+    springCards: {
+      velK: 100,
+      velDamp: -10,
+      sizeK: 100,
+      sizeDamp: -10,
+    },
+    rowLabelColor: new Color(1, 1, 1, 0.5),
+    rowLabelSelectedColor: new Color(1, 1, 1, 1),
     bpm: 87, // beats per minute for menu, to match the music
+    rowHeight: 0.3,
+    colLeftWidth: 0.1,
+    colRightWidth: 0.5,
     cardWidth: 0.3, // game units
-    cardWidthSelected: 0.5, // selected card this much bigger
-    cardGridMargin: 0.4, //
-    cardGridShift: {x: -0.3, y: 0.1},
-    textOffsetFromCard: {x: 0, y: 0.2},
-    afterChosenOffset: {x: 0.1, y: -0.1},
+    cardWidthSelectedRow: 0.6, // unselected cards in the selected row
+    cardWidthSelectedCard: 0.8, // selected card this much bigger
+    textOffsetFromCard: {x: 0, y: 0.3},
     coverColor: new Color(0, 0, 0, 0.3), //  background over existing game
-    deselectedCardColor: new Color(0, 0, 0, 0.2), //  background over existing game
+    deselectedCardColor: new Color(0, 0, 0, 0.4), //  background over existing game
     cardBall1Pos: {x: 0.75, y: 0.55}, // fractional position on card's surface
     cardBall2Pos: {x: 0.75, y: 0.25}, // fractional position on card's surface
+    cardBallSize: 0.16, // fractional to card's size
+    cardSizeBounce: 0.1,
+    cardRotationBounce: 0.03,
     lockReasonPos: {x: 0, y: -0.5}, // fraction position on card's surface
     lockReasonColor: new Color(1, 1, 1, 0.8),
     lockReasonSize: 0.08,
     lockReasonSubsize: 0.06,
     lockOverlayAlpha: 0.9,
-    cardBallSize: 0.16, // fractional to card's size
-    cardSizeBounce: 0.05,
-    cardRotationBounce: 0.03,
-    subtextOffset: {x: 0, y: -0.2},
-    subtextRelSize: 0.42,
     statsPosition: {x: 0.75, y: -0.1},
     statsColorLeft: new Color(0.5, 1, 0, 0.5),
     statsColorRight: new Color(0.5, 1, 0, 0.7),
@@ -246,6 +248,6 @@ export default {
     minSizeMultiplier: 0.25,
     sizeMultiplier: 1,
     sizeVelocity: 0,
-    springConstant: 24.0,
+    springConstant: 24,
   },
 } as const

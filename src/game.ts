@@ -304,7 +304,7 @@ class Game {
     else if (this.input.wasMenuUpJustPushed(owner)) this.menu.moveUp(owner)
     if (menuSelectResult.selected && !this.menu.isOnLockedSelection()) {
       const gamepadSide = menuSelectResult.byPlayerSide
-      const entry = this.menu.selectionEntry
+      const entry = this.menu.selectedEntry
       const action = entry.action
       if (action === MenuAction.Play) {
         const numBalls = entry.numBalls ?? 1
