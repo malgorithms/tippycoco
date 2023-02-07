@@ -6,8 +6,9 @@ import {persistence} from './persistence'
 import {PlayerSpecies} from './player'
 import {SpriteBatch} from './sprite-batch'
 import tweakables from './tweakables'
-import {GameTime, PlayerSide, TextDrawOptions, Texture2D, Vector2} from './types'
+import {GameTime, PlayerSide, TextDrawOptions, Vector2} from './types'
 import {vec} from './utils'
+import {SpringCard} from './springlike'
 
 enum MenuAction {
   ReturnToGame = 'return-to-game',
@@ -18,149 +19,122 @@ type UnlockRequirement = {
   defeat: AiName
   defeatType: 'win' | 'shutout' | 'no-jumping'
 }
-type CardPosition = {
-  row: number
-  col: number
-}
 interface MenuEntry {
   text: string
-  subtext?: string
   action: MenuAction
   opponentType?: PlayerSpecies
   ai?: KnownAi
   numBalls?: number
   card: TextureName
   unlockRequirement?: UnlockRequirement
+  springCard?: SpringCard
+}
+type MenuRow = {
+  title: string
+  entries: MenuEntry[]
 }
 
 const returnToGameEntry: MenuEntry = {text: 'Return to Game', action: MenuAction.ReturnToGame, card: 'menuCardReturnToGame'}
-const allMenuItems: MenuEntry[] = [
-  {text: 'Quit', action: MenuAction.Exit, card: 'menuCardExit'},
-  {
-    text: aiToNickname(ais.Green),
-    ai: ais.Green,
+
+function aiEntry(ai: KnownAi, numBalls: number, card: TextureName, unlockRequirement?: UnlockRequirement): MenuEntry {
+  return {
+    text: aiToNickname(ai),
     action: MenuAction.Play,
-    card: 'menuCardPlayGreen',
     opponentType: PlayerSpecies.Ai,
-    numBalls: 1,
-  },
-  {
-    text: aiToNickname(ais.Gray),
-    ai: ais.Gray,
-    action: MenuAction.Play,
-    card: 'menuCardPlayGray',
-    opponentType: PlayerSpecies.Ai,
-    numBalls: 1,
-    unlockRequirement: {
-      defeat: 'Green',
-      defeatType: 'win',
-    },
-  },
-  {
-    text: aiToNickname(ais.Orange),
-    ai: ais.Orange,
-    action: MenuAction.Play,
-    card: 'menuCardPlayOrange',
-    opponentType: PlayerSpecies.Ai,
-    numBalls: 1,
-    unlockRequirement: {
-      defeat: 'Gray',
-      defeatType: 'win',
-    },
-  },
-  {
-    text: aiToNickname(ais.Purple),
-    ai: ais.Purple,
-    action: MenuAction.Play,
-    card: 'menuCardPlayPurple',
-    opponentType: PlayerSpecies.Ai,
-    numBalls: 2,
-    unlockRequirement: {
-      defeat: 'Orange',
-      defeatType: 'win',
-    },
-  },
-  {
-    text: aiToNickname(ais.Yellow),
-    ai: ais.Yellow,
-    action: MenuAction.Play,
-    card: 'menuCardPlayYellow',
-    opponentType: PlayerSpecies.Ai,
-    numBalls: 1,
-    unlockRequirement: {
-      defeat: 'Purple',
-      defeatType: 'no-jumping',
-    },
-  },
-  {
-    text: aiToNickname(ais.Black),
-    ai: ais.Black,
-    action: MenuAction.Play,
-    card: 'menuCardPlayBlack',
-    opponentType: PlayerSpecies.Ai,
-    numBalls: 1,
-    unlockRequirement: {
-      defeat: 'Yellow',
-      defeatType: 'shutout',
-    },
-  },
-  {
-    text: aiToNickname(ais.White),
-    ai: ais.White,
-    action: MenuAction.Play,
-    card: 'menuCardPlayWhite',
-    opponentType: PlayerSpecies.Ai,
-    numBalls: 2,
-    unlockRequirement: {
-      defeat: 'Black',
-      defeatType: 'shutout',
-    },
-  },
-  {
-    text: '1 v. 1',
+    ai,
+    numBalls,
+    card,
+    unlockRequirement,
+  }
+}
+function humanEntry(numBalls: number): MenuEntry {
+  return {
+    text: numBalls === 1 ? `1 ball` : `${numBalls} balls`,
     action: MenuAction.Play,
     card: 'menuCardHuman1Ball',
     opponentType: PlayerSpecies.Human,
-    numBalls: 1,
-  },
-  {
-    text: '1 v. 1',
-    action: MenuAction.Play,
-    card: 'menuCardHuman2Balls',
-    opponentType: PlayerSpecies.Human,
-    numBalls: 2,
-  },
-]
+    numBalls,
+  }
+}
+
+const menuRows: MenuRow[] = []
+
+// this one is special as we'll pop it off/reinsert it as needed.
+const returnRow: MenuRow = {
+  title: ' ',
+  entries: [returnToGameEntry],
+}
+//menuRows.push(returnRow)
+menuRows.push({
+  title: '1 Player',
+  entries: [
+    aiEntry(ais.Green, 1, 'menuCardPlayGreen'),
+    aiEntry(ais.Orange, 1, 'menuCardPlayOrange', {defeat: 'Green', defeatType: 'win'}),
+    aiEntry(ais.Gray, 1, 'menuCardPlayGray', {defeat: 'Orange', defeatType: 'win'}),
+    aiEntry(ais.Purple, 2, 'menuCardPlayPurple', {defeat: 'Gray', defeatType: 'win'}),
+    aiEntry(ais.Yellow, 1, 'menuCardPlayYellow', {defeat: 'Purple', defeatType: 'no-jumping'}),
+    aiEntry(ais.Black, 1, 'menuCardPlayBlack', {defeat: 'Yellow', defeatType: 'win'}),
+    aiEntry(ais.White, 2, 'menuCardPlayWhite', {defeat: 'Black', defeatType: 'shutout'}),
+  ],
+})
+
+menuRows.push({
+  title: '2 Player',
+  entries: [humanEntry(1), humanEntry(2)],
+})
+
+menuRows.push({
+  title: 'Give up',
+  entries: [{text: 'Quit', action: MenuAction.Exit, card: 'menuCardExit'}],
+})
 
 type MenuOwnership = PlayerSide | null
 
 class Menu {
   private display: Display
-  private menuItems: MenuEntry[]
-  private selectedMenuIndex = 1
+  private rows: MenuRow[]
+  private selRow = 0
+  private selCol = 0
   private playerOwnsMenu: MenuOwnership = null // If this is null, any controller can control menu.
 
   public constructor(display: Display) {
     this.display = display
-    this.menuItems = allMenuItems
+    this.rows = menuRows
   }
   private get spriteBatch(): SpriteBatch {
     return this.display.getSpriteBatch()
   }
   public get selection(): MenuAction {
-    return this.menuItems[this.selectedMenuIndex].action
+    return this.selectedEntry.action
   }
-  public get selectionEntry() {
-    return this.menuItems[this.selectedMenuIndex]
+  public get selectedEntry() {
+    return this.selectedRow.entries[this.selCol]
+  }
+  private get selectedRow() {
+    return this.rows[this.selRow]
+  }
+  private getEntry(row: number, col: number) {
+    return this.rows[row].entries[col]
+  }
+  private findRowColForMenuAction(menuAction: MenuAction): [number, number] {
+    for (let i = 0; i < this.rows.length; i++) {
+      const row = this.rows[i]
+      for (let j = 0; j < row.entries.length; j++) {
+        const entry = row.entries[j]
+        if (entry.action === menuAction) return [i, j]
+      }
+    }
+    throw new Error('not found')
   }
   public select(menuOption: MenuAction, playerSide: PlayerSide | null) {
+    if (menuOption === MenuAction.ReturnToGame) {
+      this.enforceAllowReturn(true)
+    }
     if (this.playerOwnsMenu === null || this.playerOwnsMenu === playerSide) {
-      for (let i = 0; i < this.menuItems.length; i++) {
-        if (this.menuItems[i].action === menuOption) {
-          this.selectedMenuIndex = i
-          break
-        }
-      }
+      const [row, col] = this.findRowColForMenuAction(menuOption)
+      this.selCol = col
+      this.selRow = row
+      this.updateSpringCardTargets()
     }
   }
   private isLockedReason(entry: MenuEntry): false | string {
@@ -190,8 +164,7 @@ class Menu {
     }
   }
   public isOnLockedSelection(): boolean {
-    const sel = this.menuItems[this.selectedMenuIndex]
-    return this.isLockedReason(sel) ? true : false
+    return this.isLockedReason(this.selectedEntry) ? true : false
   }
   private beat(totalSeconds: number) {
     return 2.0 * Math.PI * totalSeconds * (tweakables.menu.bpm / 60)
@@ -214,67 +187,77 @@ class Menu {
     this.spriteBatch.drawStringCentered(s, font, size, p2, foregroundColor, rotation, false)
   }
 
-  /**
-   * returns -2 if this card is 2 to the left of the currently selected card
-   */
-  private cardOffset(i: number): number {
-    return i - this.selectedMenuIndex
-  }
-  private cardNumToPosition(i: number): CardPosition {
-    return {
-      col: i % tweakables.menu.cols,
-      row: Math.floor(i / tweakables.menu.cols),
+  private getSpringCard(row: number, col: number): SpringCard {
+    const entry = this.getEntry(row, col)
+    if (entry.springCard) return entry.springCard
+    else {
+      const tCfg = tweakables.menu.springCards
+      const pos = this.targetCardCenter(row, col)
+      const width = this.targetCardWidth(row, col)
+      const sc = new SpringCard(pos, width, tCfg.velK, tCfg.sizeK, tCfg.velDamp, tCfg.sizeDamp)
+      entry.springCard = sc
+      return sc
     }
   }
-  private cardPositionToNumber(cp: CardPosition): number {
-    return cp.row * tweakables.menu.cols + cp.col
+  private updateSpringCardTargets() {
+    for (let row = 0; row < this.rows.length; row++) {
+      for (let col = 0; col < this.rows[row].entries.length; col++) {
+        const sc = this.getSpringCard(row, col)
+        sc.targetPos = this.targetCardCenter(row, col)
+        sc.targetSize = this.targetCardWidth(row, col)
+      }
+    }
   }
-  /**
-   * lays out the card into a grid
-   * @param i the ith item in the list of menu cards
-   * @returns
-   */
-  private cardCenter(i: number): Vector2 {
+
+  private targetCardCenter(row: number, col: number): Vector2 {
     const tM = tweakables.menu
-    const marg = tM.cardGridMargin
     const vRect = this.display.viewableRegion
-    const numRows = Math.ceil(this.menuItems.length / tM.cols)
-    const col = i % tM.cols
-    const row = Math.floor(i / tM.cols)
-    const xFrac = (1 + col * 2) / (tM.cols * 2)
-    const yFrac = (1 + row * 2) / (numRows * 2)
-    const x = vRect.x1 + marg + (vRect.x2 - vRect.x1) * (1 - marg) * xFrac + tM.cardGridShift.x
-    const y = vRect.y2 - marg - (vRect.y2 - vRect.y1) * (1 - marg) * yFrac + tM.cardGridShift.y
+    const ctr: Vector2 = {x: (vRect.x1 + vRect.x2) / 2, y: (vRect.y1 + vRect.y2) / 2}
+    const y = ctr.y + (this.selRow - row) * tM.rowHeight
+    // if we're to the left of the selected one, we treat differently from to the right
+    const colOffset = col - this.selCol
+    let x = 0
+    if (colOffset < 0) {
+      x = ctr.x + (col - this.selCol) * tM.colLeftWidth // vRect.x1 + marg + col * tM.cardWidth
+    } else {
+      x = ctr.x + (col - this.selCol) * tM.colRightWidth // vRect.x1 + marg + col * tM.cardWidth
+    }
     return {x, y}
   }
-  private cardWidth(gameTime: GameTime, i: number): number {
+
+  private targetCardWidth(row: number, col: number): number {
+    const tM = tweakables.menu
+    if (row === this.selRow && col === this.selCol) return tM.cardWidthSelectedCard
+    else if (row === this.selRow) return tM.cardWidthSelectedRow
+    else return tM.cardWidth
+  }
+  private cardWidth(gameTime: GameTime, row: number, col: number): number {
     const beat = this.beat(gameTime.totalGameTime.totalSeconds)
     const bounce = tweakables.menu.cardSizeBounce
     const sizeMultiplier = Math.sin(beat / 8) * bounce + Math.sin(beat / 32) * bounce
-    const offset = this.cardOffset(i)
-    if (offset === 0) return tweakables.menu.cardWidthSelected * (1 - sizeMultiplier)
-    return tweakables.menu.cardWidth * (1 + sizeMultiplier)
+    const sc = this.getSpringCard(row, col)
+    return sc.size * (1 + sizeMultiplier)
   }
-  private cardRotation(gameTime: GameTime, i: number): number {
-    const beat = this.beat(gameTime.totalGameTime.totalSeconds) + i
+  private cardRotation(gameTime: GameTime, row: number, col: number): number {
+    const beat = this.beat(gameTime.totalGameTime.totalSeconds) + row + col
     const bounce = tweakables.menu.cardRotationBounce
     const rot = Math.sin(beat / 16) * bounce + Math.sin(beat / 64) * bounce
-    const offset = this.cardOffset(i)
-    if (offset === 0) return rot
-    return -rot
+    if (row === this.selRow && col === this.selCol) return rot
+    else if (row === this.selRow) return -rot
+    else return rot
   }
 
-  private drawCard(i: number, center: Vector2, isSelected: boolean, gameTime: GameTime) {
+  private drawCard(row: number, col: number, center: Vector2, isSelected: boolean, gameTime: GameTime) {
     const tMenu = tweakables.menu
-    const item = this.menuItems[i]
-    const cardWidth = this.cardWidth(gameTime, i)
-    const texture = this.display.getTexture(item.card)
+    const entry = this.getEntry(row, col)
+    const cardWidth = this.cardWidth(gameTime, row, col)
+    const texture = this.display.getTexture(entry.card)
     const dims = this.spriteBatch.autoDim(cardWidth, texture)
-    const rotation = this.cardRotation(gameTime, i)
+    const rotation = this.cardRotation(gameTime, row, col)
     const shadowTexture = this.display.getTexture('menuCardShadow')
     const lockOverlay = this.display.getTexture('menuCardLockOverlay')
     const sCenter = vec.add(center, {x: 0.03, y: -0.03})
-    const lockReason = this.isLockedReason(item)
+    const lockReason = this.isLockedReason(entry)
     const cosRot = Math.cos(rotation) // useful for attachments
     const relPos = (v: Vector2): Vector2 => ({
       x: center.x + ((cosRot * dims.w) / 2) * v.x,
@@ -293,10 +276,10 @@ class Menu {
     const ball1Texture = this.display.getTexture('ball1')
     const ball2Texture = this.display.getTexture('ball2')
     const ballRot = isSelected ? gameTime.totalGameTime.totalSeconds : rotation
-    if (item.numBalls === 1) {
+    if (entry.numBalls === 1) {
       this.spriteBatch.drawTextureCentered(ball1Texture, ball1Pos, {w: ballSize, h: ballSize}, ballRot, 1)
     }
-    if (item.numBalls === 2) {
+    if (entry.numBalls === 2) {
       this.spriteBatch.drawTextureCentered(ball1Texture, ball2Pos, {w: ballSize, h: ballSize}, ballRot, 1)
       this.spriteBatch.drawTextureCentered(ball2Texture, ball1Pos, {w: ballSize, h: ballSize}, ballRot, 1)
     }
@@ -325,16 +308,11 @@ class Menu {
     const seconds = gameTime.totalGameTime.totalSeconds
     if (isSelected /*&& !lockReason*/) {
       const textCenter = vec.add(center, tMenu.textOffsetFromCard)
-      const subtext = item.subtext
-      if (subtext) {
-        const pos = vec.add(textCenter, tMenu.subtextOffset)
-        this.drawDancingMenuText(subtext, pos, seconds + 1, tMenu.subtextRelSize)
-      }
-      this.drawDancingMenuText(item.text, textCenter, seconds, 1)
+      this.drawDancingMenuText(entry.text, textCenter, seconds, 1)
     }
-    const ai = item.ai
+    const ai = entry.ai
     if (isSelected && ai && !lockReason) {
-      this.drawCardStats(item, ai)
+      this.drawCardStats(entry, ai)
     }
   }
 
@@ -378,66 +356,86 @@ class Menu {
   }
 
   public enforceAllowReturn(allow: boolean) {
-    if (allow && this.menuItems[1] !== returnToGameEntry) {
-      this.menuItems.splice(1, 0, returnToGameEntry)
-      this.selectedMenuIndex = 1
+    if (allow && this.rows[0] !== returnRow) {
+      this.rows.splice(0, 0, returnRow)
+      this.selRow = 0
+      this.selCol = 0
     }
-    if (!allow && this.menuItems[1] === returnToGameEntry) {
-      this.menuItems.splice(1, 1)
+    if (!allow && this.rows[0] === returnRow) {
+      this.rows.splice(0, 1)
     }
   }
 
+  private advanceSpringCards(dtSec: number) {
+    for (let row = 0; row < this.rows.length; row++) {
+      for (let col = 0; col < this.rows[row].entries.length; col++) {
+        this.getSpringCard(row, col).step(dtSec)
+      }
+    }
+  }
+
+  private rowNumsSortedByDrawOrder() {
+    return Object.keys(this.rows)
+      .sort((a, b) => Math.abs(this.selRow - parseInt(b)) - Math.abs(this.selRow - parseInt(a)))
+      .map((s) => parseInt(s))
+  }
+  private colNumsSortedByDrawOrder(entries: MenuEntry[]) {
+    return Object.keys(entries)
+      .sort((a, b) => Math.abs(this.selCol - parseInt(b)) - Math.abs(this.selCol - parseInt(a)))
+      .map((s) => parseInt(s))
+  }
+
   public draw(allowReturnToGame: boolean, gameTime: GameTime): void {
+    const dtSec = gameTime.elapsedGameTime.totalSeconds
+    this.advanceSpringCards(dtSec)
+
     this.enforceAllowReturn(allowReturnToGame)
     const tMenu = tweakables.menu
 
     // draw a cover over the existing game
     this.spriteBatch.drawScreenOverlay(tMenu.coverColor)
 
-    // TODO: see if this is slow; menu is pretty msall
-    const drawOrder = Object.keys(this.menuItems).sort(
-      (a, b) => Math.abs(this.cardOffset(parseInt(b))) - Math.abs(this.cardOffset(parseInt(a))),
-    )
-    for (const k of drawOrder) {
-      const i = parseInt(k)
-      const center = this.cardCenter(i)
-      if (i === this.selectedMenuIndex) {
-        // draw a second cover over the non-selected ones
-        this.spriteBatch.drawScreenOverlay(tMenu.deselectedCardColor)
-        this.drawCard(i, center, true, gameTime)
-      } else {
-        this.drawCard(i, center, false, gameTime)
+    // TODO: see if this is slow; menu is pretty small
+    const rowNums = this.rowNumsSortedByDrawOrder()
+    for (const rowNum of rowNums) {
+      const colNums = this.colNumsSortedByDrawOrder(this.rows[rowNum].entries)
+      for (const colNum of colNums) {
+        const entry = this.getEntry(rowNum, colNum)
+        const sc = entry.springCard
+        if (sc) {
+          if (rowNum === this.selRow && colNum === this.selCol) {
+            // since this one is done last, we can do the dark overlay
+            // underneath it, and cover all the other cards
+            this.spriteBatch.drawScreenOverlay(tMenu.deselectedCardColor)
+            this.drawCard(rowNum, colNum, sc.pos, true, gameTime)
+          } else {
+            this.drawCard(rowNum, colNum, sc.pos, false, gameTime)
+          }
+        }
       }
     }
+    for (const rowNum of rowNums) {
+      this.drawRowLabel(rowNum)
+    }
+  }
+  private drawRowLabel(rowNum: number) {
+    const row = this.rows[rowNum]
+    const tM = tweakables.menu
+    const sc = row.entries[0].springCard
+    if (sc) {
+      const pos = vec.add(sc.pos, {x: -0.6, y: -0.1})
+      const s = row.title
+      const font = this.display.font('extraBold')
+      const c = rowNum === this.selRow ? tM.rowLabelSelectedColor : tM.rowLabelColor
+      this.spriteBatch.drawString(s, font, 0.05, pos, c, -0.7)
+    }
   }
 
-  public getCard(menuItem: number): Texture2D {
-    return this.display.getTexture(this.menuItems[menuItem].card)
-  }
-
-  /**
-   * moves to the next card, including wrapping around. The logic here
-   * includes the fact that the menu might not be a perfect grid, so
-   * for example, going up from the top row might not lead you to the bottom
-   * row, if there isn't a card in that spot, and instead lead you to the next
-   * to last row. Same with columns.
-   */
   private advance(x: number, y: number) {
-    const isOver = (cp: CardPosition) => this.cardPositionToNumber(cp) >= this.menuItems.length
-    const cp = this.cardNumToPosition(this.selectedMenuIndex)
-    cp.col += x
-    if (cp.col >= tweakables.menu.cols || isOver(cp)) cp.col = 0
-    if (cp.col < 0) {
-      cp.col = tweakables.menu.cols - 1
-      if (isOver(cp)) cp.col--
-    }
-    cp.row += y
-    if (isOver(cp)) cp.row = 0
-    if (cp.row < 0) {
-      cp.row = Math.floor(this.menuItems.length / tweakables.menu.cols)
-      if (isOver(cp)) cp.row--
-    }
-    this.selectedMenuIndex = this.cardPositionToNumber(cp)
+    this.selRow = (this.selRow + y + this.rows.length) % this.rows.length
+    const numCols = this.rows[this.selRow].entries.length
+    this.selCol = (this.selCol + x + numCols) % numCols
+    this.updateSpringCardTargets()
   }
   public moveRight(owner: MenuOwnership): void {
     if (this.playerOwnsMenu === null || this.playerOwnsMenu === owner) this.advance(1, 0)
