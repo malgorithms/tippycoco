@@ -2,6 +2,7 @@
 
 Stuff
 
+- set maximum gametime delta, so the game can't do a massive skip when returning from a browser-paused state
 - more characters?
 - managed to force the ball through the net once - add constraint
 - menu redesign:

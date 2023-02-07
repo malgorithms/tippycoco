@@ -28,6 +28,7 @@ interface MenuEntry {
   card: TextureName
   unlockRequirement?: UnlockRequirement
   springCard?: SpringCard
+  ballTexture?: TextureName
 }
 type MenuRow = {
   title: string
@@ -37,7 +38,7 @@ type MenuRow = {
 const returnToGameEntry: MenuEntry = {text: 'Return to Game', action: MenuAction.ReturnToGame, card: 'menuCardReturnToGame'}
 
 function aiEntry(ai: KnownAi, numBalls: number, card: TextureName, unlockRequirement?: UnlockRequirement): MenuEntry {
-  return {
+  const res: MenuEntry = {
     text: aiToNickname(ai),
     action: MenuAction.Play,
     opponentType: PlayerSpecies.Ai,
@@ -46,6 +47,8 @@ function aiEntry(ai: KnownAi, numBalls: number, card: TextureName, unlockRequire
     card,
     unlockRequirement,
   }
+  if (aiToName(ai) === 'Gray') res.ballTexture = 'ballTennis'
+  return res
 }
 function humanEntry(numBalls: number): MenuEntry {
   return {
@@ -273,8 +276,8 @@ class Menu {
     const ballSize = cardWidth * tMenu.cardBallSize
     const ball1Pos = relPos(tMenu.cardBall1Pos)
     const ball2Pos = relPos(tMenu.cardBall2Pos)
-    const ball1Texture = this.display.getTexture('ball1')
-    const ball2Texture = this.display.getTexture('ball2')
+    const ball1Texture = this.display.getTexture(entry.ballTexture ?? 'ball1')
+    const ball2Texture = this.display.getTexture(entry.ballTexture ?? 'ball2')
     const ballRot = isSelected ? gameTime.totalGameTime.totalSeconds : rotation
     if (entry.numBalls === 1) {
       this.spriteBatch.drawTextureCentered(ball1Texture, ball1Pos, {w: ballSize, h: ballSize}, ballRot, 1)
