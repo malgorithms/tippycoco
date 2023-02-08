@@ -70,7 +70,8 @@ interface CircleCircleCollision {
   c2EnergyDelta: number
 }
 type NewPlayerArg = {
-  maxVel: Vector2
+  maxVelAtSmallest: Vector2
+  maxVelAtLargest: Vector2
   diameter: number
   density: number
   xSpringConstant: number

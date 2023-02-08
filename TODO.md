@@ -3,6 +3,7 @@
 Stuff
 
 - explosion effect on nearby player when ball hits, alongside better sound
+- change green guy to be pretty smart, just really slow
 - cleanup mixing use of Ms and Sec without var names
 - more characters?
 - managed to force the ball through the net once - add constraint
@@ -20,14 +21,10 @@ Stuff
   - all of them emerging from the ground and looking at character next to them
   - ball follows them out and they watch that
   - they jump back into the ground?
-- sound improvements:
 - exiting game shouldn't cause reload
 - iOS - can I make it work?!
-
-Before launching
-
 - discord to discuss
-- proper readme page for github
+- better readme page for github
 - review all console logging
 - basic SEO of landing page
 - basic pageview stats?

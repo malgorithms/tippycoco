@@ -17,6 +17,7 @@ import {timeout, vec} from './utils'
 import {persistence} from './persistence'
 import {aiToName, aiToNickname} from './ai/ai'
 import {RectangularObstacle} from './rectangular-obstacle'
+import {CircularObject} from './circular-object'
 
 class Game {
   private content: ContentLoader
@@ -75,6 +76,9 @@ class Game {
   }
   public get playerLeft(): Player {
     return this.player(PlayerSide.Left)
+  }
+  private getScore(playerSide: PlayerSide) {
+    return playerSide === PlayerSide.Left ? this.scoreLeftPlayer : this.scoreRightPlayer
   }
   public get playerRight(): Player {
     return this.player(PlayerSide.Right)
@@ -521,6 +525,23 @@ class Game {
     this.scoreRightPlayer = 0
   }
 
+  private pointExplosion(b: Ball) {
+    for (const p of this.players.values()) {
+      this.explodeAwayFrom(p.physics, b.physics.center)
+    }
+    for (const otherB of this.balls) {
+      if (otherB !== b) {
+        this.explodeAwayFrom(otherB.physics, b.physics.center)
+      }
+    }
+  }
+  private explodeAwayFrom(c: CircularObject, p: Vector2) {
+    const fDir = vec.normalized(vec.sub(c.center, p))
+    const velDelta = vec.scale(fDir, tweakables.physics.explosionVelDelta)
+    c.vel.x += velDelta.x
+    c.vel.y += velDelta.y
+  }
+
   private checkForAndScorePoint(): boolean {
     let pointForPlayer: PlayerSide | null = null
     if (this.accumulatedPointSeconds < tweakables.ballPlayerLaunchTime) return false
@@ -529,7 +550,10 @@ class Game {
       if (didHit) {
         pointForPlayer = b.physics.center.x > this.net.center.x ? PlayerSide.Left : PlayerSide.Right
         this.kapow.addAKapow('kapowScore', b.physics.center, Math.random() / 10, 0.4, 0.5)
-        this.sound.play('pointScored', 0.8, 0.0, b.physics.center.x, false)
+        // increase the pitch on each point
+        const pitch = Math.max(1, this.getScore(pointForPlayer) / 5)
+        this.sound.play('pointScored', 0.8, pitch, b.physics.center.x, false)
+        this.pointExplosion(b)
       }
     }
     if (pointForPlayer) this.handlePointScored(pointForPlayer)

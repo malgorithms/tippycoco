@@ -83,6 +83,7 @@ export default {
     ballOnBallFrictionSpin: 1.25, // higher values allow players to add more spin to balls
     ballOnBallFrictionBump: 0.4, // higher values cause more redirection from spin hits
     minRelSpeedToAllowBallSpins: 0.25,
+    explosionVelDelta: 0.5,
   },
   input: {
     triggerTolerance: 0.05, // anything this close to 0 is just 0
@@ -185,14 +186,13 @@ export default {
     growSpeed: 0.1,
     minDiameter: 0.09,
     maxDiameter: 0.175,
-    maxVelAtSmallest: {x: 1.033, y: 1.37} as Vector2,
-    maxVelAtLargest: {x: 0.74, y: 1.15} as Vector2,
     dashMult: 1.5, // multiplied by max speed
     jumpSpeedAfterPoint: 1.85,
     afterPointJumpDelay: 0.15,
     defaultEyes: defaultEyes,
     defaultSettings: (playerSide: PlayerSide): NewPlayerArg => ({
-      maxVel: {x: 0.8, y: 1.2},
+      maxVelAtSmallest: {x: 1.033, y: 1.37} as Vector2,
+      maxVelAtLargest: {x: 0.74, y: 1.15} as Vector2,
       diameter: 0.15,
       density: 170,
       xSpringConstant: 30,

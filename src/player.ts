@@ -12,12 +12,13 @@ class Player {
   public readonly playerSide: PlayerSide
   public readonly ai: AiBase | null
   public physics: CircularObject
-  public maxVel: Vector2
   public targetXVel: number // desired speed, accelerates towards
   private _jumpCount = 0
   private _isInJumpPosition = false
   private _isInDashPosition = false
   private _isDashing = false
+  private maxVelAtSmallest: Vector2
+  private maxVelAtLargest: Vector2
 
   constructor(o: NewPlayerArg) {
     this.physics = new CircularObject({
@@ -33,7 +34,8 @@ class Player {
       bumpOffFrictionPoints: 0,
     })
     this.playerSide = o.playerSide
-    this.maxVel = o.maxVel
+    this.maxVelAtLargest = o.maxVelAtLargest
+    this.maxVelAtSmallest = o.maxVelAtSmallest
     this.targetXVel = o.targetXVel
     this.xSpringConstant = o.xSpringConstant
     this.species = o.species
@@ -63,7 +65,8 @@ class Player {
   }
   public deepCopy(): Player {
     const sp = new Player({
-      maxVel: vec.copy(this.maxVel),
+      maxVelAtSmallest: vec.copy(this.maxVelAtSmallest),
+      maxVelAtLargest: vec.copy(this.maxVelAtLargest),
       diameter: this.physics.diameter,
       density: this.physics.density,
       xSpringConstant: this.xSpringConstant,
@@ -82,6 +85,14 @@ class Player {
   }
   public get jumpSpeed(): number {
     return this.maxVel.y
+  }
+  public get maxVel(): Vector2 {
+    const tP = tweakables.player
+    const phys = this.physics
+    const sizeFrac = (phys.diameter - tP.minDiameter) / (tP.maxDiameter - tP.minDiameter)
+    const x = this.maxVelAtLargest.x + (this.maxVelAtSmallest.x - this.maxVelAtLargest.x) * (1 - sizeFrac)
+    const y = this.maxVelAtLargest.y + (this.maxVelAtSmallest.y - this.maxVelAtLargest.y) * (1 - sizeFrac)
+    return {x, y}
   }
   public jump(): boolean {
     if (this.isInJumpPosition) {
@@ -111,9 +122,6 @@ class Player {
     phys.diameter += vel * dt
     if (phys.diameter < tP.minDiameter) phys.diameter = tP.minDiameter
     if (phys.diameter > tP.maxDiameter) phys.diameter = tP.maxDiameter
-    const sizeFrac = (phys.diameter - tP.minDiameter) / (tP.maxDiameter - tP.minDiameter)
-    this.maxVel.x = tP.maxVelAtLargest.x + (tP.maxVelAtSmallest.x - tP.maxVelAtLargest.x) * (1 - sizeFrac)
-    this.maxVel.y = tP.maxVelAtLargest.y + (tP.maxVelAtSmallest.y - tP.maxVelAtLargest.y) * (1 - sizeFrac)
   }
   public moveRight() {
     this.targetXVel = this.maxVel.x
