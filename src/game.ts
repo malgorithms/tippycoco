@@ -609,7 +609,7 @@ class Game {
       // Constrain Player to Floor. In the first second of the game they float up from it. After that they stick above it.
       if (this.accumulatedPointSeconds > tweakables.ballPlayerLaunchTime && p.physics.center.y < 0.0) {
         p.physics.center.y = 0.0
-        if (this.gameState === GameState.Action && p.physics.vel.y < 0) p.physics.vel.y = 0
+        if (p.physics.vel.y < 0) p.physics.vel.y = 0
       }
       // Left Wall
       if (p.physics.center.x < -wallBorder + p.physics.diameter / 2) {
@@ -670,7 +670,6 @@ class Game {
     }
 
     // Player-player collisions
-
     playerL.physics.handleHittingOtherCircle(playerR.physics, 0.0, isSimulation)
   }
 
@@ -728,8 +727,7 @@ class Game {
    * Then we freeze for a second and launch everything back into its hole. Once everything is back
    * underground, we switch the state to PreAction, where the serve is launched.
    */
-  private postPointStep(): void {
-    const dt = this.currentGameTime.elapsedGameTime.totalMilliseconds / 1000
+  private postPointStep(dt: number): void {
     // if everything is back underground, we can proceed to the next step
     if (
       this.playerLeft.physics.center.y < -this.playerLeft.physics.radius &&
@@ -742,12 +740,7 @@ class Game {
 
     // just let things move for a bit
     else if (this.accumulatedStateSeconds < tweakables.afterPointKeepMovingSec) {
-      let physicsDtCountdown = dt
-      while (physicsDtCountdown > 0) {
-        const delta = Math.min(tweakables.physicsDtSec, physicsDtCountdown)
-        this.simulateStep(delta)
-        physicsDtCountdown -= delta
-      }
+      this.runActionOrPostPointState()
     }
     // launch things back towards the start
     else if (this.accumulatedStateSeconds < tweakables.afterPointKeepMovingSec + tweakables.afterPointFreezeSec) {
@@ -796,8 +789,8 @@ class Game {
   }
 
   private gameStep(dt: number): boolean {
+    const isSimulation = this.gameState !== GameState.Action
     this.accumulatedGamePlayTime += dt
-
     for (const player of this.players.values()) {
       const opponent = player === this.playerLeft ? this.playerRight : this.playerLeft
       player.stepVelocity(dt)
@@ -809,18 +802,15 @@ class Game {
       ball.stepVelocity(dt, 1, true)
       ball.stepPositionAndOrientation(dt)
     }
-    if (this.checkForAndScorePoint()) {
-      this.constrainPlayers()
-      this.constrainBalls()
-      return true
-    } else {
+    if (!isSimulation) {
       this.launchPlayersWithGoodTiming()
-      this.manageCollisions(false)
-      this.handleActionInputs(dt)
-      this.constrainPlayers()
-      this.constrainBalls()
-      return false
+      if (this.checkForAndScorePoint()) return true
     }
+    this.manageCollisions(isSimulation)
+    this.handleActionInputs(dt)
+    this.constrainPlayers()
+    this.constrainBalls()
+    return false
   }
 
   private simulateStep(dt: number): void {
@@ -839,9 +829,8 @@ class Game {
   }
 
   private updateFuturePrediction(): void {
-    //return;
     // Copy current player/ball info to temp so we can step w/o wrecking things
-    const sbTemp: Ball[] = []
+    const sbReal: Ball[] = []
     const p0Real = this.player(PlayerSide.Left)
     const p1Real = this.player(PlayerSide.Right)
     const p0Copy = p0Real.deepCopy()
@@ -850,7 +839,8 @@ class Game {
     this.players.set(PlayerSide.Right, p1Copy)
 
     for (let i = 0; i < this.balls.length; i++) {
-      sbTemp[i] = this.balls[i].deepCopy()
+      sbReal[i] = this.balls[i]
+      this.balls[i] = this.balls[i].deepCopy()
       const prediction = this.futurePredictionList[i]
       prediction.ballStates = []
       // Clear old important markers
@@ -906,25 +896,23 @@ class Game {
       }
     }
     for (let i = 0; i < this.balls.length; i++) {
-      this.balls[i] = sbTemp[i]
+      this.balls[i] = sbReal[i]
     }
     this.players.set(PlayerSide.Left, p0Real)
     this.players.set(PlayerSide.Right, p1Real)
   }
 
-  private runActionState(): void {
-    const dt = this.currentGameTime.elapsedGameTime.totalMilliseconds / 1000
-
+  private runActionOrPostPointState() {
+    const dt = this.currentGameTime.elapsedGameTime.totalSeconds
     let physicsDtCountdown = dt
-    let pointScored = false
     if (this.currentGameTime.totalGameTime.totalMilliseconds > this.lastFuturePrediction + tweakables.predictFutureEveryMs) {
       this.updateFuturePrediction()
       this.lastFuturePrediction = this.currentGameTime.totalGameTime.totalMilliseconds
     }
 
-    while (physicsDtCountdown > 0 && !pointScored) {
+    while (physicsDtCountdown > 0) {
       const delta = Math.min(tweakables.physicsDtSec, physicsDtCountdown)
-      pointScored = this.gameStep(delta)
+      this.gameStep(delta)
       physicsDtCountdown -= delta
     }
     if (this.accumulatedPointSeconds > 1) this.aIStep()
@@ -945,8 +933,8 @@ class Game {
     this.handleAutoPausedInputs()
   }
   private runPostPointState() {
-    const dt = this.currentGameTime.elapsedGameTime.totalMilliseconds / 1000
-    this.postPointStep()
+    const dt = this.currentGameTime.elapsedGameTime.totalSeconds
+    this.postPointStep(dt)
     this.handlePostPointInputs(dt)
   }
   private runPreActionState() {
@@ -982,7 +970,7 @@ class Game {
     switch (this.gameState) {
       case GameState.Action:
         this.display.adjustZoomLevel(this.getMaxHeightOfAllBalls(), dt)
-        this.runActionState()
+        this.runActionOrPostPointState()
         break
       case GameState.Paused:
         this.display.adjustZoomLevel(1000, dt)

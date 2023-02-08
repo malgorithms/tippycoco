@@ -170,15 +170,6 @@ class CircularObject {
         }
       }
 
-      //if (!isSimulation) {
-      //  console.log(this.canSpin, other.canSpin)
-      //  console.log(JSON.stringify({relSpeed, thisSpinBounceLoss, otherSpinBounceLoss, thisVel: this.vel, otherVel: other.vel}, null, 2))
-      //}
-      //if (!isSimulation) {
-      //  console.log(thisAngSpeed, otherAngSpeed, this.orientation, other.orientation)
-      //  //if (thisAngSpeed === 0) console.log({thisAngSpeed, otherAngSpeed, thisAngVel: this.angularVel, otherAngVel: other.angularVel})
-      //}
-
       // ok, update their velocities
       this.vel.x = vaP1 * a.x - vb1 * a.y
       this.vel.y = vaP1 * a.y + vb1 * a.x

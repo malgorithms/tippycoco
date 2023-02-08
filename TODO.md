@@ -2,15 +2,10 @@
 
 Stuff
 
-- fix ball sticking to player after game point
-- set maximum gametime delta, so the game can't do a massive skip when returning from a browser-paused state
+- explosion effect on nearby player when ball hits, alongside better sound
+- cleanup mixing use of Ms and Sec without var names
 - more characters?
 - managed to force the ball through the net once - add constraint
-- menu redesign:
-  - it's all too mingled. Need to separate:
-    - exit / return to game
-    - play 1 player
-    - play 2 player
 - sharing idea: stats page with info in URL!
 - firefox on mac:
   - controller lag
