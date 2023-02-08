@@ -18,7 +18,6 @@ import {persistence} from './persistence'
 import {ais, aiToName, aiToNickname} from './ai/ai'
 import {RectangularObstacle} from './rectangular-obstacle'
 import {CircularObject} from './circular-object'
-import {SoundName} from './content-load-list'
 
 class Game {
   private content: ContentLoader
