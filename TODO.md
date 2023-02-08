@@ -2,7 +2,8 @@
 
 Stuff
 
-- tippy coco should move fsater and jump less
+- better visual on point scored for people without sound
+- name?!
 - cleanup mixing use of Ms and Sec without var names
 - bowling beast 8-ball character
 - more characters?
@@ -15,7 +16,10 @@ Stuff
   - warning when controller connected, if bugs not fixable
 - performance:
   - explore higher physicsDt / predictionDt
-  - consider no clouds on slow framerate
+  - consider selective draws on low framerate:
+    - no clouds
+    - no backshadow on text
+    - don't center scoreboard numbers exactly
   - test on old iMac
 - better intro ideas
   - all of them emerging from the ground and looking at character next to them
