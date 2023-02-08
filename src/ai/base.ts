@@ -30,6 +30,7 @@ interface AiThinkArg {
 interface AiBase {
   drawExtrasInFrontOfCharacter?(ctx: CanvasRenderingContext2D): void
   ballTexture?(ballNumber: number): TextureName
+  ballBounceSound?(ballNumber: number): SoundName
 }
 
 abstract class AiBase {
@@ -132,13 +133,20 @@ abstract class AiBase {
   protected get kapow() {
     return this._game.kapow
   }
+  private isBallInPlayYet(o: AiThinkArg) {
+    return o.accumulatedPointSeconds > 0.5
+  }
   protected moveLeft(o: AiThinkArg) {
-    this._lastMoveLeft = o.gameTime.totalGameTime.totalMilliseconds
-    o.me.moveLeft()
+    if (this.isBallInPlayYet(o)) {
+      this._lastMoveLeft = o.gameTime.totalGameTime.totalMilliseconds
+      o.me.moveLeft()
+    }
   }
   protected moveRight(o: AiThinkArg) {
-    this._lastMoveRight = o.gameTime.totalGameTime.totalMilliseconds
-    o.me.moveRight()
+    if (this.isBallInPlayYet(o)) {
+      this._lastMoveRight = o.gameTime.totalGameTime.totalMilliseconds
+      o.me.moveRight()
+    }
   }
   protected amIAboveTheNet(o: AiThinkArg) {
     const px = o.me.physics.center.x
@@ -158,9 +166,11 @@ abstract class AiBase {
    * @param fractionOfMaxVelocity - -1...1 how close to max speed
    */
   protected moveRationally(o: AiThinkArg, fractionOfMaxVelocity: number) {
-    if (fractionOfMaxVelocity < 0) this._lastMoveLeft = o.gameTime.totalGameTime.totalMilliseconds
-    else if (fractionOfMaxVelocity > 0) this._lastMoveRight = o.gameTime.totalGameTime.totalMilliseconds
-    o.me.moveRationally(fractionOfMaxVelocity)
+    if (this.isBallInPlayYet(o)) {
+      if (fractionOfMaxVelocity < 0) this._lastMoveLeft = o.gameTime.totalGameTime.totalMilliseconds
+      else if (fractionOfMaxVelocity > 0) this._lastMoveRight = o.gameTime.totalGameTime.totalMilliseconds
+      o.me.moveRationally(fractionOfMaxVelocity)
+    }
   }
   /**
    * stop moving left/right
@@ -174,8 +184,11 @@ abstract class AiBase {
    * @param me myself
    */
   protected jumpIfPossible(o: AiThinkArg): boolean {
-    this._lastJump = o.gameTime.totalGameTime.totalMilliseconds
-    return o.me.jump()
+    if (this.isBallInPlayYet(o)) {
+      this._lastJump = o.gameTime.totalGameTime.totalMilliseconds
+      return o.me.jump()
+    }
+    return false
   }
   protected isInJumpingPosition(player: Player) {
     return player.isInJumpPosition
@@ -184,7 +197,7 @@ abstract class AiBase {
    * this goto tries to be a little smoother, acting with rational speed as it's close to it's destination
    */
   protected tryToGetToX(o: AiThinkArg, x: number, sec: number, reactionTimeMs: number) {
-    if (sec <= 0) return
+    if (sec <= 0) sec = 0.01
     const cx = o.me.physics.center.x
     const dx = x - cx
     const speedNeeded = dx / sec

@@ -74,9 +74,7 @@ const textureSources = {
 
 const soundSources = {
   themeSong: 'sounds/ThemeSong.mp3',
-  flowerBounce: 'sounds/FlowerBounce.mp3',
   slam: 'sounds/Slam.mp3',
-  thud: 'sounds/Thud.mp3',
   dash: 'sounds/Dash.mp3',
   rejected: 'sounds/Rejected.mp3',
   pointScored: 'sounds/PointScored.mp3',
@@ -90,6 +88,11 @@ const soundSources = {
   ceramicBounce: 'sounds/CeramicBounce.mp3',
   gamePoint: 'sounds/GamePoint.mp3',
   kiss: 'sounds/Kiss.mp3',
+  launch: 'sounds/Launch.mp3',
+  chaChing: 'sounds/ChaChing.mp3',
+  bounce: 'sounds/Bounce.mp3',
+  bounceFlower: 'sounds/BounceFlower.mp3',
+  bounceTennis: 'sounds/BounceTennis.mp3',
 } as const
 
 type TextureName = keyof typeof textureSources

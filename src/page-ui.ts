@@ -116,7 +116,7 @@ class PageUi {
 
       <h4>Latest changes</h4>
       <p>
-      Yellow player, Lemonae. And orange player, The Juice.
+      Tippy Coco who plays with a tennis ball
       </p>
       <h4>Links</h4>
       <ul>

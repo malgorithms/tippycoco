@@ -1,4 +1,5 @@
 import {CircularObject} from './circular-object'
+import {SoundName, TextureName} from './content-load-list'
 import tweakables from './tweakables'
 import {NewBallArg} from './types'
 import {vec} from './utils'
@@ -6,6 +7,8 @@ import {vec} from './utils'
 class Ball {
   public physics: CircularObject
   public maxSpeed: number
+  public bounceSoundName: SoundName
+  public textureName: TextureName
   constructor(o: NewBallArg) {
     this.physics = new CircularObject({
       center: o.center,
@@ -19,7 +22,13 @@ class Ball {
       bumpOffFrictionPoints: tweakables.physics.ballBumpOffFrictionPoints,
       spinElasticityOffFrictionPoints: tweakables.physics.ballSpinElasticityOffFrictionPoints,
     })
+    this.bounceSoundName = o.bounceSoundName ?? 'bounce'
+    this.textureName = o.textureName
     this.maxSpeed = o.maxSpeed
+  }
+  public get bounceOffFlowerSoundName(): SoundName {
+    if (this.bounceSoundName !== 'bounce') return this.bounceSoundName
+    return 'bounceFlower'
   }
   public deepCopy(): Ball {
     return new Ball({
@@ -30,6 +39,8 @@ class Ball {
       maxSpeed: this.maxSpeed,
       orientation: this.physics.orientation,
       angularVel: this.physics.angularVel,
+      bounceSoundName: this.bounceSoundName,
+      textureName: this.textureName,
     })
   }
   public trimSpeedIfNecessary(): void {

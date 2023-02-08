@@ -1,4 +1,5 @@
 import {Color} from './color'
+import {SoundName} from './content-load-list'
 import {Dims, EyeConfig, KeyboardControlSet, NewBallArg, NewPlayerArg, PlayerKeyboardSet, PlayerSide, PlayerSpecies, Vector2} from './types'
 import {vec} from './utils'
 
@@ -68,6 +69,7 @@ const defaultEyes: EyeConfig[] = [
     pupilTexture: 'pupil',
   },
 ]
+const autoPitchSet: SoundName[] = ['bounceFlower', 'bounceTennis', 'bounce', 'ceramicBounce', 'rejected', 'slam']
 
 export default {
   courtWidth,
@@ -93,7 +95,8 @@ export default {
   sound: {
     autoPitchSecStorage: 0.5, // sec
     autoPitchInc: 0.25,
-    normalBumpPitchRange: 0.75, // -this...this depending on player size
+    normalBumpPitchRange: 0.4, // -this...this depending on player size
+    autoPitchSet: autoPitchSet,
   },
   display: {
     zoomCenter: {x: 0, y: 0.3} as Vector2,
@@ -116,7 +119,6 @@ export default {
   timeOnServeFloorDisappears: 0.15,
   afterPointKeepMovingSec: 1,
   afterPointFreezeSec: 0.01,
-  afterServeInputDelay: 0.75, // after
   preServeDelaySec: 0.8, // sec to switch from pre-action to action
   predictFutureEveryMs: 10, // update every this often ms
   maxDtMs: 100, // if the game tries to advance more than this, clip the timing
@@ -156,7 +158,7 @@ export default {
     yMin: -0.07,
   },
   ball: {
-    defaultSettings: (): NewBallArg => ({
+    defaultSettings: (ballNum: number): NewBallArg => ({
       density: 20,
       diameter: 0.08,
       maxSpeed: 1.4,
@@ -164,6 +166,19 @@ export default {
       center: vec.zero(),
       vel: vec.zero(),
       angularVel: 0,
+      textureName: ballNum === 0 ? 'ball1' : 'ball2',
+      bounceSoundName: 'bounce',
+    }),
+    tennisSettings: (): NewBallArg => ({
+      density: 10,
+      diameter: 0.05,
+      maxSpeed: 1.8,
+      orientation: 0,
+      center: vec.zero(),
+      vel: vec.zero(),
+      angularVel: 0,
+      textureName: 'ballTennis',
+      bounceSoundName: 'bounceTennis',
     }),
   },
   cloud: {

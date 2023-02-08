@@ -3,8 +3,8 @@ import {Game} from '../game'
 import {SkyAssignmentNames} from '../types'
 import {AiBase, AiThinkArg} from './base'
 
-const PREDICT_SEC = 0.6 // seconds in the future green will see
-const REACTION_TIME_MS = 300 // I can't change wiggle direction faster than this
+const PREDICT_SEC = 0.8 // seconds in the future green will see
+const REACTION_TIME_MS = 200 // I can't change wiggle direction faster than this
 
 /**
  *  This AI serves as a good simple example how to write a TCFTG player.
@@ -65,12 +65,13 @@ class GreenAi extends AiBase {
       this.jumpIfPossible(o)
     } else {
       // I'll try to stay a bit to the right of the position
-      target.pos.x += 0.16 * o.me.physics.diameter
+      target.pos.x += 0.1 * o.me.physics.diameter
 
       if (target.time < PREDICT_SEC) {
         // Let's add some randomness for stupidity, but have that randomness a function of the
         // current time, so it's not flickering all over the place.
-        const err = Math.sin(o.gameTime.totalGameTime.totalSeconds) * 0.2
+        const errMax = o.me.physics.radius
+        const err = errMax * Math.sin(o.gameTime.totalGameTime.totalSeconds)
         target.pos.x += o.balls[0].physics.diameter * err
         target.pos.y += o.balls[0].physics.diameter * err
 
@@ -85,7 +86,7 @@ class GreenAi extends AiBase {
           this.tryToGetToX(o, target.pos.x, target.time, REACTION_TIME_MS)
         }
 
-        // Remaining question is...do I jump?
+        // Remaining question is...do I jump? Let's be a bit "random" about it.
         const seconds = Math.floor(o.gameTime.totalGameTime.totalSeconds)
         const isOddSecond = seconds % 2
         const timeErr = 0.1 * Math.sin(o.accumulatedPointSeconds)

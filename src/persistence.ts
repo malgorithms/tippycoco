@@ -42,8 +42,8 @@ class Persistence {
     this.writeData(this.data)
     const hoursAgo = (Date.now() - this.data.firstPlayed) / 3600000
     const d = this.data
-    console.log(`You have played T.C.F.T.G. ${d.games.completed} time(s) in the last ${hoursAgo.toFixed(1)} hours`)
-    console.log(this.data)
+    console.log(`You have completed ${d.games.completed} game(s) on this computer.`)
+    //console.log(this.data)
     this.log('ready to play.')
   }
   public get data(): PersistentGameData {
@@ -99,7 +99,7 @@ class Persistence {
     this.log(`ai result. against=${aiName} win=${win} shutout=${shutoutWin} seconds=${seconds} jumps=${jumpCount}`)
     const d = this.data
     const record = d.aiRecord[aiName]
-    console.log({aiName, win, shutoutWin, seconds, jumpCount})
+    //console.log({aiName, win, shutoutWin, seconds, jumpCount})
     if (win) {
       record.wins++
       if (shutoutWin) record.shutoutWins++
@@ -108,10 +108,10 @@ class Persistence {
     } else {
       record.losses++
     }
-    console.log(`About to write`, JSON.stringify(d, null, 2))
-    console.log(`Before write:`, JSON.stringify(this.data, null, 2))
+    //console.log(`About to write`, JSON.stringify(d, null, 2))
+    //console.log(`Before write:`, JSON.stringify(this.data, null, 2))
     this.writeData(d)
-    console.log(`After write:`, JSON.stringify(this.data, null, 2))
+    //console.log(`After write:`, JSON.stringify(this.data, null, 2))
   }
   private emptyAiRecord(): AiRecordDict {
     const res: Partial<AiRecordDict> = {}
@@ -132,7 +132,9 @@ class Persistence {
     xhr.setRequestHeader('Content-type', 'application/json; charset=UTF-8')
     xhr.send(post)
     xhr.onload = () => {
-      if (xhr.status === 201) console.log(`log: ${text}`)
+      if (xhr.status === 201) {
+        //console.log(`log: ${text}`)
+      }
     }
   }
 }

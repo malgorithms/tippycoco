@@ -2,9 +2,9 @@
 
 Stuff
 
-- explosion effect on nearby player when ball hits, alongside better sound
-- change green guy to be pretty smart, just really slow
+- tippy coco should move fsater and jump less
 - cleanup mixing use of Ms and Sec without var names
+- bowling beast 8-ball character
 - more characters?
 - managed to force the ball through the net once - add constraint
 - sharing idea: stats page with info in URL!

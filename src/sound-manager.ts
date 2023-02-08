@@ -13,7 +13,7 @@ class SoundManager {
   private content: ContentLoader
   private sounds = new Map<SoundName, SoundEffect>()
   // these sounds, if played in rapid succession, keep getting a higher pitch
-  private autoPitchIncrementers = new Set<SoundName>(['flowerBounce', 'thud', 'ceramicBounce', 'rejected', 'slam'])
+  private autoPitchIncrementers = new Set<SoundName>(tweakables.sound.autoPitchSet)
   private autoPitchPlays = new Array<HistoricPlay>()
   public constructor(content: ContentLoader) {
     this.content = content

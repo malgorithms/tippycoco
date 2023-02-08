@@ -15,9 +15,10 @@ import tweakables from './tweakables'
 import {ContentLoadMonitor, FutureState, GameState, GameTime, PlayerSide, Vector2} from './types'
 import {timeout, vec} from './utils'
 import {persistence} from './persistence'
-import {aiToName, aiToNickname} from './ai/ai'
+import {ais, aiToName, aiToNickname} from './ai/ai'
 import {RectangularObstacle} from './rectangular-obstacle'
 import {CircularObject} from './circular-object'
+import {SoundName} from './content-load-list'
 
 class Game {
   private content: ContentLoader
@@ -89,7 +90,8 @@ class Game {
   private generateBalls(numBalls: number) {
     this.balls = []
     for (let i = 0; i < numBalls; i++) {
-      const ballArg = tweakables.ball.defaultSettings()
+      let ballArg = tweakables.ball.defaultSettings(i)
+      if (this.playerRight.ai instanceof ais.Gray) ballArg = tweakables.ball.tennisSettings()
       this.balls.push(new Ball(ballArg))
     }
   }
@@ -180,7 +182,10 @@ class Game {
     this.sound.fadeGrowthNoise(PlayerSide.Right)
     if (gs !== this.gameState) this.accumulatedStateSeconds = 0.0
     this.gameState = gs
-    if (gs === GameState.PreAction) this.setUpForServe()
+    if (gs === GameState.PreAction) {
+      this.sound.play('launch', 0.25, 0.5, 0, false)
+      this.setUpForServe()
+    }
     if (
       gs === GameState.MainMenu ||
       gs === GameState.Paused ||
@@ -551,8 +556,9 @@ class Game {
         pointForPlayer = b.physics.center.x > this.net.center.x ? PlayerSide.Left : PlayerSide.Right
         this.kapow.addAKapow('kapowScore', b.physics.center, Math.random() / 10, 0.4, 0.5)
         // increase the pitch on each point
-        const pitch = Math.max(1, this.getScore(pointForPlayer) / 5)
-        this.sound.play('pointScored', 0.8, pitch, b.physics.center.x, false)
+        //const pitch = Math.max(1, this.getScore(pointForPlayer) / 5)
+        //this.sound.play('pointScored', 0.8, pitch, b.physics.center.x, false)
+        this.sound.play('chaChing', 0.8, 0, 0, false)
         this.pointExplosion(b)
       }
     }
@@ -657,12 +663,12 @@ class Game {
     // Balls with net, walls, even the floor
     for (const b of this.balls) {
       if (this.leftWall.handleBallCollision(b.physics, 1.0, isSimulation) && !isSimulation) {
-        this.sound.playIfNotPlaying('flowerBounce', 0.6, 0.0, -0.5, false)
+        this.sound.playIfNotPlaying(b.bounceOffFlowerSoundName, 0.6, 0.0, -0.5, false)
       }
       if (this.rightWall.handleBallCollision(b.physics, 1.0, isSimulation) && !isSimulation)
-        this.sound.playIfNotPlaying('flowerBounce', 0.6, 0.0, 0.5, false)
+        this.sound.playIfNotPlaying('bounceFlower', 0.6, 0.0, 0.5, false)
       if (this.net.handleBallCollision(b.physics, 1.0, isSimulation) && !isSimulation) {
-        this.sound.playIfNotPlaying('thud', 0.3, 0.0, 0.0, false)
+        this.sound.playIfNotPlaying(b.bounceOffFlowerSoundName, 0.3, 0.0, 0.0, false)
       }
       if (this.gameState !== GameState.Action || this.accumulatedPointSeconds > tweakables.timeOnServeFloorDisappears) {
         if (this.invisibleFloor.handleBallCollision(b.physics, tweakables.physics.ballFloorElasticity, isSimulation)) {
@@ -679,7 +685,7 @@ class Game {
         const hardness = Math.min(1, vec.len(collision.c2MomentumDelta) / ball0.physics.mass / 5.0)
         const pan = collision.pointOfContact.x
         const pitch = 0.5
-        this.sound.playIfNotPlaying('thud', hardness, pitch, pan, false)
+        this.sound.playIfNotPlaying(ball0.bounceSoundName, hardness, pitch, pan, false)
       }
     }
 
@@ -708,7 +714,7 @@ class Game {
       range -
       (2 * range * (player.physics.diameter - tweakables.player.minDiameter)) /
         (tweakables.player.maxDiameter - tweakables.player.minDiameter)
-    this.sound.playIfNotPlaying('thud', hardness, pitch, pan, false)
+    this.sound.playIfNotPlaying(ball.bounceSoundName, hardness, pitch, pan, false)
     // Slam
     let amINearnet = false
     if (
@@ -939,7 +945,7 @@ class Game {
       this.gameStep(delta)
       physicsDtCountdown -= delta
     }
-    if (this.accumulatedPointSeconds > 1) this.aIStep()
+    this.aIStep()
   }
   private runMainMenuState() {
     this.handleMenuInputs()

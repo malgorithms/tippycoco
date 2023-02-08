@@ -264,9 +264,7 @@ class Display {
         }
         this.drawPlayer(gameTime, player, closestBall)
       }
-      for (let i = 0; i < this.game.balls.length; i++) {
-        this.drawBall(this.game.balls[i], i, this.game.playerRight)
-      }
+      this.game.balls.forEach((b) => this.drawBall(b))
     }
     this.spriteBatch.drawTextureInRect(
       this.getTexture('floorFront'),
@@ -357,10 +355,9 @@ class Display {
     )
   }
 
-  private drawBall(ball: Ball, i: number, rightPlayer: Player) {
+  private drawBall(ball: Ball) {
     const bp = ball.physics
-    let ballName: TextureName = i % 2 ? 'ball2' : 'ball1'
-    if (rightPlayer.ai?.ballTexture) ballName = rightPlayer.ai.ballTexture(i)
+    const ballName = ball.textureName
     this.spriteBatch.drawTextureCentered(this.getTexture(ballName), bp.center, {w: bp.diameter, h: bp.diameter}, bp.orientation, 1)
     this.spriteBatch.drawTextureCentered(this.getTexture('ballShadow'), bp.center, {w: bp.diameter, h: bp.diameter}, 0, 1)
   }

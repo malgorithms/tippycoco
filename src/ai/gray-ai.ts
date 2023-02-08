@@ -1,4 +1,4 @@
-import {TextureName} from '../content-load-list'
+import {SoundName, TextureName} from '../content-load-list'
 import {Game} from '../game'
 import {EyeConfig, SkyAssignmentNames} from '../types'
 import {vec} from '../utils'
@@ -32,28 +32,16 @@ class GrayAi extends AiBase {
   private lastWhine: number
   constructor(game: Game) {
     super(game)
-    console.log('constructed')
     this.lastWhine = Date.now()
   }
-
   public get eyes() {
     return eyes
   }
-  private timeTillICanReachLanding(o: AiThinkArg) {
-    const landing = this.getNextBallHittingOnMySide(o)
-    if (!landing) return Infinity
-    return Math.abs(landing.pos.x - o.me.physics.center.x) / o.me.maxVel.x
-  }
-
   public get skyTextureNames(): SkyAssignmentNames {
     return {
       sunny: 'sunnyBackgroundBlue',
       dark: 'darkBackground',
     }
-  }
-
-  public ballTexture(ballNumber: number): TextureName {
-    return 'ballTennis'
   }
   public drawExtrasInFrontOfCharacter(ctx: CanvasRenderingContext2D) {
     ctx.fillStyle = '#000'
@@ -106,59 +94,37 @@ class GrayAi extends AiBase {
       }
     }
   }
-  public think(o: AiThinkArg): void {
-    const me = o.me
-    this.maybeWhine(o)
 
-    this.goToSize(o, 0.05)
-    const enteringMyRange = this.getNextBallEnteringMyJumpRange(o)
-    const landingOnMySide = this.getNextBallHittingOnMySide(o)
-    const timeToGetThere = this.timeTillICanReachLanding(o)
-    let stateToWatch: FutureBall | null = null
-    if (landingOnMySide && (!enteringMyRange || landingOnMySide.time < timeToGetThere + 0.4)) {
-      stateToWatch = landingOnMySide
-      stateToWatch.pos.x -= 0.01 * me.physics.diameter
-    } else if (enteringMyRange) {
-      stateToWatch = enteringMyRange
-      stateToWatch.pos.x -= 0.01 * me.physics.diameter
-    }
-
+  private isThereABallRightAboveMe(o: AiThinkArg) {
+    // jump if it's right above me
     for (const b of o.balls) {
       const deltaX = b.physics.center.x - o.me.physics.center.x
       const deltaY = b.physics.center.y - o.me.physics.center.y
-      if (deltaX > -0.05 && deltaX < 0 && deltaY < o.me.physics.diameter * 2) this.jumpBark(o)
+      if (deltaX > -0.05 && deltaX < 0 && deltaY < o.me.physics.diameter * 5) return true
     }
+    return false
+  }
+  private amIOnTheWrongSideOfTheNext(o: AiThinkArg) {
+    if (o.me.physics.center.x < o.net.center.x && o.me.physics.center.y < o.me.physics.radius / 5) return true
+    return false
+  }
 
-    // What to do if we have no idea
-    if (!stateToWatch) {
-      // Half the time go to the top of the net. The other half, do other crap.
-      if ((o.accumulatedPointSeconds / 10) % 2 == 1) {
-        if (me.physics.center.x > o.net.center.x + o.net.width / 2) {
-          this.jumpBark(o)
-          this.moveLeft(o)
-        } else if (me.physics.center.x < o.net.center.x - o.net.width / 2) {
-          this.jumpBark(o)
-          this.moveRight(o)
-        } else {
-          const speed = (o.net.center.x - me.physics.center.x) / (o.net.width / 2)
-          this.moveRationally(o, speed)
-        }
-      } else {
-        if (me.physics.center.x < o.net.center.x + o.net.width / 2 + (2 * me.physics.diameter) / 3) this.moveRight(o)
-        else if (me.physics.center.x > 1.0 - (2 * me.physics.diameter) / 3) this.moveLeft(o)
-        else {
-          this.stopMoving(o)
-        }
-      }
-      return
-    }
-    // At this point we know we have a state to watch
-    if (me.physics.center.x < o.net.center.x - o.net.width / 2) {
-      // keep me on my side of net
-      this.jumpBark(o)
+  public think(o: AiThinkArg): void {
+    const me = o.me
+    this.maybeWhine(o)
+    this.goToSize(o, 0.0)
+    const enteringMyRange = this.getNextBallEnteringMyJumpRange(o)
+    const landingOnMySide = this.getNextBallHittingOnMySide(o)
+    let stateToWatch: FutureBall | null = null
+    if (landingOnMySide) stateToWatch = landingOnMySide
+    else if (enteringMyRange) stateToWatch = enteringMyRange
+    else stateToWatch = {time: 0, pos: {y: 0, x: o.balls[0].physics.center.x}}
+    stateToWatch.pos.x += 0.1 * me.physics.diameter
+    if (this.isThereABallRightAboveMe(o)) this.jumpBark(o)
+    this.tryToGetToX(o, stateToWatch.pos.x, stateToWatch.time, REACTION_TIME_MS)
+    if (this.amIOnTheWrongSideOfTheNext(o)) {
       this.moveRight(o)
-    } else {
-      this.tryToGetToX(o, stateToWatch.pos.x, stateToWatch.time, REACTION_TIME_MS)
+      this.jumpBark(o)
     }
   }
 }

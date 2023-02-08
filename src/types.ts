@@ -1,5 +1,5 @@
 import {AiBase} from './ai/base'
-import {TextureName} from './content-load-list'
+import {SoundName, TextureName} from './content-load-list'
 
 enum PlayerSide {
   Left = 'left',
@@ -82,6 +82,8 @@ type NewPlayerArg = {
   playerSide: PlayerSide
 }
 type NewBallArg = {
+  textureName: TextureName
+  bounceSoundName: SoundName
   center: Vector2
   vel: Vector2
   diameter: number
