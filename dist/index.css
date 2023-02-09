@@ -33,6 +33,18 @@ body.in-game #game-canvas-wrapper {
   padding: 1em;
   max-width: 50em;
 }
+#launch-instructions {
+  display: none;
+}
+#game-load-wrapper.loaded #launch-instructions {
+  display: block;
+}
+
+.phone-warning {
+  font-size: 20px;
+  text-align: center;
+  padding: 20px;
+}
 
 /* General Site Style sTuff */
 .navbar-brand,

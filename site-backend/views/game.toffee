@@ -1,20 +1,26 @@
 #{partial './site-header.toffee', {includeGame: true}}    
 
-<div class="game-intro-wrapper">
+<div id="game-load-wrapper">
+
+  <!-- only visible on smaller viewports-->
+  <div style="display:none;" class="phone-warning">
+    ⚠️<br>
+    <b>Tippy Coco</b> is for computers, not phones or tablets. An <b>iPad</b> works with one of 
+    those folding keyboards, but that's it. It will not play on phones.
+    </p>
+  </div>
+
+
   <div class="intro-note">
     <div style="text-align:center">
       <img src="/images/site/cover.png" class="img-fluid">
-      <div id="load-stats" style="text-align:center;font-size:0.9em;margin-top:10px;"></div>
+      <div id="load-stats" style="text-align:center;font-size:0.9em;margin-top:10px;">
+        Waking the beasts...
+      </div>
       <div id="launch-instructions"  style="text-align:center;font-size:1.1em;height:20px;margin-top:20px;">
-        Game is ready. Press <b>[spacebar]</b> to launch.      
+        Game is ready. Press <b>[spacebar]</b> to launch.
       </div>
     </div>
-    <!-- only visible on smaller viewports-->
-    <div style="display:none;" style="text-align:center;font-size:2em;margin-top:40px;">
-      ⚠️ <b>T.C.F.T.G</b> will play on an <b>iPad</b>, but only with an
-      external keyboard. It will not play on phones.
-     </p>
-   </div>
   </div>
 
 

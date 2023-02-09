@@ -1,6 +1,7 @@
 import {$, isMobile} from './site-utils'
 import {GameLoader} from '../game-loader'
 import {MenuAutoHider} from './menu-auto-hide'
+import {timeout} from '../utils'
 
 /**
  * any site JavaScript can start here.
@@ -10,9 +11,11 @@ class Site {
   constructor() {
     this.addHandlers()
   }
-  public run() {
+  public async run() {
+    await timeout(250) // all we are saying...is give paint a chance
     console.log('running. isMobileDevice=', isMobile())
     if ($('#game-canvas-wrapper')) {
+      if (isMobile()) $('.phone-warning').style.display = ''
       this.loadGame()
     }
   }
@@ -31,6 +34,7 @@ class Site {
   private async loadGame() {
     this.gameLoader = new GameLoader($('#game-canvas-wrapper'), $('#load-stats'), () => {
       $('#game-canvas-wrapper').classList.add('loaded')
+      $('#game-load-wrapper').classList.add('loaded')
     })
   }
   private async launchGame() {

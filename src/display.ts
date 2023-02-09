@@ -15,6 +15,7 @@ import {SpriteBatch} from './sprite-batch'
 import tweakables from './tweakables'
 import {FutureState, GameTime, PlayerSide, Rectangle, Texture2D, Vector2} from './types'
 import {vec} from './utils'
+import {default as constants} from './constants'
 
 class Display {
   private canvasManager: CanvasManager
@@ -422,7 +423,8 @@ class Display {
     const yPos = view.y1 + height * 2
     const color = new Color(0, 0, 0, 0.25)
     const font = this.font('regular')
-    this.spriteBatch.drawString(`${~~currentFps} fps`, font, height, {x: xPos, y: yPos}, color, 0)
+    const str = `v${constants.version} ${~~currentFps} fps`
+    this.spriteBatch.drawString(str, font, height, {x: xPos, y: yPos}, color, 0)
     const suggAt = 90
     if (currentFps && currentFps < suggAt) {
       const opacity = 0.5 * (1 - currentFps / suggAt)
