@@ -317,11 +317,11 @@ class Display {
     if (gameState == GameState.PreExitMessage) {
       this.drawCenteredDancingMessage(gameTime, 'They went back to the ground.', null, Colors.white)
     } else if (gameState == GameState.Intro1) {
-      this.drawCenteredDancingMessage(gameTime, 'Tippy Coco came from the ground.', null, Colors.white)
+      this.drawCenteredDancingMessage(gameTime, 'They came from the ground.', null, Colors.white)
     } else if (gameState == GameState.Intro2) {
-      this.drawCenteredDancingMessage(gameTime, 'she brought a bouncy ball -', null, Colors.white)
+      this.drawCenteredDancingMessage(gameTime, 'they brought a bouncy ball -', null, Colors.white)
     } else if (gameState == GameState.Intro3) {
-      this.drawCenteredDancingMessage(gameTime, '- and she bounced it around.', null, Colors.white)
+      this.drawCenteredDancingMessage(gameTime, '- and they bounced it around.', null, Colors.white)
     } else if (gameState == GameState.AutoPaused) {
       this.drawCenteredDancingMessage(gameTime, 'Please reconnect your controller.', null, Colors.white)
     } else if (gameState == GameState.PreExitCredits) {
