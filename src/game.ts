@@ -975,6 +975,7 @@ class Game {
   }
   private handleUniversalInputs() {
     if (this.input.wasDebugKeyJustPushed()) {
+      this.menu.unlockAll = true
       this.display.inDebugView = !this.display.inDebugView
     }
   }

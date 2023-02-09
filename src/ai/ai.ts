@@ -21,10 +21,10 @@ const ais = {
 type AiName = keyof typeof ais
 
 const aiNicknames = {
-  Green: 'Green Guy',
+  Green: 'Groon',
   Black: 'Black Tie',
   White: 'Skarball',
-  Purple: 'Pinky',
+  Purple: 'Pinky Woo',
   Orange: 'The Juice',
   Yellow: 'Lemonae',
   Gray: 'Tippy Coco',

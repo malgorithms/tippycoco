@@ -1,4 +1,4 @@
-import {SoundName, TextureName} from '../content-load-list'
+import {TextureName} from '../content-load-list'
 import {Game} from '../game'
 import {EyeConfig, SkyAssignmentNames} from '../types'
 import {vec} from '../utils'
@@ -18,7 +18,7 @@ const eyes: EyeConfig[] = [
     pupilTexture: 'pupil',
   },
   {
-    offset: {x: 0.35, y: 0.1},
+    offset: {x: 0.45, y: 0.1},
     size: 0.2,
     movementRadius: 0.01,
     blinkScale: 0.1,

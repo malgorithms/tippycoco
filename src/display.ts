@@ -317,15 +317,15 @@ class Display {
     if (gameState == GameState.PreExitMessage) {
       this.drawCenteredDancingMessage(gameTime, 'They went back to the ground.', null, Colors.white)
     } else if (gameState == GameState.Intro1) {
-      this.drawCenteredDancingMessage(gameTime, 'They came from the ground.', null, Colors.white)
+      this.drawCenteredDancingMessage(gameTime, 'Tippy Coco came from the ground.', null, Colors.white)
     } else if (gameState == GameState.Intro2) {
-      this.drawCenteredDancingMessage(gameTime, 'They brought a bouncy ball -', null, Colors.white)
+      this.drawCenteredDancingMessage(gameTime, 'she brought a bouncy ball -', null, Colors.white)
     } else if (gameState == GameState.Intro3) {
-      this.drawCenteredDancingMessage(gameTime, '- and they bounced it around.', null, Colors.white)
+      this.drawCenteredDancingMessage(gameTime, '- and she bounced it around.', null, Colors.white)
     } else if (gameState == GameState.AutoPaused) {
       this.drawCenteredDancingMessage(gameTime, 'Please reconnect your controller.', null, Colors.white)
     } else if (gameState == GameState.PreExitCredits) {
-      this.drawCenteredDancingMessage(gameTime, 'tcftg.com', 'spread the word', Colors.white)
+      this.drawCenteredDancingMessage(gameTime, 'tippycoco.com', 'for your next free moment', Colors.white)
     }
   }
   private drawFlowers(leftTreeTopWidth: number, leftTreeTopHeight: number, rightTreeTopWidth: number, rightTreeTopHeight: number) {
@@ -495,7 +495,16 @@ class Display {
     this.spriteBatch.drawTextureInRect(bannerTexture, rect, 1)
   }
 
-  private drawScores(p0Score: number, p1Score: number, gameTime: GameTime) {
+  private scoreIntToTextureArray(n: number): Texture2D[] {
+    const res: Texture2D[] = []
+    for (const c of `${n}`) {
+      const textureName: TextureName = `digit${c}` as TextureName
+      res.push(this.getTexture(textureName))
+    }
+    return res
+  }
+
+  private drawScore(score: number, sizeMultiplier: number, center: Vector2, gameTime: GameTime) {
     const seconds = gameTime.totalGameTime.totalSeconds
     const rotMax = 0.02
     const rotation = rotMax + 2 * rotMax * Math.sin(gameTime.totalGameTime.totalSeconds)
@@ -504,30 +513,27 @@ class Display {
     const extraScale = 1 - scaleMax * Math.sin(beat / 4) - scaleMax * Math.sin(beat / 8)
 
     const view = this.canvasManager.viewableRegion
-    const scoreCardHeight = ((view.y2 - view.y1) / 10) * extraScale
+    const scoreCardHeight = ((view.y2 - view.y1) / 10) * extraScale * sizeMultiplier
+    const dims = {w: scoreCardHeight, h: scoreCardHeight}
+    this.spriteBatch.drawTextureCentered(this.getTexture('scoreCard'), center, dims, rotation, 1)
+    const textures1 = this.scoreIntToTextureArray(score)
+    const eachWidth = textures1.length === 1 ? 0.7 * dims.w : dims.w / textures1.length
+    const digitDims = this.spriteBatch.autoDim(eachWidth, textures1[0])
+    const startX = center.x - (textures1.length - 1) * 0.5 * eachWidth
+    for (let i = 0; i < textures1.length; i++) {
+      const texture = textures1[i]
+      const tCenter = {x: startX + i * eachWidth, y: center.y}
+      this.spriteBatch.drawTextureCentered(texture, tCenter, digitDims, rotation, 1)
+    }
+  }
+
+  private drawScores(p0Score: number, p1Score: number, gameTime: GameTime) {
+    const view = this.canvasManager.viewableRegion
     const y = (9 * view.y2 + view.y1) / 10 // most of the way towards tL.y
     const x1 = (9 * view.x1 + view.x2) / 10 // most of the way to the left side
     const x2 = (9 * view.x2 + view.x1) / 10 //  most of the way to the right side
-
-    const box1Center: Vector2 = {x: x1, y}
-    const box2Center: Vector2 = {x: x2, y}
-
-    const text1 = `${p0Score}`
-
-    const p0h = this.p0ScoreCard.sizeMultiplier * scoreCardHeight
-    this.spriteBatch.drawTextureCentered(this.getTexture('scoreCard'), box1Center, {w: p0h, h: p0h}, rotation, 1)
-    const font = this.font('extraBold')
-    const t0Center = vec.add(box1Center, tweakables.display.scorecard.textOffset)
-    const t0Size = 0.9 * p0h * this.p1ScoreCard.sizeMultiplier
-    this.spriteBatch.drawStringCentered(text1, font, t0Size, t0Center, Colors.black, -rotation, true)
-
-    const text2 = `${p1Score}`
-
-    const p1h = this.p1ScoreCard.sizeMultiplier * scoreCardHeight
-    this.spriteBatch.drawTextureCentered(this.getTexture('scoreCard'), box2Center, {w: p1h, h: p1h}, rotation, 1)
-    const t1Center = vec.add(box2Center, tweakables.display.scorecard.textOffset)
-    const t1Size = 0.9 * p1h * this.p1ScoreCard.sizeMultiplier
-    this.spriteBatch.drawStringCentered(text2, font, t1Size, t1Center, Colors.black, -rotation, true)
+    this.drawScore(p0Score, this.p0ScoreCard.sizeMultiplier, {x: x1, y}, gameTime)
+    this.drawScore(p1Score, this.p1ScoreCard.sizeMultiplier, {x: x2, y}, gameTime)
   }
 
   public adjustZoomLevel(maxBallHeight: number, dt: number) {

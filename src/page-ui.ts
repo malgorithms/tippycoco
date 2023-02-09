@@ -109,7 +109,7 @@ class PageUi {
       <br>
         Player 2 ⌨️: <b>i j l</b> or <b>arrow keys</b>
       <br><br>
-      🎮: T.C.F.T.G. also works with 1 or 2 gamepads. (Hint: PS5 and XBox controllers can pair with Windows/MacOS.)
+      🎮: Tippy Coco also works with gamepads for 1 or 2 players. (Hint: PS5 and XBox controllers can pair with Windows/MacOS.)
       <br><br>
       </p>
 
@@ -120,7 +120,7 @@ class PageUi {
       </p>
       <h4>Links</h4>
       <ul>
-       <li><a href="https://github.com/malgorithms/they-came-from-the-ground">source code</a></li>
+       <li><a href="https://github.com/malgorithms/tippycoco">source code</a></li>
        <li><a href="#no" id="btn-erase-storage">erase local stats</a></li>
        <li>my personal website, <a href="https://chriscoyne.com">ChrisCoyne.com</a></li>
        <li>my twitter, <a href="https://twitter.com/malgorithms">@malgorithms</a></li>
@@ -128,8 +128,11 @@ class PageUi {
       <h4>About</h4>
       <p>
         This game is a free, open-source hobby project by <b>Chris Coyne</b> (<a href="https://chriscoyne.com">chriscoyne.com</a>) with help from friends. The GitHub readme shows how to run your own
-        copy of the game. You can chnage the game physics and rules. The original inspiration for this game was Slime Volleyball, by Daniel Wedge &amp; Quin Pendragon. Music in T.C.F.T.G. by my friend
-        Christian Rudder, of the band <a href="https://en.wikipedia.org/wiki/Bishop_Allen">Bishop Allen</a>. "Rejected!" and "Slam!" and "Kiss" voiced by Jennie, Cameron, and Abbott Coyne.
+        copy of the game. You can chnage the game physics, rules, whatever. The original inspiration for this game was Slime Volleyball, a 1999 Java Applet by Daniel Wedge &amp; Quin Pendragon. 
+        Music in TippyCoco is by my friend
+        Christian Rudder, of the band <a href="https://en.wikipedia.org/wiki/Bishop_Allen">Bishop Allen</a>. 
+        "Rejected!" and "Slam!" and "Kiss" voiced by Jennie, Cameron, and Abbott Coyne. And the character TippyCoco is named
+        after our friends' dog, TippiCocoa, who in turn was named after Tippi Hedron and hot cocoa.
       </p>
       </div>
     </div>`

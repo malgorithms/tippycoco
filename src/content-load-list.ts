@@ -70,6 +70,17 @@ const textureSources = {
   menuCardPlayBlack: 'images/MenuCards/PlayBlack.png',
   menuCardPlayGray: 'images/MenuCards/PlayGray.png',
   menuCardPlayWhite: 'images/MenuCards/PlayWhite.png',
+  /* digits */
+  digit0: 'images/ScoreCards/0.png',
+  digit1: 'images/ScoreCards/1.png',
+  digit2: 'images/ScoreCards/2.png',
+  digit3: 'images/ScoreCards/3.png',
+  digit4: 'images/ScoreCards/4.png',
+  digit5: 'images/ScoreCards/5.png',
+  digit6: 'images/ScoreCards/6.png',
+  digit7: 'images/ScoreCards/7.png',
+  digit8: 'images/ScoreCards/8.png',
+  digit9: 'images/ScoreCards/9.png',
 } as const
 
 const soundSources = {

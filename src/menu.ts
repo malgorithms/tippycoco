@@ -69,7 +69,7 @@ const returnRow: MenuRow = {
 }
 //menuRows.push(returnRow)
 menuRows.push({
-  title: '1 Player',
+  title: 'Solo',
   entries: [
     aiEntry(ais.Green, 1, 'menuCardPlayGreen'),
     aiEntry(ais.Orange, 1, 'menuCardPlayOrange', {defeat: 'Green', defeatType: 'win'}),
@@ -94,6 +94,7 @@ menuRows.push({
 type MenuOwnership = PlayerSide | null
 
 class Menu {
+  public unlockAll: boolean
   private display: Display
   private rows: MenuRow[]
   private selRow = 0
@@ -103,6 +104,7 @@ class Menu {
   public constructor(display: Display) {
     this.display = display
     this.rows = menuRows
+    this.unlockAll = false
   }
   private get spriteBatch(): SpriteBatch {
     return this.display.getSpriteBatch()
@@ -141,7 +143,7 @@ class Menu {
     }
   }
   private isLockedReason(entry: MenuEntry): false | string {
-    if (entry.unlockRequirement) {
+    if (entry.unlockRequirement && !this.unlockAll) {
       return this.lockCheckReason(entry.unlockRequirement)
     }
     return false
