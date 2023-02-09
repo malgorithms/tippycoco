@@ -34,7 +34,7 @@ class Display {
   private fontManager: FontManager
   private game: Game
 
-  public constructor(game: Game, content: ContentLoader, targetDiv: HTMLDivElement) {
+  public constructor(game: Game, content: ContentLoader, targetDiv: HTMLElement) {
     this.game = game
     this.content = content
     this.canvasManager = new CanvasManager(targetDiv)
@@ -325,7 +325,7 @@ class Display {
     } else if (gameState == GameState.AutoPaused) {
       this.drawCenteredDancingMessage(gameTime, 'Please reconnect your controller.', null, Colors.white)
     } else if (gameState == GameState.PreExitCredits) {
-      this.drawCenteredDancingMessage(gameTime, 'tippycoco.com', 'for your next free moment', Colors.white)
+      this.drawCenteredDancingMessage(gameTime, 'tippycoco.com', 'love you', Colors.white)
     }
   }
   private drawFlowers(leftTreeTopWidth: number, leftTreeTopHeight: number, rightTreeTopWidth: number, rightTreeTopHeight: number) {

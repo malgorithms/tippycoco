@@ -17,10 +17,11 @@ Prerequisite: `Node.js` installed
 - clone this repo, cd into it
 - install yarn if you don't have it. `npm install -g yarn`
 - run `yarn` to get dependencies
-- in one terminal `yarn webpack -w`. This will keep the game built as you edit it
-- in another terminal `yarn app`. This will start the game up.
+- in one terminal `yarn watch`. This will keep the game and frontend JS built as you edit it
+- in another terminal `yarn app`. This will compile the site and host it
 - visit `http://localhost:3377` to play the game
 - Now, just edit any `*.ts` file in the `src/` dir to insta-change the game
+- If you change the site code at all (`site/` dir, kill and restart with `yarn app`)
 
 ### Writing a bot
 

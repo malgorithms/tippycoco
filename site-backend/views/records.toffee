@@ -1,0 +1,39 @@
+#{partial './site-header.toffee', {includeGame: false}}    
+
+<h4>Records</h4>
+
+<p>
+    I'll keep top 10 lists for each adversary. Please see the bottom of this page for how
+    to submit a records.    
+</p>
+
+<h4 class="record-section">Groon</h4>
+<h5>Fastest Win</h5>
+<p>Send me your record and I'll add it.</p>
+<h5>Fastest win without jumping</h5>
+<p>Send me your record and I'll add it.</p>
+
+
+<h4>Submitting a record</h4>
+<p>
+    You should email me (<b>ccoyne77@gmail.com</b>) with the following info:
+</p>
+<ul>
+    <li>a link to a publicly reviewable video, which I'll post here</li>
+    <li>your name or nickname for the victory</li>
+    <li>(optional) a link to your own site / social media</li>
+    <li>(optional) any commentary to include</li>
+</ul>
+<p>
+    Some clarifications:
+</p>
+<ul>
+    <li>You must run the game unmodified</li>
+    <li>You have to be a human player, not a bot.</li>
+    <li>Any victories due to bugs or glitches won't count. Please report bugs!</li>
+    <li>I'll reset a list if I meaningfully change a character's code.</li>
+    <li>You must leave your video proof live for others to review. Please use a common site such as Twitch, Youtube, Insta, etc.</li>
+</ul>
+
+
+#{partial './site-footer.toffee'}

@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "outDir": "./compiled/",
+    "rootDir": "./src",
+    "sourceMap": false,
+    "module": "Node16",
+    "target": "Es2022",
+    "allowJs": false,
+    "moduleResolution": "node",
+    "noErrorTruncation": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noEmit": false,
+    "allowSyntheticDefaultImports": true
+  }
+}
