@@ -6,3 +6,4 @@ tsconfig.tsbuildinfo
 debug/
 games.log
 dist/bundle.js
+site-backend/compiled/

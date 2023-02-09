@@ -2,7 +2,7 @@ const path = require('path')
 const webpack = require('webpack')
 module.exports = {
   mode: 'development',
-  entry: './src/index.ts',
+  entry: './src/site-frontend/index.ts',
   node: {
     global: false,
   },

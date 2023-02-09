@@ -1,5 +1,6 @@
 import {SoundEffect} from './sound-effect'
 import {ContentLoadMonitor, ContentLoadStats, Texture2D} from './types'
+import {timeout} from './utils'
 
 class ContentLoader {
   private audioContext = new AudioContext()
@@ -34,6 +35,7 @@ class ContentLoader {
   }
   public async loadTexture2d(url: string): Promise<Texture2D> {
     this.loadStats.total++
+    //await timeout(Math.random() * 5000)
     this.loadMonitor(this.getLoadStats())
     const img = await this.loadImage(url)
     this.loadStats.done++

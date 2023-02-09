@@ -15,6 +15,7 @@ import {SpriteBatch} from './sprite-batch'
 import tweakables from './tweakables'
 import {FutureState, GameTime, PlayerSide, Rectangle, Texture2D, Vector2} from './types'
 import {vec} from './utils'
+import {default as constants} from './constants'
 
 class Display {
   private canvasManager: CanvasManager
@@ -34,7 +35,7 @@ class Display {
   private fontManager: FontManager
   private game: Game
 
-  public constructor(game: Game, content: ContentLoader, targetDiv: HTMLDivElement) {
+  public constructor(game: Game, content: ContentLoader, targetDiv: HTMLElement) {
     this.game = game
     this.content = content
     this.canvasManager = new CanvasManager(targetDiv)
@@ -325,7 +326,7 @@ class Display {
     } else if (gameState == GameState.AutoPaused) {
       this.drawCenteredDancingMessage(gameTime, 'Please reconnect your controller.', null, Colors.white)
     } else if (gameState == GameState.PreExitCredits) {
-      this.drawCenteredDancingMessage(gameTime, 'tippycoco.com', 'for your next free moment', Colors.white)
+      this.drawCenteredDancingMessage(gameTime, 'tippycoco.com', 'love you', Colors.white)
     }
   }
   private drawFlowers(leftTreeTopWidth: number, leftTreeTopHeight: number, rightTreeTopWidth: number, rightTreeTopHeight: number) {
@@ -422,7 +423,8 @@ class Display {
     const yPos = view.y1 + height * 2
     const color = new Color(0, 0, 0, 0.25)
     const font = this.font('regular')
-    this.spriteBatch.drawString(`${~~currentFps} fps`, font, height, {x: xPos, y: yPos}, color, 0)
+    const str = `v${constants.version} ${~~currentFps} fps`
+    this.spriteBatch.drawString(str, font, height, {x: xPos, y: yPos}, color, 0)
     const suggAt = 90
     if (currentFps && currentFps < suggAt) {
       const opacity = 0.5 * (1 - currentFps / suggAt)

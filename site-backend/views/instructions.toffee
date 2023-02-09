@@ -1,0 +1,22 @@
+#{partial './site-header.toffee', {includeGame: false}}    
+
+<h4>Keyboard</h4>
+<p>
+  Basic moves are left, right, and jump. You can also grow or shrink your character with the keys alongside
+  your jump key. For example, Q and E below.
+</p>
+<img src="/images/site/keyboard-layout.png" class="img-fluid">
+<p>
+  If you're playing solo, you can use either side of the keyboard, or your arrow keys.
+</p>
+
+<h4>🎮 Gamepad support</h4>
+<p>
+  Playstation and Xbox controllers both work! This is 1000x better for head-to-head, so you can sit back and not cram over a keyboard.
+</p>
+<p style="margin-bottom:300px;">
+  Buuut...there are gamepad issues with Firefox. Please use Safari, Chrome, or MS Edge if you're connecting
+  a gamepad.
+</p>
+
+#{partial './site-footer.toffee'}

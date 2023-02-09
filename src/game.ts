@@ -48,14 +48,14 @@ class Game {
   private accumulatedPointSeconds = 0 // Accumulated play time this point (persists even if pausing it to go to menu)
   private whenStartedDateTime = Date.now()
 
-  constructor(targetDiv: HTMLDivElement, contentLoadMonitor: ContentLoadMonitor) {
+  constructor(targetDiv: HTMLElement, contentLoadMonitor: ContentLoadMonitor) {
     this.content = new ContentLoader(contentLoadMonitor)
     this.generatePlayers(null)
     this.generateBalls(2)
     this.resetScores()
     this.init(targetDiv)
   }
-  private async init(targetDiv: HTMLDivElement) {
+  private async init(targetDiv: HTMLElement) {
     this.sound = new SoundManager(this.content)
     this.display = new Display(this, this.content, targetDiv)
     this.menu = new Menu(this.display)
