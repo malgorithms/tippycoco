@@ -44,12 +44,12 @@ const reportedScores: RecordListMap = {
       },
     ],
   },
-  Black: emptyList(),
-  White: emptyList(),
+  Orange: emptyList(),
   Purple: emptyList(),
   Gray: emptyList(),
-  Orange: emptyList(),
   Yellow: emptyList(),
+  Black: emptyList(),
+  White: emptyList(),
 }
 
 export {reportedScores}
