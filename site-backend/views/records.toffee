@@ -11,11 +11,11 @@
             <h4><b>#{nick}</b></h4>
             <div class="row" style="margin-top:20px;">
                 <div class="col-sm-6">
-                    <h5><img src="/images/Players/#{k.toLowerCase()}Player.png" width="20" height="20"> Fastest</h5>
+                    <h5><img src="/images/Players/#{k}Player.png" width="20" height="20"> Fastest</h5>
                     #{partial './records-table.toffee', {data: v.fastest}}
                 </div>
                 <div class="col-sm-6">
-                    <h5><img src="/images/Players/#{k.toLowerCase()}Player.png" width="20" height="20"> Without jumping</h5>
+                    <h5><img src="/images/Players/#{k}Player.png" width="20" height="20"> Without jumping</h5>
                     #{partial './records-table.toffee', {data: v.withoutJumping}}
                 </div>
             </div>
