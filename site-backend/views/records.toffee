@@ -1,38 +1,52 @@
 #{partial './site-header.toffee', {includeGame: false}}    
 
-<h4>Records</h4>
+<h4>A Big List of Top 10's </h4>
 
-<p>
-    I'll keep top 10 lists for each adversary. Please see the bottom of this page for how
-    to submit a records.    
-</p>
 
-<h4 class="record-section">Groon</h4>
-<h5>Fastest Win</h5>
-<p>Send me your record and I'll add it.</p>
-<h5>Fastest win without jumping</h5>
-<p>Send me your record and I'll add it.</p>
-
+{#
+    for k,v of reportedScores 
+        nick = aiToNickname k
+        {:
+        <div class="scoreboard">            
+            <h4><b>#{nick}</b></h4>
+            <div class="row" style="margin-top:20px;">
+                <div class="col-sm-6">
+                    <h5><img src="/images/Players/#{k.toLowerCase()}Player.png" width="20" height="20"> Fastest</h5>
+                    #{partial './records-table.toffee', {data: v.fastest}}
+                </div>
+                <div class="col-sm-6">
+                    <h5><img src="/images/Players/#{k.toLowerCase()}Player.png" width="20" height="20"> Without jumping</h5>
+                    #{partial './records-table.toffee', {data: v.withoutJumping}}
+                </div>
+            </div>
+        </div>
+        :}
+#}
 
 <h4>Submitting a record</h4>
 <p>
-    You should email me (<b>ccoyne77@gmail.com</b>) with the following info:
+    Records are only official if you record a video. <a href="https://www.howtogeek.com/406064/how-to-record-a-video-of-your-chrome-browser/">Here are some suggestions on how to record.</a>
+</p>
+<p>
+    Once you have a recording, post in <a href="/community">our discord group</a> the following info:
 </p>
 <ul>
-    <li>a link to a publicly reviewable video, which I'll post here</li>
-    <li>your name or nickname for the victory</li>
+    <li>a link to video, posted publicly. It's important so anyone can review.</li>
+    <li>your name or nickname for the scoreboard</li>
     <li>(optional) a link to your own site / social media</li>
-    <li>(optional) any commentary to include</li>
+    <li>(optional) any commentary text to include</li>
 </ul>
 <p>
     Some clarifications:
 </p>
-<ul>
+<ul style="margin-bottom:300px;">
     <li>You must run the game unmodified</li>
+    <li>The video needs to show the whole match including the victory screen with time</li>
     <li>You have to be a human player, not a bot.</li>
     <li>Any victories due to bugs or glitches won't count. Please report bugs!</li>
     <li>I'll reset a list if I meaningfully change a character's code.</li>
-    <li>You must leave your video proof live for others to review. Please use a common site such as Twitch, Youtube, Insta, etc.</li>
+    <li>You must leave your video proof live for others to review. Please use a popular site such as Twitch, Youtube, or Instagram.</li>
+    <li>(optional) link to the game or this page from your video :-)</li>
 </ul>
 
 

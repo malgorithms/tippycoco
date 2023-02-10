@@ -111,6 +111,8 @@ export default {
       textOffset: {x: 0, y: 0},
     },
   },
+  // this is a public join link...if it's abused we can change the rules
+  discordJoin: 'https://discord.gg/vUttx8Qrnp',
   allowDashing: false,
   fpsSampleCount: 100, // loops
   ballPlayerLaunchTime: 1,

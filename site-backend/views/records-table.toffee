@@ -1,0 +1,27 @@
+{#
+    data.sort((a,b)=>a.time-b.time)
+    if not data.length {:
+        <em>-</em>
+    :}
+    else {:
+        <ol>
+            {#
+                for row in data {:
+                    <li>
+                    {#
+                        if (row.who.profileLink) {:
+                            <a href="#{row.who.profileLink}">#{row.who.name}</a>
+                        :}
+                        else {:
+                            #{row.who.name}
+                        :}
+                    #}
+                    ...
+                    #{row.sec.toFixed(3)} seconds
+                    <a href="#{row.videoLink}" target="_blank">[watch]</a>
+                    </li>
+                :}
+            #}
+        </ol>
+    :}
+#}
