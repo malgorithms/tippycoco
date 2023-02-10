@@ -3,6 +3,9 @@ import path from 'path'
 import fs from 'fs/promises'
 import favicon from 'serve-favicon'
 import morgan from 'morgan'
+import {reportedScores} from './src-frontend/site/record-list'
+import {aiToNickname} from './src-frontend/ai/ai'
+import tweakables from './src-frontend/tweakables'
 
 const app = express()
 const port = 3377
@@ -15,13 +18,15 @@ app.use(express.static('dist'))
 app.use(favicon(path.join(rootDir, 'dist', 'images', 'site', 'favicon.ico')))
 
 const viewDir = path.join(rootDir, 'site-backend', 'views')
-const serveToff = (res: Response, fName: string) => res.render(path.join(viewDir, fName), {})
 
-app.get('/', (_req, res) => serveToff(res, 'game.toffee'))
-app.get('/play', (_req, res) => serveToff(res, 'game.toffee'))
-app.get('/instructions', (_req, res) => serveToff(res, 'instructions.toffee'))
-app.get('/about', (_req, res) => serveToff(res, 'about.toffee'))
-app.get('/records', (_req, res) => serveToff(res, 'records.toffee'))
+const serve = (res: Response, fName: string, obj?: any) => res.render(path.join(viewDir, fName), obj ?? {})
+
+app.get('/', (_req, res) => serve(res, 'game.toffee'))
+app.get('/play', (_req, res) => serve(res, 'game.toffee'))
+app.get('/instructions', (_req, res) => serve(res, 'instructions.toffee'))
+app.get('/about', (_req, res) => serve(res, 'about.toffee'))
+app.get('/records', (_req, res) => serve(res, 'records.toffee', {reportedScores, aiToNickname}))
+app.get('/community', (_req, res) => serve(res, 'community.toffee', {tweakables}))
 
 // Simple gameplay logging to see how often it is played/won/etc.
 // without 3rd party cookie garbage.

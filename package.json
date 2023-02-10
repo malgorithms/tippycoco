@@ -6,8 +6,8 @@
   "private": true,
   "scripts": {
     "watch": "webpack -w",
-    "app": "yarn build-site && node site-backend/compiled/app.js",
-    "build-site": "tsc --project site-backend/tsconfig.site-backend.json"
+    "app": "yarn build-site && node site-backend/compiled-backend/app.js",
+    "build-site": "tsc --project tsconfig.site-backend.json"
   },
   "dependencies": {
     "@types/express": "^4.17.15",

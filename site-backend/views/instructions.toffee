@@ -5,7 +5,9 @@
   Basic moves are left, right, and jump. You can also grow or shrink your character with the keys alongside
   your jump key. For example, Q and E below.
 </p>
-<img src="/images/site/keyboard-layout.png" class="img-fluid">
+<div style="max-width:800px;">
+  <img src="/images/site/keyboard-layout.png" class="img-fluid" >
+</div>
 <p>
   If you're playing solo, you can use either side of the keyboard, or your arrow keys.
 </p>

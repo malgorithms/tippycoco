@@ -1,0 +1,11 @@
+#{partial './site-header.toffee', {includeGame: false}}    
+
+<h4>Join us on Discord</h4>
+
+<p>
+    This link should work: <a href="#{raw tweakables.discordJoin}">#{tweakables.discordJoin}</a>
+</p>
+
+<img class="img img-fluid" src="/images/site/discord-site.png">
+
+#{partial './site-footer.toffee'}

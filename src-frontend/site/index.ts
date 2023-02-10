@@ -2,7 +2,6 @@ import {$, isMobile} from './site-utils'
 import {GameLoader} from '../game-loader'
 import {MenuAutoHider} from './menu-auto-hide'
 import {timeout} from '../utils'
-
 /**
  * any site JavaScript can start here.
  */
@@ -52,4 +51,4 @@ class Site {
     if (e.key === ' ') this.launchGame()
   }
 }
-new Site().run()
+export {Site}

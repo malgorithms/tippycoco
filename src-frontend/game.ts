@@ -240,8 +240,7 @@ class Game {
       this.isGamePoint = false
       const seconds = this.accumulatedGamePlayTime
       const minutesInt = Math.floor(seconds / 60.0)
-      const secondsInt = Math.floor(seconds - minutesInt * 60)
-      const time = minutesInt > 0 ? `${minutesInt} min ${secondsInt} sec` : `${seconds.toFixed(3)} seconds`
+      const time = minutesInt > 0 ? `${minutesInt} min ${seconds.toFixed(3)} sec` : `${seconds.toFixed(3)} seconds`
       const winner = this.scoreLeftPlayer > this.scoreRightPlayer ? PlayerSide.Left : PlayerSide.Right
       const summ = winner === PlayerSide.Right && this.playerRight.ai ? `Defeat in ${time}.` : `Victory in ${time}.`
       const wPlayer = winner === PlayerSide.Right ? this.playerRight : this.playerLeft
