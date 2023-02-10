@@ -1,22 +1,26 @@
 #{partial './site-header.toffee', {includeGame: false}}    
 
-<h4>Records</h4>
+<h4>A Big List of Top 10's </h4>
 
 
 {#
-    for k,v of reportedScores {:
-        <h4><b>#{aiToNickname(k)}</b></h4>
-        <div class="row" style="margin-top:20px;">
-            <div class="col-sm-6">
-                <h5>Fastest</h5>
-                #{partial './records-table.toffee', {data: v.fastest}}
-            </div>
-            <div class="col-sm-6">
-                <h5>Without Jumping</h5>
-                #{partial './records-table.toffee', {data: v.withoutJumping}}
+    for k,v of reportedScores 
+        nick = aiToNickname k
+        {:
+        <div class="scoreboard">            
+            <h4><b>#{nick}</b></h4>
+            <div class="row" style="margin-top:20px;">
+                <div class="col-sm-6">
+                    <h5><img src="/images/Players/#{k.toLowerCase()}Player.png" width="20" height="20"> Fastest</h5>
+                    #{partial './records-table.toffee', {data: v.fastest}}
+                </div>
+                <div class="col-sm-6">
+                    <h5><img src="/images/Players/#{k.toLowerCase()}Player.png" width="20" height="20"> Without jumping</h5>
+                    #{partial './records-table.toffee', {data: v.withoutJumping}}
+                </div>
             </div>
         </div>
-    :}
+        :}
 #}
 
 <h4>Submitting a record</h4>

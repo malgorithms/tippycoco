@@ -22,7 +22,7 @@
             </svg>Discord</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/records">Records</a>
+            <a class="nav-link" href="/records">Champions</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/about">About</a>
