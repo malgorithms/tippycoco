@@ -24,10 +24,16 @@ const emptyList = () => ({fastest: [], withoutJumping: []})
  * for now let's hard code some
  */
 const chris: RecordHolder = {name: 'Chris Coyne', profileLink: 'https://chriscoyne.com'}
+const cd: RecordHolder = {name: 'cd', profileLink: 'https://keybase.io/cd'}
 
 const reportedScores: RecordListMap = {
   Green: {
     fastest: [
+      {
+        who: cd,
+        sec: 32.689,
+        videoLink: 'https://youtu.be/U-LRoUGLUN0',
+      },
       {
         who: chris,
         sec: 58.891,
