@@ -3,6 +3,7 @@
 <h4>Join us on Discord</h4>
 
 <p>
+    We can discuss the game on Discord. Also it's the place to announce any videos for our <a href="/records">personal records list</a>.    
     This link should work: <a href="#{raw tweakables.discordJoin}">#{tweakables.discordJoin}</a>
 </p>
 

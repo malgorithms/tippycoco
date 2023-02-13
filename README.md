@@ -1,16 +1,26 @@
 ### Tippy Coco
 
-An HTML-5 canvas game with gamepad support.
+Tippy Coco is a volleyball game in the browser. You don't need to install anything to play. Just visit the browser page on a computer or iPad with a keyboard.
+
+It supports:
+
+- 2 players at the same keyboard
+- 2 players with gamepads
+- 1 player against the bundled opponents
+
+Network play is not possible and won't be supported as (1) that's not fun for a game like this, and (2) this game is too twitchy for any pings higher than LAN play.
 
 ### To play
 
 https://tippycoco.com
 
-### To report bugs
+### To report bugs and suggestions
 
-Please, create a GitHub issue for me!
+Please, create a [GitHub issue](/malgorithms/tippycoco/issues) for me.
 
 ### To run locally and develop
+
+This should be pretty easy. Let me know in the issues if not.
 
 Prerequisite: `Node.js` installed
 

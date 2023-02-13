@@ -2,13 +2,10 @@
 
 Stuff
 
-- better visual on point scored for people without sound
-- name?!
-- cleanup mixing use of Ms and Sec without var names
+- sharing idea: shareable stats page powered with some persistence / random playerid
 - bowling beast 8-ball character
 - more characters?
 - managed to force the ball through the net once - add constraint
-- sharing idea: stats page with info in URL!
 - firefox on mac:
   - controller lag
   - button mappings different from chrome & safari
@@ -19,7 +16,6 @@ Stuff
   - consider selective draws on low framerate:
     - no clouds
     - no backshadow on text
-    - don't center scoreboard numbers exactly
   - test on old iMac
 - better intro ideas
   - all of them emerging from the ground and looking at character next to them
@@ -27,7 +23,6 @@ Stuff
   - they jump back into the ground?
 - exiting game shouldn't cause reload
 - iOS - can I make it work?!
-- discord to discuss
 - better readme page for github
 - review all console logging
 - basic SEO of landing page

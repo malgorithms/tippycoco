@@ -3,6 +3,7 @@
   "main": "index.js",
   "repository": "git@github.com:malgorithms/tcftg-browser.git",
   "author": "Chris Coyne <ccoyne77@gmail.com>",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "watch": "webpack -w",

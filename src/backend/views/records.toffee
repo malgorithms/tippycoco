@@ -1,7 +1,10 @@
 #{partial './site-header.toffee', {includeGame: false}}    
 
-<h4>A Big List of Top 10's </h4>
+<h4>A Big List of Top Times </h4>
 
+Please submit your personal records, even if you're not first. I'll keep everyone's best times here.
+
+So far #{reportedScores.White.fastest.length} have beaten <b>Skarball</b>.
 
 {#
     for k,v of reportedScores 
@@ -33,16 +36,17 @@
 
 <h4>Submitting a record</h4>
 <p>
-    Records are only official if you record a video. <a href="https://www.howtogeek.com/406064/how-to-record-a-video-of-your-chrome-browser/">Here are some suggestions on how to record.</a>
+    Records are only official if you record a video.    
+    <a href="https://www.howtogeek.com/406064/how-to-record-a-video-of-your-chrome-browser/">Recording your browser is easy these days.</a>
 </p>
 <p>
     Once you have a recording, post in <a href="/community">our discord group</a> the following info:
 </p>
 <ul>
-    <li>a link to video, posted publicly. It's important so anyone can review.</li>
-    <li>your name or nickname for the scoreboard</li>
+    <li>a link to your proof video, posted for perpetuity in a video forum such as YouTube or Twitch.</li>
+    <li>(optional) your name or nickname for the scoreboard</li>
     <li>(optional) a link to your own site / social media</li>
-    <li>(optional) any commentary text to include</li>
+    <li>(optional) any (dozen words or less) commentary to include</li>
 </ul>
 <p>
     Some clarifications:
@@ -53,7 +57,7 @@
     <li>You have to be a human player, not a bot.</li>
     <li>Any victories due to bugs or glitches won't count. Please report bugs!</li>
     <li>I'll reset a list if I meaningfully change a character's code.</li>
-    <li>You must leave your video proof live for others to review. Please use a popular site such as Twitch, Youtube, or Instagram.</li>
+    <li>You must leave your video proof live</li>
     <li>(optional) link to the game or this page from your video :-)</li>
 </ul>
 

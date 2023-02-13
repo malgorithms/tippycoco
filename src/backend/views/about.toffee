@@ -3,16 +3,15 @@
 <h4>About</h4>
 
 <p>
-    Tippy Coco is a free and open source game by <b>Chris Coyne</b> 
+    Tippy Coco is a free, open-source game by <b>Chris Coyne</b> 
     (<a href="https://chriscoyne.com">chriscoyne.com</a>
     / <a href="https://twitter.com/malgorithms">@malgorithms</a>). 
-    If you're a programmer, you can edit the game easily (see soure code below). 
    
-    The original inspiration for this game was <b>Slime Volleyball</b>, a 1999 Java Applet by Daniel Wedge &amp; Quin Pendragon.
+    The inspiration for this game was <b>Slime Volleyball</b>, a 1999 Java Applet by Daniel Wedge &amp; Quin Pendragon.
     I called an earlier version of this game <b>They Came from the Ground.</b>
 </p>
 <p>
-    The game is all programmed in JavaScript (well, TypeScript) and just uses HTML Canvas drawing.
+    The game is programmed in JavaScript (well, TypeScript) and uses simple HTML Canvas drawing.
 </p>
 <p>
     Music in Tippy Coco is by my friend
