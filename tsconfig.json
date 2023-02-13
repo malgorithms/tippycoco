@@ -2,7 +2,7 @@
   "compilerOptions": {
     "strict": true,
     "outDir": "./dist/",
-    "rootDir": "frontend",
+    "rootDir": "./src/frontend",
     "sourceMap": false,
     "module": "es6",
     "target": "es6",
@@ -16,5 +16,5 @@
     "noEmit": true,
     "allowSyntheticDefaultImports": true
   },
-  "exclude": ["backend", "node_modules"]
+  "exclude": ["./src/backend", "node_modules"]
 }
