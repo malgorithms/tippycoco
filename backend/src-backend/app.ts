@@ -17,7 +17,7 @@ app.enable('trust proxy')
 app.use(express.static('dist'))
 app.use(favicon(path.join(rootDir, 'dist', 'images', 'site', 'favicon.ico')))
 
-const viewDir = path.join(rootDir, 'site-backend', 'views')
+const viewDir = path.join(rootDir, 'backend', 'views')
 
 const serve = (res: Response, fName: string, obj?: any) => res.render(path.join(viewDir, fName), obj ?? {})
 

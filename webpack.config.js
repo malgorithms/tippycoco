@@ -1,9 +1,9 @@
 const path = require('path')
 const webpack = require('webpack')
-const excludes = [path.resolve(__dirname, 'node_modules'), path.resolve(__dirname, 'site-backend')]
+const excludes = [path.resolve(__dirname, 'node_modules'), path.resolve(__dirname, 'backend')]
 module.exports = {
   mode: 'development',
-  entry: './src-frontend/main.ts',
+  entry: './frontend/main.ts',
   node: {
     global: false,
   },

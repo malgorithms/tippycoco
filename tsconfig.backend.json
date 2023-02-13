@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "strict": true,
-    "outDir": "./site-backend/compiled-backend",
-    "rootDir": "./site-backend/src-backend",
+    "outDir": "./backend/compiled-backend",
+    "rootDir": "./backend/src-backend",
     "sourceMap": false,
     "module": "Node16",
     "target": "Es2022",
