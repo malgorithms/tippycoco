@@ -1,11 +1,13 @@
 {
+  // Backend code can access any front-end libraries too, for convenience
+  "include": ["./src/backend/**/*.ts", "./src/frontend/**/*.ts"],
   "compilerOptions": {
     "strict": true,
-    "outDir": "./backend/compiled-backend",
-    "rootDir": "./backend/src-backend",
+    "outDir": "./backend-compiled",
+    "rootDir": "./src",
     "sourceMap": false,
-    "module": "Node16",
-    "target": "Es2022",
+    "module": "node16",
+    "target": "es2022",
     "allowJs": false,
     "moduleResolution": "node",
     "noErrorTruncation": true,

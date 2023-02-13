@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "watch": "webpack -w",
-    "app": "yarn build-site && node backend/compiled-backend/app.js",
+    "app": "yarn build-site && node backend-compiled/backend/app.js",
     "build-site": "tsc --project tsconfig.backend.json"
   },
   "dependencies": {

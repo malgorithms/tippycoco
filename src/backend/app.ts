@@ -3,9 +3,9 @@ import path from 'path'
 import fs from 'fs/promises'
 import favicon from 'serve-favicon'
 import morgan from 'morgan'
-import {reportedScores} from './src-frontend/site/record-list'
-import {aiToNickname} from './src-frontend/ai/ai'
-import tweakables from './src-frontend/tweakables'
+import {aiToNickname} from '../frontend/ai/ai'
+import tweakables from '../frontend/tweakables'
+import {reportedScores} from '../frontend/site/record-list'
 
 const app = express()
 const port = 3377
@@ -17,7 +17,7 @@ app.enable('trust proxy')
 app.use(express.static('dist'))
 app.use(favicon(path.join(rootDir, 'dist', 'images', 'site', 'favicon.ico')))
 
-const viewDir = path.join(rootDir, 'backend', 'views')
+const viewDir = path.join(rootDir, 'src', 'backend', 'views')
 
 const serve = (res: Response, fName: string, obj?: any) => res.render(path.join(viewDir, fName), obj ?? {})
 
@@ -31,7 +31,7 @@ app.get('/community', (_req, res) => serve(res, 'community.toffee', {tweakables}
 // Simple gameplay logging to see how often it is played/won/etc.
 // without 3rd party cookie garbage.
 
-const gameLog = path.join(__dirname, 'games.log')
+const gameLog = path.join(rootDir, 'games.log')
 
 function dateStr(d: Date) {
   const p = (n: number, dig: number) => `${n}`.padStart(dig, '0')
