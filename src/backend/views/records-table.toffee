@@ -17,8 +17,8 @@
                         :}
                     #}
                     ...
-                    #{row.sec.toFixed(3)} seconds
-                    <a href="#{row.videoLink}" target="_blank">[watch]</a>
+                    <b>#{row.sec.toFixed(3)}</b>
+                    <a href="#{row.videoLink}" target="_blank">[vid]</a>
                     </li>
                 :}
             #}

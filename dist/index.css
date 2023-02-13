@@ -84,3 +84,6 @@ h4 {
 .scoreboard h4 {
   margin-top: 0;
 }
+a {
+  text-decoration: none;
+}
