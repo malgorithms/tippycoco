@@ -44,9 +44,34 @@ const reportedScores: RecordListMap = {
       },
     ],
   },
-  Orange: emptyList(),
+  Orange: {
+    fastest: [
+      {
+        who: chris,
+        sec: 224.579,
+        videoLink: 'https://youtu.be/BukgkKGbja8',
+        comment: 'This should be an easy record to beat.',
+      },
+    ],
+    withoutJumping: [],
+  },
   Purple: emptyList(),
-  Gray: emptyList(),
+  Gray: {
+    fastest: [
+      {
+        who: chris,
+        sec: 62.635,
+        videoLink: 'https://youtu.be/lAJ_v0j9Urg',
+      },
+    ],
+    withoutJumping: [
+      {
+        who: chris,
+        sec: 62.635,
+        videoLink: 'https://youtu.be/lAJ_v0j9Urg',
+      },
+    ],
+  },
   Yellow: emptyList(),
   Black: emptyList(),
   White: emptyList(),

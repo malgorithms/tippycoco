@@ -19,6 +19,13 @@
                     ...
                     <b>#{row.sec.toFixed(3)}</b>
                     <a href="#{row.videoLink}" target="_blank">[vid]</a>
+                    {#
+                        if row.comment?.length {:
+                            <div style="border-left:1px solid #ccc;padding-left:10px;font-style:italic;font-size:0.9em;color:#666;">
+                                #{row.comment}
+                            </div>
+                        :}
+                    #}
                     </li>
                 :}
             #}
