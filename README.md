@@ -1,6 +1,6 @@
 ### Tippy Coco
 
-Tippy Coco is a volleyball game in the browser. You don't need to install anything to play. Just visit the browser page on a computer or iPad with a keyboard.
+Tippy Coco is a volleyball game in the browser. You don't need to install anything to play. Just visit the webpage on a computer with a keyboard.
 
 It supports:
 

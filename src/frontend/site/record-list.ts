@@ -61,7 +61,23 @@ const reportedScores: RecordListMap = {
     ],
     withoutJumping: [],
   },
-  Purple: emptyList(),
+  Purple: {
+    fastest: [
+      {
+        who: chris,
+        sec: 25.624,
+        videoLink: 'https://youtu.be/QRKh4JO4F4U',
+      },
+    ],
+    withoutJumping: [
+      {
+        who: chris,
+        sec: 25.624,
+        videoLink: 'https://youtu.be/QRKh4JO4F4U',
+      },
+    ],
+  },
+
   Gray: {
     fastest: [
       {
