@@ -102,9 +102,8 @@ class Player {
     }
     return false
   }
-
   public dash(dir: Vector2) {
-    console.log('player::dash', this._isDashing)
+    console.log('player::dash', this._isDashing, 'can dash=', this.canDashNow)
     if (this.canDashNow) {
       this._isDashing = true
       this.physics.density = 234
