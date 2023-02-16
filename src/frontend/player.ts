@@ -102,6 +102,15 @@ class Player {
     }
     return false
   }
+  public jumpTowards(dir: Vector2): boolean {
+    if (this.isInJumpPosition) {
+      this._jumpCount++
+      this.physics.vel.y = this.jumpSpeed * dir.y
+      this.physics.vel.x = this.jumpSpeed * dir.x
+      return true
+    }
+    return false
+  }
   public dash(dir: Vector2) {
     console.log('player::dash', this._isDashing, 'can dash=', this.canDashNow)
     if (this.canDashNow) {

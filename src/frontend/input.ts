@@ -136,12 +136,15 @@ class Input {
     return this.keyboard.anyKeyDown(set.jump) || this.pads.anyButtonDown(pI, ['psX'])
   }
   public didJumpViaTouch(): boolean {
-    return !!this.touch.anyTap(ScreenSide.Right)
+    const res = !!this.touch.anyTap(ScreenSide.Right)
+    this._isPlayingWithTouch ||= res
+    return res
   }
   public getTouchThumbstickX(): number {
     const t = this.touch.anyDragMovement(ScreenSide.Left)
     if (!t) return 0
     else {
+      this._isPlayingWithTouch = true
       const x = t.vAsScreenFrac.x * tweakables.touch.xMoveMult
       return Math.max(-1, Math.min(1, x))
     }

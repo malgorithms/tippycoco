@@ -436,7 +436,12 @@ class Game {
           player.dash(dashDir)
           this.sound.play('dash', 1, 0, 0, false)
         } else if (player.isInJumpPosition) {
-          if (this.input.isJumpPressed(playerSide) || this.input.didJumpViaTouch()) player.jump()
+          if (this.input.isJumpPressed(playerSide)) player.jump()
+          else if (this.input.didJumpViaTouch()) {
+            const b = this.getClosestBall(player.physics.center)
+            const dir = vec.normalized(vec.sub(b.physics.center, player.physics.center))
+            player.jumpTowards(dir)
+          }
         }
       }
       // triggers only register over some threshold as dtermined in tweakables.triggerTolerance
@@ -616,6 +621,19 @@ class Game {
       }
       this.whoseServe = PlayerSide.Right
     }
+  }
+
+  public getClosestBall(p: Vector2): Ball {
+    let closestBall = this.balls[0]
+    let closestDSq = Infinity
+    for (const ball of this.balls) {
+      const dSq = vec.lenSq(vec.sub(ball.physics.center, p))
+      if (dSq < closestDSq) {
+        closestDSq = dSq
+        closestBall = ball
+      }
+    }
+    return closestBall
   }
 
   // keeps balls within the flowers; this is a simple/fast solution
