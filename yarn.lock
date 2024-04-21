@@ -2055,6 +2055,11 @@ source-map@^0.7.4:
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.7.4.tgz#a9bbe705c9d8846f4e08ff6765acf0f1b0898656"
   integrity sha512-l3BikUxvPOcn5E74dZiq5BGsTb5yEwhaTSzccU6t4sDOH8NWJCstKO5QT2CvtFoK6F0saL7p9xHAqHOlCPJygA==
 
+stathat@^0.0.8:
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/stathat/-/stathat-0.0.8.tgz#19a258d9d4a3204f36300f898942b5ff20a181d2"
+  integrity sha512-DbW/+aK5u3v2h6R8X4NfYMFLm4FI22UULIWjHOWR8Tn4EzcxBLIrsUOFktKwn4PipcP/EBp9dZc6aBZYvj41NQ==
+
 statuses@2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/statuses/-/statuses-2.0.1.tgz#55cb000ccf1d48728bd23c685a063998cf1a1b63"

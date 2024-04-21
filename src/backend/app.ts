@@ -6,6 +6,7 @@ import morgan from 'morgan'
 import {aiToNickname} from '../frontend/ai/ai'
 import tweakables from '../frontend/tweakables'
 import {reportedScores} from '../frontend/site/record-list'
+import {count, value} from './stats'
 
 const app = express()
 const port = 3377
@@ -46,15 +47,20 @@ function dateStr(d: Date) {
 }
 
 //
-// basic text logging of gameplay
-//
+// basic text logging of gameplay, and counting aggregate plays/wins
+// on StatHat if configured
 app.post('/api/persistence', async (req, res) => {
   const o = req.body
   if (o?.action === 'log') {
-    const txt = (o?.text || '-').slice(0, 120)
+    await count('persistence', 1)
+    const txt: string = (o?.text || '-').slice(0, 120)
     const logLine = `${dateStr(new Date())} [${o?.playerId ?? 'unknown'}] ${txt}`
     await fs.appendFile(gameLog, logLine + '\n')
     console.log(logLine)
+    if (/ready to play/gi.test(txt)) await count('ready to play', 1)
+    if (/game started.*species=human/gi.test(txt)) await count('2p games started', 1)
+    if (/game started.*species=ai/gi.test(txt)) await count('1p games started', 1)
+    if (/game complete/gi.test(txt)) await count('games completed', 1)
   }
   res.json({status: 0})
 })

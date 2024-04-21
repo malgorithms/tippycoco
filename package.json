@@ -21,6 +21,7 @@
     "morgan": "^1.10.0",
     "prettier": "^3.2.5",
     "serve-favicon": "^2.5.0",
+    "stathat": "^0.0.8",
     "toffee": "^0.3.7",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
