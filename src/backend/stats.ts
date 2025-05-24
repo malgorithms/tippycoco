@@ -1,4 +1,5 @@
 import stathat from 'stathat'
+stathat.useHTTPS = true
 
 const StatHatAccount: string | null = null
 const Prefix = 'TippyCoco'
