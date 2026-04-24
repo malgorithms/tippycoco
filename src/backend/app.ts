@@ -5,7 +5,6 @@ import favicon from 'serve-favicon'
 import morgan from 'morgan'
 import {aiToNickname} from '../frontend/ai/ai'
 import tweakables from '../frontend/tweakables'
-import {reportedScores} from '../frontend/site/record-list'
 import {count, value} from './stats'
 
 const app = express()
@@ -26,7 +25,6 @@ app.get('/', (_req, res) => serve(res, 'game.toffee'))
 app.get('/play', (_req, res) => serve(res, 'game.toffee'))
 app.get('/instructions', (_req, res) => serve(res, 'instructions.toffee'))
 app.get('/about', (_req, res) => serve(res, 'about.toffee'))
-app.get('/records', (_req, res) => serve(res, 'records.toffee', {reportedScores, aiToNickname}))
 app.get('/community', (_req, res) => serve(res, 'community.toffee', {tweakables}))
 
 // Simple gameplay logging to see how often it is played/won/etc.
