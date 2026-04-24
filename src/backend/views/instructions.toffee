@@ -1,4 +1,4 @@
-#{partial './site-header.toffee', {includeGame: false}}    
+#{partial './site-header.toffee', {includeGame: false}}
 
 <h4>Keyboard</h4>
 <p>
@@ -17,8 +17,7 @@
   Playstation and Xbox controllers both work! This is 1000x better for head-to-head, so you can sit back and not cram over a keyboard.
 </p>
 <p style="margin-bottom:300px;">
-  Buuut...there are gamepad issues with Firefox. Please use Safari, Chrome, or MS Edge if you're connecting
-  a gamepad.
+  Buuut...last I checked there were gamepad support issues with Firefox. Please use Safari, Chrome, or MS Edge if you're connecting a gamepad.
 </p>
 
 #{partial './site-footer.toffee'}

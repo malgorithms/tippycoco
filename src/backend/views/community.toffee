@@ -1,9 +1,9 @@
-#{partial './site-header.toffee', {includeGame: false}}    
+#{partial './site-header.toffee', {includeGame: false}}
 
 <h4>Join us on Discord</h4>
 
 <p>
-    We can discuss the game on Discord. Also it's the place to announce any videos for our <a href="/records">personal records list</a>.    
+    Players can discuss the game on Discord.
     This link should work: <a href="#{raw tweakables.discordJoin}">#{tweakables.discordJoin}</a>
 </p>
 
