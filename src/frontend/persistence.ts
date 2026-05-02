@@ -88,8 +88,8 @@ class Persistence {
     d.games.started++
     this.writeData(d)
   }
-  public incGamesCompleted() {
-    this.log('game complete.')
+  public incGamesCompleted(species: PlayerSpecies) {
+    this.log(`game complete. species=${species}`)
     const d = this.data
     d.lastPlayed = Date.now()
     d.games.completed++

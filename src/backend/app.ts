@@ -3,9 +3,11 @@ import path from 'path'
 import fs from 'fs/promises'
 import favicon from 'serve-favicon'
 import morgan from 'morgan'
-import {aiToNickname} from '../frontend/ai/ai'
+import {aiToNickname, aiNames} from '../frontend/ai/ai'
 import tweakables from '../frontend/tweakables'
 import {count, value} from './stats'
+
+const knownAiNames = new Set<string>(aiNames)
 
 const app = express()
 const port = 3377
@@ -58,7 +60,16 @@ app.post('/api/persistence', async (req, res) => {
     if (/ready to play/gi.test(txt)) await count('ready to play', 1)
     if (/game started.*species=human/gi.test(txt)) await count('2p games started', 1)
     if (/game started.*species=ai/gi.test(txt)) await count('1p games started', 1)
-    if (/game complete/gi.test(txt)) await count('games completed', 1)
+    if (/game complete.*species=human/gi.test(txt)) await count('games_completed', 1, {mode: '2p'})
+    if (/game complete.*species=ai/gi.test(txt)) await count('games_completed', 1, {mode: '1p'})
+    const aiResult = /ai result\. against=(\w+) win=(true|false)/i.exec(txt)
+    if (aiResult) {
+      const ai = aiResult[1]
+      const outcome = aiResult[2] === 'true' ? 'win' : 'loss'
+      if (knownAiNames.has(ai)) {
+        await count('1p_result', 1, {outcome, ai})
+      }
+    }
   }
   res.json({status: 0})
 })

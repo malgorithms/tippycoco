@@ -34,10 +34,15 @@ async function pushMetric(name: string, labels: Record<string, string>, val: num
   }
 }
 
-async function count(statName: string, n: number): Promise<void> {
-  console.log(`[stats] ${statName} +${n}`)
-  counters[statName] = (counters[statName] || 0) + n
-  await pushMetric(`${prefix}_events_total`, {event: statName}, counters[statName])
+async function count(statName: string, n: number, labels: Record<string, string> = {}): Promise<void> {
+  const allLabels: Record<string, string> = {event: statName, ...labels}
+  const key = Object.keys(allLabels)
+    .sort()
+    .map((k) => `${k}=${allLabels[k]}`)
+    .join(',')
+  counters[key] = (counters[key] || 0) + n
+  console.log(`[stats] ${key} +${n} (=${counters[key]})`)
+  await pushMetric(`${prefix}_events_total`, allLabels, counters[key])
 }
 
 async function value(statName: string, val: number): Promise<void> {

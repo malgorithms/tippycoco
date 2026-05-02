@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(yarn build-site *)",
+      "Bash(npx webpack *)",
+      "Bash(tsc --project tsconfig.backend.json)",
+      "Bash(tsc --project tsconfig.webpack.json --noEmit)",
+      "Bash(yarn --version)",
+      "Bash(yarn install *)",
+      "Bash(yarn webpack *)"
+    ]
+  }
+}

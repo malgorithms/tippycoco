@@ -586,7 +586,7 @@ class Game {
     if (playerSide === PlayerSide.Left) {
       this.scoreLeftPlayer++
       if (this.scoreLeftPlayer >= winScore && this.scoreLeftPlayer - this.scoreRightPlayer >= 2) {
-        persistence.incGamesCompleted()
+        persistence.incGamesCompleted(this.playerRight.species)
         if (this.playerRight.ai) {
           const aiName = aiToName(this.playerRight.ai)
           const wasShutout = this.scoreRightPlayer === 0
@@ -598,7 +598,7 @@ class Game {
     } else {
       this.scoreRightPlayer++
       if (this.scoreRightPlayer >= winScore && this.scoreRightPlayer - this.scoreLeftPlayer >= 2) {
-        persistence.incGamesCompleted()
+        persistence.incGamesCompleted(this.playerRight.species)
         if (this.playerRight.ai) {
           const aiName = aiToName(this.playerRight.ai)
           persistence.recordResultAgainstAi(aiName, false, false, sec, jumps)
